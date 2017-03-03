@@ -2,8 +2,14 @@ from slackclient import SlackClient
 import os
 import config
 import time
+import sqlite3
+conn = sqlite3.connect('mentors.db')
+#creat the table
+c = conn.cursor()
+c.execute("SELECT * FROM MENTOR")
+x = c.fetchall()
+print list(x[0][0])
 BOT_NAME = 'helperbot'
-print(config.apiT)
 slack_client = SlackClient(config.apiT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
