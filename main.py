@@ -3,12 +3,7 @@ import os
 import config
 import time
 import sqlite3
-conn = sqlite3.connect('mentors.db')
 #creat the table
-c = conn.cursor()
-c.execute("SELECT * FROM MENTOR")
-x = c.fetchall()
-print list(x[0][0])
 BOT_NAME = 'helperbot'
 slack_client = SlackClient(config.apiT)
 BOTID = config.botID
@@ -19,6 +14,13 @@ def channel_info(channel_id):
              return channel_info['channel']
              return None
 
+def grab_user(use):
+    api =slack_client.api_call('users.list')
+    if(api.get('ok')):
+            users = api.get('members')
+            for user in users:
+                if 'name' in user and user.get('id') == use:
+                    return user['name'] 
 def parse_slack_output(slack_rtm_output):
     """
         The Slack Real Time Messaging API is an events firehose.
@@ -29,21 +31,21 @@ def parse_slack_output(slack_rtm_output):
     if output_list and len(output_list) > 0:
         for output in output_list:
             if output and 'text' in output and AT_BOT in output['text']:
-                # return text after the @ mention, whitespace removed
+                print(output)
+                
+                user_name =  grab_user(output['user'])
                 return output['text'].split(AT_BOT)[1].strip().lower(), \
-                       output['channel']
-    return None, None
-
-def handle_command(command, channel):
+                       output['channel'], \
+                       output['user'], \
+                       user_name
+    return None, None, "", ""
+def handle_command(command, channel,userid,username):
     """
         Receives commands directed at the bot and determines if they
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
     """
-    response = "Not sure what you mean. Use the  "\
-               "* command with numbers, delimited by spaces."
-    if command.startswith("KEK"):
-        response = "Sure...write some more code then I can do that!"
+    print(userid)
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=command, as_user=True)
 def list_channels():
@@ -57,9 +59,9 @@ if __name__ == "__main__":
     if slack_client.rtm_connect():
         print("StarterBot connected and running!")
         while True:
-            command, channel = parse_slack_output(slack_client.rtm_read())
+            command, channel, userid,username = parse_slack_output(slack_client.rtm_read())
             if command and channel:
-                handle_command(command, channel)
+                handle_command(command, channel,userid,username)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?") 
