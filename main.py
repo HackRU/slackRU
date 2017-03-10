@@ -39,6 +39,31 @@ def parse_slack_output(slack_rtm_output):
                        output['user'], \
                        user_name
     return None, None, "", ""
+
+#userid, mentorid
+def create_channel_pair(userid, mentorid, username, mentorname):
+	newGroup = slack_client.api_call(
+		"groups.create",
+		name = username + " " + mentorname,
+		validate = "true",
+		as_User = "true")
+	if not newGroup.get('ok'):
+		print "Error!"
+		print newGroup
+		return
+	slack_client.apicall(
+		"groups.invite",
+		channel = newGroup.get('id'),
+		user = userid
+		)
+
+
+	slack_client.apicall(
+		"groups.invite",
+		channel = newGroup.get('id'),
+		user = mentorid
+		)
+
 def handle_command(command, channel,userid,username):
     """
         Receives commands directed at the bot and determines if they
@@ -46,6 +71,7 @@ def handle_command(command, channel,userid,username):
         returns back what it needs for clarification.
     """
     print(userid)
+    create_channel_pair(userid, "U44AZ0GP6", username, "Srihari")
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=command, as_user=True)
 def list_channels():
@@ -65,6 +91,8 @@ if __name__ == "__main__":
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?") 
+
+
 
 
 
