@@ -45,26 +45,16 @@ def parse_slack_output(slack_rtm_output):
 def create_channel_pair(userid, mentorid, username, mentorname):
 	newGroup = slack_web_client.api_call(
 
-		"groups.create",
+		"mpim.open",
                 token = config.oauthT,
-		name = username + " " + mentorname,
-		as_User = True)
+                users = mentorid +','+ userid
+		)
 	if not newGroup.get('ok'):
 		print "Error!"
 		print newGroup
 		return
-	slack_web_client.apicall(
-		"groups.invite",
-		channel = newGroup.get('id'),
-		user = userid
-		)
 
-
-	slack_web_client.apicall(
-		"groups.invite",
-		channel = newGroup.get('id'),
-		user = mentorid
-		)
+        print (newGroup)
 
 def handle_command(command, channel,userid,username):
     """
