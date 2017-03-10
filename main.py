@@ -6,6 +6,7 @@ import sqlite3
 #creat the table
 BOT_NAME = 'helperbot'
 slack_client = SlackClient(config.apiT)
+slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
 def channel_info(channel_id):
@@ -42,23 +43,24 @@ def parse_slack_output(slack_rtm_output):
 
 #userid, mentorid
 def create_channel_pair(userid, mentorid, username, mentorname):
-	newGroup = slack_client.api_call(
+	newGroup = slack_web_client.api_call(
+
 		"groups.create",
+                token = config.oauthT,
 		name = username + " " + mentorname,
-		validate = "true",
-		as_User = "true")
+		as_User = True)
 	if not newGroup.get('ok'):
 		print "Error!"
 		print newGroup
 		return
-	slack_client.apicall(
+	slack_web_client.apicall(
 		"groups.invite",
 		channel = newGroup.get('id'),
 		user = userid
 		)
 
 
-	slack_client.apicall(
+	slack_web_client.apicall(
 		"groups.invite",
 		channel = newGroup.get('id'),
 		user = mentorid
@@ -78,7 +80,6 @@ def list_channels():
      channels_call = slack_client.api_call("channels.list")
      if channels_call.get('ok'):
          return channels_call['channels']
-channels = list_channels()
 #sends message to a channel
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
