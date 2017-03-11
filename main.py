@@ -43,11 +43,14 @@ def parse_slack_output(slack_rtm_output):
 
 #userid, mentorid
 def create_channel_pair(userid, mentorid, username, mentorname):
+        userlist = []
+        userlist.append(config.botID)
+        userlist.append(mentorid)
 	newGroup = slack_web_client.api_call(
 
 		"mpim.open",
                 token = config.oauthT,
-                users = mentorid +','+ userid
+                users = userid + ',' + mentorid + ',' + config.botID
 		)
 	if not newGroup.get('ok'):
 		print "Error!"
@@ -63,6 +66,7 @@ def handle_command(command, channel,userid,username):
         returns back what it needs for clarification.
     """
     print(userid)
+    
     create_channel_pair(userid, "U44AZ0GP6", username, "Srihari")
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=command, as_user=True)
