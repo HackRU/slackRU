@@ -42,6 +42,8 @@ def parse_slack_output(slack_rtm_output):
     return None, None, "", ""
 
 #userid, mentorid
+#opens a multiparty im with some users
+
 def create_channel_pair(userid, mentorid, username, mentorname):
         userlist = []
         userlist.append(config.botID)
