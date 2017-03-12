@@ -9,11 +9,6 @@ slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
-def channel_info(channel_id):
-        channel_info = slack_client.api_call("channels.info", channel=channel_id)
-        if channel_info:
-             return channel_info['channel']
-             return None
 
 def grab_user(use):
     api =slack_client.api_call('users.list')
