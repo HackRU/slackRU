@@ -55,6 +55,8 @@ def create_channel_pair(userid, mentorid, username, mentorname):
 		return
 
         print (newGroup)
+        test = slack_client.api_call("chat.postMessage", channel = newGroup['group']['id'], text = "Hello", as_user = True);
+        print (test)
 
 def handle_command(command, channel,userid,username):
     """
