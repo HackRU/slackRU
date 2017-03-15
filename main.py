@@ -9,7 +9,7 @@ slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
-
+BOT_CHANNEl = "D4GSK3HG9"
 def grab_user(use):
     api =slack_client.api_call('users.list')
     if(api.get('ok')):
@@ -31,6 +31,14 @@ def parse_slack_output(slack_rtm_output):
                 
                 user_name =  grab_user(output['user'])
                 return output['text'].split(AT_BOT)[1].strip().lower(), \
+                       output['channel'], \
+                       output['user'], \
+                       user_name
+
+            elif output and 'text' in output and BOT_CHANNEl in output['channel'] and AT_BOT not in output['user']:
+
+                user_name =  grab_user(output['user'])
+                return output['text'], \
                        output['channel'], \
                        output['user'], \
                        user_name
@@ -66,9 +74,9 @@ def handle_command(command, channel,userid,username):
     """
     print(userid)
     
+    slack_client.api_call("chat.postMessage", channel=userid,
+                          text="Hello, you asked "+command + " to help better pair you with a mentor, please type some keywords" , as_user=True)
     create_channel_pair(userid, "U44AZ0GP6", username, "Srihari")
-    slack_client.api_call("chat.postMessage", channel=channel,
-                          text=command, as_user=True)
 def list_channels():
      channels_call = slack_client.api_call("channels.list")
      if channels_call.get('ok'):
