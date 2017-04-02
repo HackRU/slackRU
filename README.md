@@ -2,7 +2,7 @@
 
 
 |Commands|Status|Comments|
-|--------|:----:|-------:|
+|--------|:----:|:------:|
 |checkStatus|Finished|Needs testing|
 |busy|Finished|Needs testing|
 |unbusy|Finished|Needs testing|
