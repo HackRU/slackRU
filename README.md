@@ -6,8 +6,7 @@
 |checkStatus|Finished|Needs testing|
 |busy|Finished|Needs testing|
 |unbusy|Finished|Needs testing|
-|mentors|Finished|Needs testing with
-mentor channel id|
+|mentors|Finished|Needs testing with mentor channel id|
 |shortenlist|Finished||
 |help|Finished||
 
