@@ -11,9 +11,9 @@
 |help|Finished||
 
 ### Backlog
--[ ] Annoucements
--[ ] Testing Database
--[ ] Testing all functions on dummy data
--[ ] MentorID's and Mentor Channel ID's integrated
--[ ] Message all directors function
--[ ] How many hours left in the hackathon?
+- [ ] Annoucements
+- [ ] Testing Database
+- [ ] Testing all functions on dummy data
+- [ ] MentorID's and Mentor Channel ID's integrated
+- [ ] Message all directors function
+- [ ] How many hours left in the hackathon?
