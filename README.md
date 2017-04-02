@@ -6,12 +6,13 @@
 |checkStatus|Finished|Needs testing|
 |busy|Finished|Needs testing|
 |unbusy|Finished|Needs testing|
-|mentors|Finished|Needs testing with mentor channel id|
+|mentors|Finished|Needs testing with \nmentor channel id|
 |shortenlist|Finished||
 |help|Finished||
 
 ### Backlog
-- [ ] Annoucements
+- [ ] Annoucements -> (syncing with google calendar?)
+- [ ] Being able to change anoucements based on calendar/director changes
 - [ ] Testing Database
 - [ ] Testing all functions on dummy data
 - [ ] MentorID's and Mentor Channel ID's integrated
