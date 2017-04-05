@@ -11,6 +11,7 @@
 |help|Finished||
 
 ### Backlog
+- [ ] Code review
 - [ ] Annoucements -> (syncing with google calendar?)
 - [ ] Being able to change anoucements based on calendar/director changes
 - [ ] Testing Database
