@@ -38,7 +38,6 @@ def parse_slack_output(slack_rtm_output):
     if output_list and len(output_list) > 0:
         for output in output_list:
             if output and 'text' in output and AT_BOT in output['text']:
-                print(output)
                 
                 user_name =  grab_user(output['user'])
                 return output['text'].split(AT_BOT)[1].strip().lower(), \
@@ -46,13 +45,6 @@ def parse_slack_output(slack_rtm_output):
                        output['user'], \
                        user_name
 
-            elif output and 'text' in output and BOT_CHANNEl in output['channel'] and AT_BOT not in output['user']:
-
-                user_name =  grab_user(output['user'])
-                return output['text'], \
-                       output['channel'], \
-                       output['user'], \
-                       user_name
     return None, None, "", ""
 
 #userid, mentorid
@@ -117,7 +109,7 @@ def handle_command(command, channel,userid,username):
     
     #This is a troll command, play with it if you wish
     if(dividedCommand[0] == "karlin"):
-        slack_client.api_call("chat.postMessage",channel = channel, text = "HE IS THE IMPOSTER SCREW HIM, I am the alpha Karlin!")
+        slack_client.api_call("chat.postMessage",channel = channel, text = "HE IS THE IMPOSTER SCREW HIM, I am the alpha Karlin!",as_user = True)
         return
     #This command was used to test timestamps on python, delete if you want (delete the function as well)
     if(dividedCommand[0] == "timetest"):
@@ -269,7 +261,7 @@ def findAvaliableMentor(hackerName,userid ,keywords):
             if(i.h == hackerID):
                 LOWH.remove(i)
         print("Suitable mentor found!\n"+found[1]+"!")
-        conn.execute("update mentors set busy = 1 where name = ?",[name])
+        conn.execute("update mentors set busy = 1 where name = ?",[found[1]])
         #create a channel between the two
         conn.commit()
 
