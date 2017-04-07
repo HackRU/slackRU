@@ -12,6 +12,7 @@
 
 ### Backlog
 - [ ] Code review
+- [ ] Function to find a userid given a username
 - [ ] Annoucements -> (syncing with google calendar?)
 - [ ] Being able to change anoucements based on calendar/director changes
 - [ ] Testing Database
