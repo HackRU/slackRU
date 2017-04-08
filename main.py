@@ -21,6 +21,11 @@ slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
 BOT_CHANNEl = "D4GSK3HG9"
+def hours_left():
+    epoch_of_end_hack_ru = 1492970400
+    curr_epoch_time = int(time.time())
+    return (epoch_of_end_hack_ru/3600 - curr_epoch_time/3600)
+
 def grab_user(use):
     api =slack_client.api_call('users.list')
     if(api.get('ok')):
@@ -110,6 +115,10 @@ def handle_command(command, channel,userid,username):
     #This is a troll command, play with it if you wish
     if(dividedCommand[0] == "karlin"):
         slack_client.api_call("chat.postMessage",channel = channel, text = "HE IS THE IMPOSTER SCREW HIM, I am the alpha Karlin!",as_user = True)
+        return
+    if (str.lower(dividedCommand[0]) == "hours"):
+        
+        slack_client.api_call("chat.postMessage",channel = channel, text = "There are " + hours_left() + " " + "till the end of HackRU"  ,as_user = True)
         return
     #This command was used to test timestamps on python, delete if you want (delete the function as well)
     if(dividedCommand[0] == "timetest"):
