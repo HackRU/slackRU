@@ -21,6 +21,19 @@ slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
 BOT_CHANNEl = "D4GSK3HG9"
+#convert username to username
+def username_to_id(user):
+     api =slack_client.api_call('users.list')
+     if (api.get('ok')):
+         userrs = api.get('members')
+         for user in userrs:
+             if 'id' and 'name'  in user and user.get('name') == user:
+                 return user['id']
+print username_to_id('sriharishankar')
+print username_to_id('azoam')
+print username_to_id('sakib')
+print username_to_id('aditya')
+print username_to_id('qasim')
 def hours_left():
     epoch_of_end_hack_ru = 1492970400
     curr_epoch_time = int(time.time())
@@ -237,7 +250,8 @@ def findAvaliableMentor(hackerName,userid ,keywords):
                 k = k.lower()
                 if k in keywords:
                     count = count+1
-
+        mentorid = conn.execute("select mentorid from mentors where name =?",[MentorName])
+        
         #Everytime the count is larger than the currently largest count, swap a new found            
         if count > found[0]:
             found[0] = count
@@ -272,6 +286,7 @@ def findAvaliableMentor(hackerName,userid ,keywords):
         print("Suitable mentor found!\n"+found[1]+"!")
         conn.execute("update mentors set busy = 1 where name = ?",[found[1]])
         #create a channel between the two
+        create_channel_pair(userid,mentorid,MentorName,"Hello")
         conn.commit()
 
     conn.close()
