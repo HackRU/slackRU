@@ -104,28 +104,31 @@ def handle_command(command, channel,userid,username):
     dividedCommand = command.split()
     print(dividedCommand)
     
-    if(dividedCommand[0] == "checkStatus"):
-        if(command[1] != config.mpass):
+    if(dividedCommand[0] == "checkstatus"):
+        if(dividedCommand[1] != config.mpass):
             message(userid,"Incorrect password, Try again or ask Architects Sam or Srihari for the password!")
             return
         conn = sqlite3.connect("main.db")
-        Mentor = conn.execute("select busy from mentors where mentorid=?",[userid])
-        if(len(Mentor) == 0):
+        row = conn.execute("select busy from mentors where mentorid=?",[userid])
+	stuff = row.fetchone()
+        if stuff[0] == None :
             message(userid, "Couldnt find you in mentor database, contact Sam or Srihari!")
             return
         else:
-            message(userid, "Your busy status is currently: "+Mentor[0]+"\nWhere 0 is unbusy and 1 is busy!")
+            message(userid, "Your busy status is currently: "+str(stuff[0])+"\nWhere 0 is unbusy and 1 is busy!")
         return
     #This command deals with making a mentor busy or unbusy
     if(dividedCommand[0] == "busy" or dividedCommand[0] == "unbusy"):
-        if(command[1] != config.mpass):
+        if(dividedCommand[1] != config.mpass):
             message(userid,"Incorrect password, Try again or ask Sam or Srihari for the password!")
             return
         
         if dividedCommand[0] == "busy":
-            dbManage(userid,0,[0,config.dbpass,"BS",userid,1])
+            dbManage(userid,0,[0,config.dbpass,"bs",userid,1])
+	    return
         else:
-            dbManage(userid,0,[0,config.dbpass,"BS",userid,0])
+            dbManage(userid,0,[0,config.dbpass,"bs",userid,0])
+	    return
     
     #This is a troll command, play with it if you wish
     if(dividedCommand[0] == "karlin"):
@@ -133,7 +136,7 @@ def handle_command(command, channel,userid,username):
         return
     if (dividedCommand[0] == "hours"):
         
-        slack_client.api_call("chat.postMessage",channel = channel, text = "There are " + hours_left() + " " + "till the end of HackRU"  ,as_user = True)
+        slack_client.api_call("chat.postMessage",channel = channel, text = "There are " +str(hours_left()) + " " + "till the end of HackRU"  ,as_user = True)
         return
     #This command was used to test timestamps on python, delete if you want (delete the function as well)
     if(dividedCommand[0] == "timetest"):
@@ -237,7 +240,7 @@ def shortenlist(mentorID, mentorName, commandOptions):
             #create channel pair
         userInfo = slack_client.api_call("user.info", user=hackerID, as_user=True)
         print("Trying to pair from list...")
-        #create_channel_pair(hackerID, mentorID,userInfo['user']['name'], mentorName)
+        create_channel_pair(hackerID, mentorID,"dude", mentorName)
 
 def findAvaliableMentor(hackerName,userid ,keywords):
     #This is used later on if we have to put this user in the list of waiting hackers
@@ -324,7 +327,7 @@ def dbManage(mentorid,channelid, dbcommand):
         print(conn.execute("select * from mentor"))
 
     elif(dbcommand[2] == "addmentor" or dbcommand[2] == "am"):
-		#Option Params: name busy keywords mentorid
+		#Option Params::: name busy keywords mentorid
 	print("Adding new Mentor")
         if len(dbcommand) != 8:
             print("Incorrect arguments got: "+str(len(dbcommand))+" arguments instead of 7")
@@ -335,17 +338,22 @@ def dbManage(mentorid,channelid, dbcommand):
     elif(dbcommand[2] == "busystat" or dbcommand[2] == "bs"):
 		#Option Params: mentorid <0,1> 0 for unbusy 1 for busy
 	print("Changing busy status...")
-        if command[3] == 0:
-                if len(conn.execute("select name from mentors where mentorid=?",[command[3]])) == 0:
+        if dbcommand[4] == 0:
+		match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
+                if list(match) ==  []:
                		message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
-              		return
-                conn.execute("update mentors set busy = 0 where mentorid =?",[command[3]])
+		else:
+                	conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
+			message(mentorid,"All good buddy, set you to unbusy!")
+
 
         else:
-            if len(conn.execute("select name from mentors where mentorid=?",[command[3]])) == 0:
+	    match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
+            if list(match) == []:
                 message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
-                return
-            conn.execute("update mentors set busy = 1 where mentorid =?",[command[3]]) 
+	    else:
+            	conn.execute("update mentors set busy = 1 where mentorid =?",[dbcommand[3]])
+		message(mentorid,"All good buddy, set you to busy!") 
 
     conn.commit()
     conn.close()
