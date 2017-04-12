@@ -11,6 +11,7 @@
 |help|Finished||
 
 ### Backlog
+- [ ] Change password in the event that it is exposed!
 - [ ] Continuous reminder about how to use commands
 - [ ] Funny Stuff? randomgif :D?
 - [ ] What's next command: Tells the users whats next on the list of events (next 5 events?)
