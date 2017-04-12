@@ -11,6 +11,8 @@
 |help|Finished||
 
 ### Backlog
+- [ ] Funny Stuff? randomgif :D?
+- [ ] What's next command: Tells the users whats next on the list of events (next 5 events?)
 - [ ] Code review
 - [ ] Function to find a userid given a username
 - [ ] Make a new row for 'MentorID' in sqlite3
