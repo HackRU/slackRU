@@ -3,9 +3,9 @@
 
 |Commands|Status|Comments|
 |--------|:----:|:------:|
-|checkStatus|Finished|Needs testing|
-|busy|Finished|Needs testing|
-|unbusy|Finished|Needs testing|
+|checkStatus|Finished||
+|busy|Finished||
+|unbusy|Finished||
 |mentors|Finished|Needs testing with mentor channel id|
 |shortenlist|Finished||
 |help|Finished||
