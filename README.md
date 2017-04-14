@@ -11,6 +11,7 @@
 |help|Finished||
 
 ### Backlog
+- [ ] We don't need a password on unbusy/busy or status
 - [ ] Change password in the event that it is exposed!
 - [ ] Continuous reminder about how to use commands
 - [ ] Funny Stuff? randomgif :D?
