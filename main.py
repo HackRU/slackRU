@@ -1,18 +1,26 @@
 #!/bin/bash
 from slackclient import SlackClient
-
+from oauth2client.service_account import ServiceAccountCredentials
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 import os
 import config
 import time
 import sqlite3
-
+import httplib2
+from apiclient.discovery import build
+import datetime
+import dateutil.parser
 class wHacker:
     def __init__(self,hackerID,request):
         self.h = hackerID
         self.r = request
 
+
+class eventObj:
+    def __init__(self,startime,summary):
+	self.s = startime
+	self.sum = summary
 #List Of Waiting Hacker -> Hackers who are currently waiting for a mentor to respond to them!
 LOWH = []
 #List Of Active Channels -> Active channels created from the mentor chat.
@@ -23,6 +31,35 @@ slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
 BOT_CHANNEl = "D4GSK3HG9"
+#authorize google calender stuff
+def get_messages():
+	events_obj =  []
+	scopes = ['https://www.googleapis.com/auth/calendar']
+	credentials = ServiceAccountCredentials.from_json_keyfile_name(
+    'creds.json', scopes=scopes)
+	http_auth = credentials.authorize(httplib2.Http())
+	service = build('calendar', 'v3', http=http_auth)
+	now = datetime.datetime.utcnow().isoformat() + 'Z'
+	eventsResult = service.events().list(
+        	calendarId='dummeeacct123@gmail.com', timeMin=now, maxResults=5, singleEvents=True,
+       		orderBy='startTime').execute()
+   	events = eventsResult.get('items', [])
+
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+       	     start = event['start'].get('dateTime', event['start'].get('date'))
+	     end = event['end'].get('dateTime',event['end'].get('date'))
+	     dte = dateutil.parser.parse(end)
+
+	     dt =  dateutil.parser.parse(start)
+	     dte = dte.strftime('%H:%M')
+	     dt = dt.strftime('%H:%M')
+	     rn = str(dt) + " - " + str(dte)
+	     e = eventObj(rn,event['summary'])
+	     events_obj.append(e)
+        return events_obj
+get_messages()
 #convert username to username
 def username_to_id(username):
      api =slack_client.api_call('users.list')
@@ -33,6 +70,7 @@ def username_to_id(username):
 	    
              if 'id'  in user and user['name'] == username:
                  return user['id']
+print (username_to_id("slackru"))
 def hours_left():
     epoch_of_end_hack_ru = 1492970400
     curr_epoch_time = int(time.time())
@@ -142,8 +180,16 @@ def handle_command(command, channel,userid,username):
     if(dividedCommand[0] == "timetest"):
         checkTime(channel)
         return
-   #
-	 
+    if (dividedCommand[0] == "annoucements"):
+	li = get_messages()
+	if li != []:
+		
+	    
+           slack_client.api_call("chat.postMessage",channel = channel, text ="The next five events are...."  ,as_user = True)
+	for i in li:
+	    
+           slack_client.api_call("chat.postMessage",channel = channel, text =i.sum + " " + i.s  ,as_user = True)
+	return 
     #params: dbmanager <password> <command> <options>
     if (dividedCommand[0] == "dbmanage"):
 		print("yes")
