@@ -287,10 +287,11 @@ def message(channelid, message):
     text=message, as_user=True)
 
 def list_channels():
-     channels_call = slack_client.api_call("channels.list")
+     channels_call = slack_client.api_call("groups.list")
      if channels_call.get('ok'):
-         return channels_call['channels']
+         return channels_call['groups']
 
+print(list_channels())
 def shortenlist(mentorID, mentorName, commandOptions):
     if(commandOptions[1] != config.mpass):
         message(mentorID, "The password inserted was incorrect, please try again. If you need the password message Architect Sam or Architect Shri.")
@@ -366,8 +367,8 @@ def findAvaliableMentor(hackerName,userid ,keywords):
         strKeywords = ""
         print("Could not find suitable mentor!")
         #This method below should be uncommented once we have the mentors channel set up and we have the mentor channel id
-        # slack_client.api_call("chat.postMessage", channel=mentorsChannel,
-        #    text="There is currently a hacker by the name of: "+hackerName+"Who is having trouble with: "+keywords+" Please use the command `@helperbot shortenList <password> <userid>  in order to help them with this! The password is mentors2017 and this users id is: "+userid+"", as_user=True)
+        slack_client.api_call("chat.postMessage", channel='G52TN1TB6',
+            text="There is currently a hacker with the ID: "+str(userid)+" Who is having trouble with: "+str(keywords)+" Please use the command <AT>slackru shortenList <password> <userid>  in order to help them with this if you can! The password is mentors2017", as_user=True)
         message(userid,"We could not find a mentor with the paramters you gave us, we have placed your request on a list. If a mentor believes they can help you with this issue they will respond to you! You are more than welcome to use the mentors command again with new keywords!")
         f = 0
         for i in LOWH:
