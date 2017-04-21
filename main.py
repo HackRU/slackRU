@@ -41,9 +41,12 @@ def get_messages():
     'creds.json', scopes=scopes)
 	http_auth = credentials.authorize(httplib2.Http())
 	service = build('calendar', 'v3', http=http_auth)
+	page_token = None
+
+
 	now = datetime.datetime.utcnow().isoformat() + 'Z'
 	eventsResult = service.events().list(
-        	calendarId='dummeeacct123@gmail.com', timeMin=now, maxResults=5, singleEvents=True,
+        	calendarId='hl4bsn6030jr76nql68cen2jto@group.calendar.google.com', timeMin=now, maxResults=5, singleEvents=True,
        		orderBy='startTime').execute()
    	events = eventsResult.get('items', [])
 
@@ -170,7 +173,23 @@ def handle_command(command, channel,userid,username):
         else:
             dbManage(userid,0,[0,config.dbpass,"bs",userid,0])
 	    return
-    
+    if(dividedCommand[0] == "inactive"):
+        print("gothere")
+        if(dividedCommand[1] != config.mpass):
+             message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
+	     return
+        else:
+	     print("set inactive!!")
+             dbManage(userid,0,[0,config.dbpass,"setinactive",userid])
+             return
+ 
+    if(dividedCommand[0] == "active"):
+        if(dividedCommand[1] != config.mpass):
+             message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
+	     return
+        else:
+             dbManage(userid,0,[0,config.dbpass,"setactive",userid])
+             return
     #This is a troll command, play with it if you wish
     if(dividedCommand[0] == "karlin"):
         slack_client.api_call("chat.postMessage",channel = channel, text = "HE IS THE IMPOSTER SCREW HIM, I am the alpha Karlin!",as_user = True)
@@ -183,7 +202,7 @@ def handle_command(command, channel,userid,username):
     if(dividedCommand[0] == "timetest"):
         checkTime(channel)
         return
-    if (dividedCommand[0] == "annoucements"):
+    if (dividedCommand[0] == "announcements"):
 	li = get_messages()
 	if li != []:
 		
@@ -239,9 +258,9 @@ def handle_command(command, channel,userid,username):
 def help(userid, username):
     message(userid,"Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
     message(userid,"All commands will begin with <AT character>slackru")
-    message(userid,"""Hacker:\n| menotors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
+    message(userid,"""Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
                     \n| help  | -> Wait what?
-		    \n Organizer:\n | annoucements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
+		    \n | announcements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
                     \nMentor:\n| shortenList <password> <hacker id> | -> Used to help a hackers whose keywords could not be found.
                    \n | unbusy | makes your busy status 0, so you can help more people!
                    \n | busy | -> opposite of the guy above, used when you want to afk I guess""")
@@ -423,6 +442,7 @@ def dbManage(mentorid,channelid, dbcommand):
 			message(mentorid,"All good buddy, set you to unbusy!")
 
     elif(dbcommand[2] == 'setinactive'):
+	print dbcommand
         match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
         if list(match) ==  []:
             message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
@@ -438,26 +458,31 @@ def dbManage(mentorid,channelid, dbcommand):
         else:
             conn.execute("update mentors set inactive = 0 where mentorid =?",[dbcommand[3]])
 	    conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
-            message(mentorid,"Made you inactive!!")
+            message(mentorid,"Made you active!!")
 
 
     elif(dbcommand[2] == 'listactivity'):		
-        match1 = conn.execute("select name from mentors where inactive=?",['1'])
-        if list(match1) == []:
+        match1 = conn.execute("select name from mentors where inactive=1")
+       
+        c = list(match1.fetchall())
+        if list(c) == []:
 	    message(mentorid,"List contains no inactive mentors!")
         else:
 	    message(mentorid,"Current Inactive Mentors\n________________________")
-	    for i in match1:
-	        message(mentorid,str(i[0]) + '\n')
-
-        match2 = conn.execute("select name from mentors where inactive=?",['0'])
-	if list(match2) == []:
+            print c
+	    for i in c:
+	        message(mentorid,str(i[0]).upper() + '\n')
+	
+        match2 = conn.execute("select name from mentors where inactive=0")
+	c =  list(match2.fetchall())
+	
+	if list(match2.fetchall()) == None:
  	    message(mentorid,"List contains no active mentors!")
 	else:
 	    message(mentorid,"Current Active Mentors\n______________________")
-	    for i in match2:
-                print(list(match2))
-	        message(mentorid,i+"\n")
+	    for i in c:
+		print i	
+	        message(mentorid,i[0].upper()+"\n")
 
     conn.commit()
     conn.close()
