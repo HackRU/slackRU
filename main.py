@@ -130,7 +130,7 @@ def create_channel_pair(userid, mentorid, username, mentorname, question):
 		return
 
         print (newGroup)
-        test = slack_client.api_call("chat.postMessage", channel = newGroup['group']['id'], text = "This channel has been created to resolve the issue "+mentorname+"'s issue. When the issue has been resolved, mentor please call the @helperbot <password> unbusy command. If you do not know the password please contact Architect's Sam or Srihari. Good luck!\nIssue: "+question, as_user = True);
+        test = slack_client.api_call("chat.postMessage", channel = newGroup['group']['id'], text = "This channel has been created to resolve the issue "+mentorname+"'s issue. When the issue has been resolved, mentor please call the @slackru <password> unbusy command. If you do not know the password please contact Architect's Sam or Srihari. Good luck!\nIssue: "+question, as_user = True);
         print (test)
         #Once the active channel is created, put it in the LOAC array so it can be monitored
         #And reminded if things go sour (afk mentor, afk hacker, etc)
@@ -155,7 +155,7 @@ def handle_command(command, channel,userid,username):
         conn = sqlite3.connect("main.db")
         row = conn.execute("select busy from mentors where mentorid=?",[userid])
 	stuff = row.fetchone()
-        if stuff[0] == None :
+        if stuff == None:
             message(userid, "Couldnt find you in mentor database, contact Sam or Srihari!")
             return
         else:
@@ -244,7 +244,7 @@ def handle_command(command, channel,userid,username):
     #command for mentors to take a hacker from the List Of Waiting Hackers (LOWH) and help them out
     if(dividedCommand[0] == "shortenlist"):
         if(len(dividedCommand) != 3):
-            message(userid, "I apologize, the shortenList command takes two arguments: <password> and <hackerid>, please try again!")
+            message(userid, "I apologize, the shortenlist command takes two arguments: <password> and <hackerid>, please try again!")
             return
         else:
             shortenlist(userid, username, dividedCommand)
@@ -294,7 +294,7 @@ def list_channels():
 print(list_channels())
 def shortenlist(mentorID, mentorName, commandOptions):
     if(commandOptions[1] != config.mpass):
-        message(mentorID, "The password inserted was incorrect, please try again. If you need the password message Architect Sam or Architect Shri.")
+        message(mentorID, "The password inserted was incorrect, please try again. If you need the password message Architect Sam or Architect Sri.")
         return
     hackerID = commandOptions[2].upper()
     found = 0
@@ -328,6 +328,8 @@ def findAvaliableMentor(hackerName,userid ,keywords):
     saveKeywords = keywords;
     strKeywords = ""
     for i in saveKeywords:
+	if i == "mentors":
+            continue
         strKeywords += i
         strKeywords += " " 
     print("These are the keywords: "+strKeywords)
@@ -349,7 +351,7 @@ def findAvaliableMentor(hackerName,userid ,keywords):
                 k = k.lower()
                 for z in keywords:
 		    z = z.lower()
-		    if k is z:
+		    if k == z:
                         count = count+1
         
         #Everytime the count is larger than the currently largest count, swap a new found            
@@ -364,13 +366,13 @@ def findAvaliableMentor(hackerName,userid ,keywords):
     #If the dummy value is still valid, then we know no keywords were found :(    
 
     if(found[1] == "dummy"):
-        strKeywords = ""
         print("Could not find suitable mentor!")
         #This method below should be uncommented once we have the mentors channel set up and we have the mentor channel id
-        slack_client.api_call("chat.postMessage", channel='G52TN1TB6',
-            text="There is currently a hacker with the ID: "+str(userid)+" Who is having trouble with: "+str(keywords)+" Please use the command <AT>slackru shortenList <password> <userid>  in order to help them with this if you can! The password is mentors2017", as_user=True)
+        slack_client.api_call("chat.postMessage", channel='G53T6D0A2',
+            text="There is currently a hacker with the ID: "+str(userid)+" Who is having trouble with: "+strKeywords+". Please use the command <AT>slackru shortenlist <password> <userid>  in order to help them with this if you can! The password is mentors2017", as_user=True)
         message(userid,"We could not find a mentor with the paramters you gave us, we have placed your request on a list. If a mentor believes they can help you with this issue they will respond to you! You are more than welcome to use the mentors command again with new keywords!")
-        f = 0
+        f = 0	
+        strKeywords = ""
         for i in LOWH:
             if i.h == userid:
                 f = 1
@@ -441,6 +443,13 @@ def dbManage(mentorid,channelid, dbcommand):
 		else:
                 	conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
 			message(mentorid,"All good buddy, set you to unbusy!")
+	if dbcommand[4] == 1:
+		match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
+                if list(match) ==  []:
+               		message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
+		else:
+                	conn.execute("update mentors set busy = 1 where mentorid =?",[dbcommand[3]])
+			message(mentorid,"All good buddy, set you to busy!")
 
     elif(dbcommand[2] == 'setinactive'):
 	print dbcommand
@@ -498,11 +507,11 @@ def checkOnChannels():
         if(currentTS > int(float(channelINFO['messages'][0]['ts']))+(3600*2)):
             message(i,"The last message sent on this channel is an hour long! Just making sure everything is alright!")
             message(i, "For Mentors:")
-            message(i,"If you are finished with the issue make sure to run @helperbot <password> unbusy if you haven't already")
-            message(i,"(message Architects Sam or Shrihari for that!)")
+            message(i,"If you are finished with the issue make sure to run @slackru <password> unbusy if you haven't already")
+            message(i,"(message Architects Sam or Srihari for that!)")
             message(i,"For Hackers:")
             message(i,"If your mentor is not responding, you can run the command for a mentor again")
-            message(i,"This channel will stop being monitored by helperbot.")
+            message(i,"This channel will stop being monitored by slackru.")
             LOAC.remove(i)
             
             
