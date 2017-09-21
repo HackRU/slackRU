@@ -21,8 +21,8 @@ class wHacker:
 
 class eventObj:
     def __init__(self,startime,summary):
-	self.s = startime
-	self.sum = summary
+        self.s = startime
+        self.sum = summary
 #List Of Waiting Hacker -> Hackers who are currently waiting for a mentor to respond to them!
 LOWH = []
 #List Of Active Channels -> Active channels created from the mentor chat.
@@ -35,51 +35,36 @@ AT_BOT = "<@" + BOTID + ">"
 BOT_CHANNEl = "D4GSK3HG9"
 #authorize google calender stuff
 def get_messages():
-	events_obj =  []
-	scopes = ['https://www.googleapis.com/auth/calendar']
-	credentials = ServiceAccountCredentials.from_json_keyfile_name(
-    'creds.json', scopes=scopes)
-	http_auth = credentials.authorize(httplib2.Http())
-	service = build('calendar', 'v3', http=http_auth)
-	page_token = None
+    events_obj =  []
+    scopes = ['https://www.googleapis.com/auth/calendar']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(
+'creds.json', scopes=scopes)
+    http_auth = credentials.authorize(httplib2.Http())
+    service = build('calendar', 'v3', http=http_auth)
+    page_token = None
 
 
-	now = datetime.datetime.utcnow().isoformat() + 'Z'
-	eventsResult = service.events().list(
-        	calendarId='hl4bsn6030jr76nql68cen2jto@group.calendar.google.com', timeMin=now, maxResults=5, singleEvents=True,
-       		orderBy='startTime').execute()
-   	events = eventsResult.get('items', [])
+    now = datetime.datetime.utcnow().isoformat() + 'Z'
+    eventsResult = service.events().list(
+            calendarId='hl4bsn6030jr76nql68cen2jto@group.calendar.google.com', timeMin=now, maxResults=5, singleEvents=True,
+            orderBy='startTime').execute()
+    events = eventsResult.get('items', [])
 
-        if not events:
-            print('No upcoming events found.')
-        for event in events:
-       	     start = event['start'].get('dateTime', event['start'].get('date'))
-	     end = event['end'].get('dateTime',event['end'].get('date'))
-	     dte = dateutil.parser.parse(end)
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        end = event['end'].get('dateTime',event['end'].get('date'))
+        dte = dateutil.parser.parse(end)
 
-	     dt =  dateutil.parser.parse(start)
-	     dte = dte.strftime('%H:%M')
-	     dt = dt.strftime('%H:%M')
-	     rn = str(dt) + " - " + str(dte)
-	     e = eventObj(rn,event['summary'])
-	     events_obj.append(e)
-        return events_obj
+        dt =  dateutil.parser.parse(start)
+        dte = dte.strftime('%H:%M')
+        dt = dt.strftime('%H:%M')
+        rn = str(dt) + " - " + str(dte)
+        e = eventObj(rn,event['summary'])
+        events_obj.append(e)
+    return events_obj
 get_messages()
-#convert username to username
-'''
-converts the username to an ind
-:param a username
-'''
-def username_to_id(username):
-     api =slack_client.api_call('users.list')
-     if (api.get('ok')):
-	 userrs = api['members']
-	 
-         for user in userrs:
-	    
-             if 'id'  in user and user['name'] == username:
-                 return user['id']
-print (username_to_id("slackru"))
 def hours_left():
     epoch_of_end_hack_ru = 1492970400
     curr_epoch_time = int(time.time())
@@ -94,7 +79,7 @@ def parse_slack_output(slack_rtm_output):
     if output_list and len(output_list) > 0:
         for output in output_list:
             if output and 'text' in output and AT_BOT in output['text']:
-                
+
                 user_name =  util.grab_user(output['user'])
                 return output['text'].split(AT_BOT)[1].strip().lower(), \
                        output['channel'], \
@@ -107,49 +92,49 @@ def parse_slack_output(slack_rtm_output):
 #opens a multiparty im with some users
 
 def create_channel_pair(userid, mentorid, username, mentorname, question):
-        userlist = []
-        userlist.append(config.botID)
-        userlist.append(mentorid)
-        print ("This is the question: "+question)
-	print ("MENTOR ID    "  + mentorid)
-	print ("USERID  " + userid)
-	newGroup = slack_web_client.api_call(
+    userlist = []
+    userlist.append(config.botID)
+    userlist.append(mentorid)
+    print ("This is the question: "+question)
+    print ("MENTOR ID    "  + mentorid)
+    print ("USERID  " + userid)
+    newGroup = slack_web_client.api_call(
 
-		"mpim.open",
-                token = config.oauthT,
-                users = userid + ',' + mentorid + ',' + config.botID
-		)
-	if not newGroup.get('ok'):
-		print "Error!"
-		print newGroup
-		return
+            "mpim.open",
+            token = config.oauthT,
+            users = userid + ',' + mentorid + ',' + config.botID
+            )
+    if not newGroup.get('ok'):
+        print "Error!"
+        print newGroup
+        return
 
-        print (newGroup)
-        test = slack_client.api_call("chat.postMessage", channel = newGroup['group']['id'], text = "This channel has been created to resolve the issue "+mentorname+"'s issue. When the issue has been resolved, mentor please call the @slackru <password> unbusy command. If you do not know the password please contact Architect's Sam or Srihari. Good luck!\nIssue: "+question, as_user = True);
-        print (test)
-        #Once the active channel is created, put it in the LOAC array so it can be monitored
-        #And reminded if things go sour (afk mentor, afk hacker, etc)
-        LOAC.append(newGroup['group']['id'])
+    print (newGroup)
+    test = slack_client.api_call("chat.postMessage", channel = newGroup['group']['id'], text = "This channel has been created to resolve the issue "+mentorname+"'s issue. When the issue has been resolved, mentor please call the @slackru <password> unbusy command. If you do not know the password please contact Architect's Sam or Srihari. Good luck!\nIssue: "+question, as_user = True);
+    print (test)
+    #Once the active channel is created, put it in the LOAC array so it can be monitored
+    #And reminded if things go sour (afk mentor, afk hacker, etc)
+    LOAC.append(newGroup['group']['id'])
 
 def handle_command(command, channel,userid,username):
     """
         Receives commands directed at the bot and determines if they
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
-   	"""
+        """
     #The command will be divided into several parts, incase a certain command needs paramters
     #For example the dbmanager should take in some options regarding who to delete or add
     #So dividedCommand represent a list of the entire command separated by spaces.
     dividedCommand = command.split()
     print(dividedCommand)
-    
+
     if(dividedCommand[0] == "checkstatus"):
         if(dividedCommand[1] != config.mpass):
             message(userid,"Incorrect password, Try again or ask Architects Sam or Srihari for the password!")
             return
         conn = sqlite3.connect("main.db")
         row = conn.execute("select busy from mentors where mentorid=?",[userid])
-	stuff = row.fetchone()
+        stuff = row.fetchone()
         if stuff == None:
             message(userid, "Couldnt find you in mentor database, contact Sam or Srihari!")
             return
@@ -161,36 +146,36 @@ def handle_command(command, channel,userid,username):
         if(dividedCommand[1] != config.mpass):
             message(userid,"Incorrect password, Try again or ask Sam or Srihari for the password!")
             return
-        
+
         if dividedCommand[0] == "busy":
             dbManage(userid,0,[0,config.dbpass,"bs",userid,1])
-	    return
+            return
         else:
             dbManage(userid,0,[0,config.dbpass,"bs",userid,0])
-	    return
+            return
     if(dividedCommand[0] == "inactive"):
         print("gothere")
         if(dividedCommand[1] != config.mpass):
-             message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
-	     return
+            message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
+            return
         else:
-	     print("set inactive!!")
-             dbManage(userid,0,[0,config.dbpass,"setinactive",userid])
-             return
- 
+            print("set inactive!!")
+            dbManage(userid,0,[0,config.dbpass,"setinactive",userid])
+            return
+
     if(dividedCommand[0] == "active"):
         if(dividedCommand[1] != config.mpass):
-             message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
-	     return
+            message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
+            return
         else:
-             dbManage(userid,0,[0,config.dbpass,"setactive",userid])
-             return
+            dbManage(userid,0,[0,config.dbpass,"setactive",userid])
+            return
     #This is a troll command, play with it if you wish
     if(dividedCommand[0] == "karlin"):
         slack_client.api_call("chat.postMessage",channel = channel, text = "HE IS THE IMPOSTER SCREW HIM, I am the alpha Karlin!",as_user = True)
         return
     if (dividedCommand[0] == "hours"):
-        
+
         slack_client.api_call("chat.postMessage",channel = channel, text = "There are " +str(hours_left()) + " " + " hours left till the end of HackRU"  ,as_user = True)
         return
     #This command was used to test timestamps on python, delete if you want (delete the function as well)
@@ -198,34 +183,34 @@ def handle_command(command, channel,userid,username):
         checkTime(channel)
         return
     if (dividedCommand[0] == "announcements"):
-	li = get_messages()
-	if li != []:
-		
-	    
-           slack_client.api_call("chat.postMessage",channel = channel, text ="The next five events are...."  ,as_user = True)
-           for i in li:
-		#split_time = i.s.split('-')    
-		#print split_time
-                #line_chart.title = 'Events'
-	        #line_chart.x_labels = map(str, range(1, 5))
-	        #line_chart.add(i.sum, [split_time[0], split_time[1]])
-	        #line_chart.render_table(style=True)
-           	slack_client.api_call("chat.postMessage",channel = channel, text =i.sum + " " + i.s  ,as_user = True)
-	return 
+        li = get_messages()
+        if li != []:
+
+
+            slack_client.api_call("chat.postMessage",channel = channel, text ="The next five events are...."  ,as_user = True)
+            for i in li:
+        #split_time = i.s.split('-')
+        #print split_time
+        #line_chart.title = 'Events'
+        #line_chart.x_labels = map(str, range(1, 5))
+        #line_chart.add(i.sum, [split_time[0], split_time[1]])
+        #line_chart.render_table(style=True)
+                slack_client.api_call("chat.postMessage",channel = channel, text =i.sum + " " + i.s  ,as_user = True)
+        return
     #params: dbmanager <password> <command> <options>
     if (dividedCommand[0] == "dbmanage"):
-		print("yes")
-		#mentorname = dividedCommand[3]
-		#mentorid = username_to_id(mentorname)
-		dbManage(userid,channel,dividedCommand)
-	 	return	
+        print("yes")
+        #mentorname = dividedCommand[3]
+        #mentorid = username_to_id(mentorname)
+        dbManage(userid,channel,dividedCommand)
+        return
     #Main function for dealing with mentors
     if(dividedCommand[0] == "mentors"):
-    	print(userid)
+        print(userid)
         if(len(dividedCommand) == 1):
-    	    slack_client.api_call("chat.postMessage", channel=userid,
-		    text="Hello, to better pair you with a mentor, please call the command mentors <keywords>" , as_user=True)
-    	    #create_channel_pair(userid, "U44AZ0GP6", username, "Srihari")
+            slack_client.api_call("chat.postMessage", channel=userid,
+                    text="Hello, to better pair you with a mentor, please call the command mentors <keywords>" , as_user=True)
+            #create_channel_pair(userid, "U44AZ0GP6", username, "Srihari")
             return
         else:
             findAvaliableMentor(username,userid,dividedCommand)
@@ -235,7 +220,7 @@ def handle_command(command, channel,userid,username):
         help(userid,username)
         return
             #Tell the user about all the commands that come with this cool bot!
-    
+
     #command for mentors to take a hacker from the List Of Waiting Hackers (LOWH) and help them out
     if(dividedCommand[0] == "shortenlist"):
         if(len(dividedCommand) != 3):
@@ -246,8 +231,8 @@ def handle_command(command, channel,userid,username):
             return
 
     slack_client.api_call("chat.postMessage", channel=userid,
-	text="I'm sorry I couldn't understand that command, try using the command help for a list of commands you can use!", as_user=True)
-		
+        text="I'm sorry I couldn't understand that command, try using the command help for a list of commands you can use!", as_user=True)
+
     return
 
 def help(userid, username):
@@ -255,7 +240,7 @@ def help(userid, username):
     message(userid,"All commands will begin with <AT character>slackru")
     message(userid,"""Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
                     \n| help  | -> Wait what?
-		    \n | announcements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
+                    \n | announcements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
                     \nMentor:\n| shortenList <password> <hacker id> | -> Used to help a hackers whose keywords could not be found.
                    \n | unbusy | makes your busy status 0, so you can help more people!
                    \n | busy | -> opposite of the guy above, used when you want to afk I guess""")
@@ -282,9 +267,9 @@ def message(channelid, message):
     text=message, as_user=True)
 
 def list_channels():
-     channels_call = slack_client.api_call("groups.list")
-     if channels_call.get('ok'):
-         return channels_call['groups']
+    channels_call = slack_client.api_call("groups.list")
+    if channels_call.get('ok'):
+        return channels_call['groups']
 
 print(list_channels())
 def shortenlist(mentorID, mentorName, commandOptions):
@@ -311,7 +296,7 @@ def shortenlist(mentorID, mentorName, commandOptions):
         #remove them from the waiting list
         for i in LOWH:
             if(i.h == hackerID):
-		messageL = i.r
+                messageL = i.r
                 LOWH.remove(i)
             #create channel pair
         userInfo = slack_client.api_call("user.info", user=hackerID, as_user=True)
@@ -323,10 +308,10 @@ def findAvaliableMentor(hackerName,userid ,keywords):
     saveKeywords = keywords;
     strKeywords = ""
     for i in saveKeywords:
-	if i == "mentors":
+        if i == "mentors":
             continue
         strKeywords += i
-        strKeywords += " " 
+        strKeywords += " "
     print("These are the keywords: "+strKeywords)
     goodMentors = [];
     #Join the keywords for an easier way to search for keywords
@@ -345,20 +330,20 @@ def findAvaliableMentor(hackerName,userid ,keywords):
             for k in Keywords:
                 k = k.lower()
                 for z in keywords:
-		    z = z.lower()
-		    if k == z:
+                    z = z.lower()
+                    if k == z:
                         count = count+1
-        
-        #Everytime the count is larger than the currently largest count, swap a new found            
+
+        #Everytime the count is larger than the currently largest count, swap a new found
         if count > found[0]:
             found[0] = count
             found[1] = Mentorid
-        
+
         if count > 0:
             goodMentors.append(Mentorid)
-         
-        count = 0 
-    #If the dummy value is still valid, then we know no keywords were found :(    
+
+        count = 0
+    #If the dummy value is still valid, then we know no keywords were found :(
 
     if(found[1] == "dummy"):
         print("Could not find suitable mentor!")
@@ -366,23 +351,23 @@ def findAvaliableMentor(hackerName,userid ,keywords):
         slack_client.api_call("chat.postMessage", channel='G53T6D0A2',
             text="There is currently a hacker with the ID: "+str(userid)+" Who is having trouble with: "+strKeywords+". Please use the command <AT>slackru shortenlist <password> <userid>  in order to help them with this if you can! The password is mentors2017", as_user=True)
         message(userid,"We could not find a mentor with the paramters you gave us, we have placed your request on a list. If a mentor believes they can help you with this issue they will respond to you! You are more than welcome to use the mentors command again with new keywords!")
-        f = 0	
+        f = 0
         strKeywords = ""
         for i in LOWH:
             if i.h == userid:
                 f = 1
         #If they are currently not in the waiting list, put them on it
         if(f == 0):
-            i = 1  
+            i = 1
             while(i < len(saveKeywords)):
                 strKeywords += (saveKeywords[i])
-		strKeywords += " ";
+                strKeywords += " ";
                 i+=1
             newWaitingHacker = wHacker(userid,strKeywords)
             LOWH.append(newWaitingHacker)
 
     else:
-	if found[0] < 3:
+        if found[0] < 3:
             randomMentor = randint(0,len(goodMentors)-1);
             found[1] = goodMentors[randomMentor]
         for i in LOWH:
@@ -390,28 +375,28 @@ def findAvaliableMentor(hackerName,userid ,keywords):
                 LOWH.remove(i)
         print("Suitable mentor found!\n"+found[1]+"!")
         conn.execute("update mentors set busy = 1 where mentorid = ?",[found[1]])
-	
+
         #create a channel between the two
         create_channel_pair(userid,found[1],util.grab_user(userid),util.grab_user(found[1]),strKeywords)
         conn.commit()
 
     conn.close()
-	
+
 #This is for management of the database woot woot
 #This function has a lot of functionality (no pun intended) the dbcommand paramter
 #Is a list of different strings which represent different options
 #Below each if statemenet are the paramters that the command needs in order to continue the action on the database
 def dbManage(mentorid,channelid, dbcommand):
     conn = sqlite3.connect('main.db')
-	#params: dbmanager <password> <command> <options>
+        #params: dbmanager <password> <command> <options>
     #delimit and tokenize the command, first part is pass
     if(dbcommand[1] != config.dbpass):
         slack_client.api_call("chat.postMessage", channel=channel,text="Incorrect Password.", as_user=True)
         return
-	#delimit and tokenize the command for the second part for the command
+        #delimit and tokenize the command for the second part for the command
     elif(dbcommand[2] == "delete" or dbcommand[2] == "d"):
         print("Attempting to delete...")
-		#Option Params: mentorid
+                #Option Params: mentorid
         #Cannot really delete a user so we will make them permanently busy
         if len(command) != 3:
             print("Incorrect arguments got: "+str(len(dbcommand))+" need 3")
@@ -420,40 +405,40 @@ def dbManage(mentorid,channelid, dbcommand):
         print(conn.execute("select * from mentor"))
 
     elif(dbcommand[2] == "addmentor" or dbcommand[2] == "am"):
-		#Option Params::: name busy keywords mentorid
-	print("Adding new Mentor")
+                #Option Params::: name busy keywords mentorid
+        print("Adding new Mentor")
         if len(dbcommand) != 9:
             print("Incorrect arguments got: "+str(len(dbcommand))+" arguments instead of 7")
-	    return
+            return
         conn.execute("insert into mentors values (?,?,?,?,?)",[dbcommand[4]+" "+dbcommand[5],dbcommand[6],dbcommand[7],mentorid,dbcommand[8]])
         print(conn.execute("select * from mentors"))
 
     elif(dbcommand[2] == "busystat" or dbcommand[2] == "bs"):
-		#Option Params: mentorid <0,1> 0 for unbusy 1 for busy
-	print("Changing busy status...")
+                #Option Params: mentorid <0,1> 0 for unbusy 1 for busy
+        print("Changing busy status...")
         if dbcommand[4] == 0:
-		match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
-                if list(match) ==  []:
-               		message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
-		else:
-                	conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
-			message(mentorid,"All good buddy, set you to unbusy!")
-	if dbcommand[4] == 1:
-		match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
-                if list(match) ==  []:
-               		message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
-		else:
-                	conn.execute("update mentors set busy = 1 where mentorid =?",[dbcommand[3]])
-			message(mentorid,"All good buddy, set you to busy!")
+            match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
+            if list(match) ==  []:
+                message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
+            else:
+                conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
+                message(mentorid,"All good buddy, set you to unbusy!")
+        if dbcommand[4] == 1:
+            match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
+            if list(match) ==  []:
+                message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
+            else:
+                conn.execute("update mentors set busy = 1 where mentorid =?",[dbcommand[3]])
+                message(mentorid,"All good buddy, set you to busy!")
 
     elif(dbcommand[2] == 'setinactive'):
-	print dbcommand
+        print dbcommand
         match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
         if list(match) ==  []:
             message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
         else:
             conn.execute("update mentors set inactive = 1 where mentorid =?",[dbcommand[3]])
-	    conn.execute("update mentors set busy = 1 where mentorid=?",[dbcommand[3]])
+            conn.execute("update mentors set busy = 1 where mentorid=?",[dbcommand[3]])
             message(mentorid,"Made you inactive!!")
 
     elif(dbcommand[2] == 'setactive'):
@@ -462,32 +447,32 @@ def dbManage(mentorid,channelid, dbcommand):
             message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
         else:
             conn.execute("update mentors set inactive = 0 where mentorid =?",[dbcommand[3]])
-	    conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
+            conn.execute("update mentors set busy = 0 where mentorid =?",[dbcommand[3]])
             message(mentorid,"Made you active!!")
 
 
-    elif(dbcommand[2] == 'listactivity'):		
+    elif(dbcommand[2] == 'listactivity'):
         match1 = conn.execute("select name from mentors where inactive=1")
-       
+
         c = list(match1.fetchall())
         if list(c) == []:
-	    message(mentorid,"List contains no inactive mentors!")
+            message(mentorid,"List contains no inactive mentors!")
         else:
-	    message(mentorid,"Current Inactive Mentors\n________________________")
+            message(mentorid,"Current Inactive Mentors\n________________________")
             print c
-	    for i in c:
-	        message(mentorid,str(i[0]).upper() + '\n')
-	
+            for i in c:
+                message(mentorid,str(i[0]).upper() + '\n')
+
         match2 = conn.execute("select name from mentors where inactive=0")
-	c =  list(match2.fetchall())
-	
-	if list(match2.fetchall()) == None:
- 	    message(mentorid,"List contains no active mentors!")
-	else:
-	    message(mentorid,"Current Active Mentors\n______________________")
-	    for i in c:
-		print i	
-	        message(mentorid,i[0].upper()+"\n")
+        c =  list(match2.fetchall())
+
+        if list(match2.fetchall()) == None:
+            message(mentorid,"List contains no active mentors!")
+        else:
+            message(mentorid,"Current Active Mentors\n______________________")
+            for i in c:
+                print i
+                message(mentorid,i[0].upper()+"\n")
 
     conn.commit()
     conn.close()
@@ -508,8 +493,8 @@ def checkOnChannels():
             message(i,"If your mentor is not responding, you can run the command for a mentor again")
             message(i,"This channel will stop being monitored by slackru.")
             LOAC.remove(i)
-            
-            
+
+
 
 #sends message to a channel
 if __name__ == "__main__":
@@ -520,15 +505,11 @@ if __name__ == "__main__":
             command, channel, userid,username = parse_slack_output(slack_client.rtm_read())
             if command and channel:
                 handle_command(command, channel,userid,username)
-			#check busy status of all users, their last time busy and if they have been busy for more than 35 minutes
+                #check busy status of all users, their last time busy and if they have been busy for more than 35 minutes
             time.sleep(READ_WEBSOCKET_DELAY)
             #This function will check on all the active channels and if the latest response was an hour ago from the current time
             #The bot will message the channel and let them know it will be stop being monitored and give them insturctions
             #For certain scenarios.
             checkOnChannels()
     else:
-        print("Connection failed. Invalid Slack token or bot ID?") 
-
-
-
-
+        print("Connection failed. Invalid Slack token or bot ID?")

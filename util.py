@@ -17,3 +17,17 @@ def grab_user(user):
         for user in users:
             if 'name' in user and user.get('id') == use:
                 return user['name']
+
+
+'''
+converts the username to an id
+:param the username
+'''
+def username_to_id(username):
+    api = slack_client.api_call('users.list')
+    if api.get('ok'):
+        users = api.get('members')
+        for user in users:
+            if 'id' in user and user['name'] == username:
+                return user['id']
+
