@@ -13,6 +13,7 @@ import datetime
 import dateutil.parser
 import pygal
 import util
+import requests
 class wHacker:
     def __init__(self,hackerID,request):
         self.h = hackerID
@@ -116,124 +117,37 @@ def create_channel_pair(userid, mentorid, username, mentorname, question):
     #And reminded if things go sour (afk mentor, afk hacker, etc)
     LOAC.append(newGroup['group']['id'])
 
-def handle_command(command, channel,userid,username):
+def handle_command(command:str, channel:str,userid:str,username:str) -> None:
     """
         Receives commands directed at the bot and determines if they
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
+        :param command:str the command to parse
+        :param channel:str the channel id
+        :param userid:str the user id
+        :param:str the username 
         """
-    #The command will be divided into several parts, incase a certain command needs paramters
-    #For example the dbmanager should take in some options regarding who to delete or add
-    #So dividedCommand represent a list of the entire command separated by spaces.
     dividedCommand = command.split()
-    print(dividedCommand)
-
-    if(dividedCommand[0] == "checkstatus"):
-        if(dividedCommand[1] != config.mpass):
-            message(userid,"Incorrect password, Try again or ask Architects Sam or Srihari for the password!")
-            return
-        conn = sqlite3.connect("main.db")
-        row = conn.execute("select busy from mentors where mentorid=?",[userid])
-        stuff = row.fetchone()
-        if stuff == None:
-            message(userid, "Couldnt find you in mentor database, contact Sam or Srihari!")
-            return
-        else:
-            message(userid, "Your busy status is currently: "+str(stuff[0])+"\nWhere 0 is unbusy and 1 is busy!")
-        return
-    #This command deals with making a mentor busy or unbusy
-    if(dividedCommand[0] == "busy" or dividedCommand[0] == "unbusy"):
-        if(dividedCommand[1] != config.mpass):
-            message(userid,"Incorrect password, Try again or ask Sam or Srihari for the password!")
-            return
-
-        if dividedCommand[0] == "busy":
-            dbManage(userid,0,[0,config.dbpass,"bs",userid,1])
-            return
-        else:
-            dbManage(userid,0,[0,config.dbpass,"bs",userid,0])
-            return
-    if(dividedCommand[0] == "inactive"):
-        print("gothere")
-        if(dividedCommand[1] != config.mpass):
-            message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
-            return
-        else:
-            print("set inactive!!")
-            dbManage(userid,0,[0,config.dbpass,"setinactive",userid])
-            return
-
-    if(dividedCommand[0] == "active"):
-        if(dividedCommand[1] != config.mpass):
-            message(userid,"Incorrect Passoword, Try again or ask Sam or Srihari for the password!")
-            return
-        else:
-            dbManage(userid,0,[0,config.dbpass,"setactive",userid])
-            return
-    #This is a troll command, play with it if you wish
-    if(dividedCommand[0] == "karlin"):
-        slack_client.api_call("chat.postMessage",channel = channel, text = "HE IS THE IMPOSTER SCREW HIM, I am the alpha Karlin!",as_user = True)
-        return
-    if (dividedCommand[0] == "hours"):
-
-        slack_client.api_call("chat.postMessage",channel = channel, text = "There are " +str(hours_left()) + " " + " hours left till the end of HackRU"  ,as_user = True)
-        return
-    #This command was used to test timestamps on python, delete if you want (delete the function as well)
-    if(dividedCommand[0] == "timetest"):
-        checkTime(channel)
-        return
-    if (dividedCommand[0] == "announcements"):
-        li = get_messages()
-        if li != []:
+    command = dividedCommand[0]
+    command = command.lower()
+    if command == 'mentors':
+        findMentor(command,userid)
+       
+        #call the findAvailMentorCommand
 
 
-            slack_client.api_call("chat.postMessage",channel = channel, text ="The next five events are...."  ,as_user = True)
-            for i in li:
-        #split_time = i.s.split('-')
-        #print split_time
-        #line_chart.title = 'Events'
-        #line_chart.x_labels = map(str, range(1, 5))
-        #line_chart.add(i.sum, [split_time[0], split_time[1]])
-        #line_chart.render_table(style=True)
-                slack_client.api_call("chat.postMessage",channel = channel, text =i.sum + " " + i.s  ,as_user = True)
-        return
-    #params: dbmanager <password> <command> <options>
-    if (dividedCommand[0] == "dbmanage"):
-        print("yes")
-        #mentorname = dividedCommand[3]
-        #mentorid = username_to_id(mentorname)
-        dbManage(userid,channel,dividedCommand)
-        return
-    #Main function for dealing with mentors
-    if(dividedCommand[0] == "mentors"):
-        print(userid)
-        if(len(dividedCommand) == 1):
-            slack_client.api_call("chat.postMessage", channel=userid,
-                    text="Hello, to better pair you with a mentor, please call the command mentors <keywords>" , as_user=True)
-            #create_channel_pair(userid, "U44AZ0GP6", username, "Srihari")
-            return
-        else:
-            findAvaliableMentor(username,userid,dividedCommand)
-            return
-    #help command will give all current commands avliable for BOTH mentor and Hacker (may need to be updated with more commands)
-    if(dividedCommand[0] == "help"):
-        help(userid,username)
-        return
-            #Tell the user about all the commands that come with this cool bot!
+def findMentor(command:str,userid:str) -> str:
+    """
+        Makes a post request to the server and passes the pairing to he mentee
+        :param command:str the parsedcommand
+        :param:str the userid
+    """
+    req = requests.post(config.serverurl)
+    
 
-    #command for mentors to take a hacker from the List Of Waiting Hackers (LOWH) and help them out
-    if(dividedCommand[0] == "shortenlist"):
-        if(len(dividedCommand) != 3):
-            message(userid, "I apologize, the shortenlist command takes two arguments: <password> and <hackerid>, please try again!")
-            return
-        else:
-            shortenlist(userid, username, dividedCommand)
-            return
 
-    slack_client.api_call("chat.postMessage", channel=userid,
-        text="I'm sorry I couldn't understand that command, try using the command help for a list of commands you can use!", as_user=True)
 
-    return
+     
 
 def help(userid, username):
     message(userid,"Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
@@ -260,7 +174,7 @@ def checkTime(channelid):
 def message(channelid, messageL):
     slack_client.api_call("chat.postMessage", channel=channelid,
     text=messageL, as_user=True)
-
+    
 
 def message(channelid, message):
     slack_client.api_call("chat.postMessage", channel=channelid,
