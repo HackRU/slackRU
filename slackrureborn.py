@@ -173,22 +173,13 @@ def checkTime(channelid):
     message(channelid,"This is the latest message: "+latestMessage)
     return
 
-
-def message(channelid, messageL):
-    slack_client.api_call("chat.postMessage", channel=channelid,
-    text=messageL, as_user=True)
-    
-
 def message(channelid, message):
     slack_client.api_call("chat.postMessage", channel=channelid,
     text=message, as_user=True)
-
 def list_channels():
     channels_call = slack_client.api_call("groups.list")
     if channels_call.get('ok'):
         return channels_call['groups']
-
-print(list_channels())
 def shortenlist(mentorID, mentorName, commandOptions):
     if(commandOptions[1] != config.mpass):
         message(mentorID, "The password inserted was incorrect, please try again. If you need the password message Architect Sam or Architect Sri.")
