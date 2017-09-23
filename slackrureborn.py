@@ -131,18 +131,21 @@ def handle_command(command:str, channel:str,userid:str,username:str) -> None:
     command = dividedCommand[0]
     command = command.lower()
     if command == 'mentors':
-        findMentor(command,userid)
+        findMentor(command,username)
        
         #call the findAvailMentorCommand
 
 
-def findMentor(command:str,userid:str) -> str:
+def findMentor(command:str,username:str) -> str:
     """
         Makes a post request to the server and passes the pairing to he mentee
         :param command:str the parsedcommand
-        :param:str the userid
+        :param username:str the username
     """
-    req = requests.post(config.serverurl)
+    postData = {}
+    postData[username] = command
+    req = requests.post(config.serverurl,data = postData)
+    return req.text
     
 
 
