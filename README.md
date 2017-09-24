@@ -43,5 +43,6 @@ Hacker has question on python -> Question is sent out in text form to all mentor
 - We need a feed of all questions
 - Send it out to all mentors on shift if there is no one who knows it
 - Slack bot server and Actual server to do commands.
+
 #Contribting
 Make a branch of the rewrite branch and add a feature. Sri and Sam are taking care of the mentor pairing. if you want to add a feature, make a pull request and I will merge it.
