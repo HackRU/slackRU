@@ -26,6 +26,11 @@ def pairMentor(methods = ['POST']):
 
 #the twilio end point that will text mentors
 def pairMentorWithHacker(comment:str,username:str):
+    """
+    pairs a mentor with a hacker using the kwywords from the senntence
+    :param comment:str -> the input string the parse
+    :param username:str -> the username of the person asking the question
+    """
     query = query_db('SELECT * from keywords')
     #build a list of keywords
     keywordlist = []
@@ -35,6 +40,9 @@ def pairMentorWithHacker(comment:str,username:str):
     for word in comment:
         if word.lower() in keywordlist:
             q = query_db('SELECT id from keywords WHERE keyword='+word.lower())
+            #selec all the mentors 
+            if q is not None:
+                mentorsublist = query_db("SELECT * from mentors WHERE keyid="q)
 
 
     
