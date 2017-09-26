@@ -9,7 +9,7 @@ def get_db():
     """
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(dbpath)
     return db
 def query_db(query, args=(), one=False):
     """
@@ -42,7 +42,7 @@ def pairMentorWithHacker(comment:str,username:str):
             q = query_db('SELECT id from keywords WHERE keyword='+word.lower())
             #selec all the mentors 
             if q is not None:
-                mentorsublist = query_db("SELECT * from mentors WHERE keyid="q)
+                mentorsublist = query_db("SELECT * from mentors WHERE keyid="+q)
 
 
     
