@@ -31,9 +31,14 @@ def pairMentorWithHacker(comment:str,username:str):
     :param comment:str -> the input string the parse
     :param username:str -> the username of the person asking the question
     """
+    mentorlist = []
     #selec all the mentors 
-    q = query_db("SELECT keywords from mentors");
-    
+    q = query_db("SELECT * from mentors")
+    for keywordlist in q:
+        for word in comment:
+            if word in keywordlist['kewywords']:
+                mentorlist.append(q)
+
 
         
 
