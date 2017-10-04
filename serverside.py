@@ -31,18 +31,11 @@ def pairMentorWithHacker(comment:str,username:str):
     :param comment:str -> the input string the parse
     :param username:str -> the username of the person asking the question
     """
-    query = query_db('SELECT * from keywords')
-    #build a list of keywords
-    keywordlist = []
-    mentorlist = []
-    for keyword in query:
-        keywordlist.append(keyword['keyword'])
-    for word in comment:
-        if word.lower() in keywordlist:
-            q = query_db('SELECT id from keywords WHERE keyword='+word.lower())
-            #selec all the mentors 
-            if q is not None:
-                mentorsublist = query_db("SELECT * from mentors WHERE keyid="+q)
+    #selec all the mentors 
+    q = query_db("SELECT * from mentors");
+    keywordlist = q['keywords']
 
+    for word in comment:
+        
 
     
