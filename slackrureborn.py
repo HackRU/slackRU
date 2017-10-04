@@ -1,4 +1,8 @@
+"""
+    The new main file for the slack bot
+"""
 from slackclient import SlackClient
+
 from oauth2client.service_account import ServiceAccountCredentials
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
@@ -106,8 +110,6 @@ def create_channel_pair(userid, mentorid, username, mentorname, question):
             users = userid + ',' + mentorid + ',' + config.botID
             )
     if not newGroup.get('ok'):
-        print "Error!"
-        print newGroup
         return
 
     print (newGroup)
@@ -340,7 +342,6 @@ def dbManage(mentorid,channelid, dbcommand):
                 message(mentorid,"All good buddy, set you to busy!")
 
     elif(dbcommand[2] == 'setinactive'):
-        print dbcommand
         match = conn.execute("select mentorid from mentors where mentorid=?",[dbcommand[3]])
         if list(match) ==  []:
             message(mentorid, "I tried tried to change your status in the database, but could not, please contact Architect Sam or Shrihari!")
@@ -367,7 +368,6 @@ def dbManage(mentorid,channelid, dbcommand):
             message(mentorid,"List contains no inactive mentors!")
         else:
             message(mentorid,"Current Inactive Mentors\n________________________")
-            print c
             for i in c:
                 message(mentorid,str(i[0]).upper() + '\n')
 
@@ -379,7 +379,6 @@ def dbManage(mentorid,channelid, dbcommand):
         else:
             message(mentorid,"Current Active Mentors\n______________________")
             for i in c:
-                print i
                 message(mentorid,i[0].upper()+"\n")
 
     conn.commit()
