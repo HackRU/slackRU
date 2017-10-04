@@ -38,7 +38,7 @@ def pairMentorWithHacker(comment:str,username:str):
         for word in comment:
             if word in keywordlist['kewywords']:
                 mentorlist.append(q)
-
+    return mentorlist
 
         
 
