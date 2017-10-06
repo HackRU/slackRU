@@ -67,7 +67,8 @@ def makeRequest():
                 sendMessage(from_no,"Hi, Another mentor has already accepted this question")
             else:
                 #message the user via slack using the util class as we are storing the USERNAME of the person
-                util.message(questionstruct[str(splitBody[1])]['id'], "Hi You Have been paired with a mentor, please goto the mentor table and meet the mentor and take the mentor back to you work area")
+                name = query_db('select name from mentors where phone=?',from_no,one = True)
+                util.message(questionstruct[str(splitBody[1])]['id'], "Hi You Have been paired with" + name + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
                 questionstruct[splitBody[1]['answered'] = True
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         
