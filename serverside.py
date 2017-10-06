@@ -50,17 +50,37 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     questionstruct[str(qid)]['answered'] = False
     for mentor in mentorlist:
         #message all the mentor
-        message = client.messages.create(
-        mentor['phone'],
-        body="Hi, A Hacker had a question, " + comment + " " + "please type accept " + str(qid) " to accept" + " or " + "decline " + str(qid) " to decline"),
-        from_=ph,
-       ) 
+        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(qid) " to accept" + " or " + "decline " + str(qid) " to decline")
     qid +=1
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
+    from_no = request.form['From']
+    body = request.form['Body']
+    if len(body.split() !=2):
+        sendMessage(from_no,"please fix your formatting, either accept <id> or decline <id>")
+    splitBody = body.split()
+    else:
+        if splitBody[0] == 'accept':
+            if questionstruct[str(splitBody[0])]['answered']  == True:
+                sendMessage(from_no,"Hi, Another mentor has already accepted this question")
+            else:
+                #message the user via slack using the util class as we are storing the USERNAME of the person
+                questionstruct[splitBody[1]['answered'] = True
+                sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
+        
 
     return "done"
-
-
+def sendMessage(to:str,message:str) -> None:
+    """
+        Helper method to send messages
+        :param to:str -> the phone numner to send to
+        :param message:str -> the message we send
+    """
+    
+    message = client.messages.create(
+        to,
+        body=message,
+        from_=ph
+       ) 
     
