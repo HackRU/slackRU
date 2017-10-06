@@ -31,9 +31,9 @@ def pairMentor(methods = ['POST']):
     return "Hello World!"
 
 #the twilio end point that will text mentors
-def pairMentorWithHacker(comment:str,username:str):
+def textMentorsQuestion(comment:str,username:str) -> None:
     """
-    pairs a mentor with a hacker using the kwywords from the senntence
+     Given a question , tries to find mentors with the keywords with the key words and sends a message that a hacker needs help
     :param comment:str -> the input string the parse
     :param username:str -> the username of the person asking the question
     """
@@ -59,6 +59,7 @@ def pairMentorWithHacker(comment:str,username:str):
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
+
     return "done"
 
 
