@@ -1,8 +1,11 @@
 from flask import Flask
 import sqlite3
 import config
+from twilio.rest import Client
 app = Flask(__name__)
 dbpath = config.dbpath
+#setup twilio with sid and authid
+client = Client(config.sid, config.authid)
 def get_db():
     """
     From the Flask Websitei, probs best practice to connect to the databse this way
@@ -42,7 +45,7 @@ def pairMentorWithHacker(comment:str,username:str):
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
-    
+    return "done"
 
 
     
