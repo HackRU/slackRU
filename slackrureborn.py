@@ -39,37 +39,37 @@ BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
 BOT_CHANNEl = "D4GSK3HG9"
 #authorize google calender stuff
-def get_messages():
-    events_obj =  []
-    scopes = ['https://www.googleapis.com/auth/calendar']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-'creds.json', scopes=scopes)
-    http_auth = credentials.authorize(httplib2.Http())
-    service = build('calendar', 'v3', http=http_auth)
-    page_token = None
-
-
-    now = datetime.datetime.utcnow().isoformat() + 'Z'
-    eventsResult = service.events().list(
-            calendarId='hl4bsn6030jr76nql68cen2jto@group.calendar.google.com', timeMin=now, maxResults=5, singleEvents=True,
-            orderBy='startTime').execute()
-    events = eventsResult.get('items', [])
-
-    if not events:
-        print('No upcoming events found.')
-    for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        end = event['end'].get('dateTime',event['end'].get('date'))
-        dte = dateutil.parser.parse(end)
-
-        dt =  dateutil.parser.parse(start)
-        dte = dte.strftime('%H:%M')
-        dt = dt.strftime('%H:%M')
-        rn = str(dt) + " - " + str(dte)
-        e = eventObj(rn,event['summary'])
-        events_obj.append(e)
-    return events_obj
-get_messages()
+#def get_messages():
+#    events_obj =  []
+#    scopes = ['https://www.googleapis.com/auth/calendar']
+#    credentials = ServiceAccountCredentials.from_json_keyfile_name(
+#'creds.json', scopes=scopes)
+#    http_auth = credentials.authorize(httplib2.Http())
+#    service = build('calendar', 'v3', http=http_auth)
+#    page_token = None
+#
+#
+#    now = datetime.datetime.utcnow().isoformat() + 'Z'
+#    eventsResult = service.events().list(
+#            calendarId='hl4bsn6030jr76nql68cen2jto@group.calendar.google.com', timeMin=now, maxResults=5, singleEvents=True,
+#            orderBy='startTime').execute()
+#    events = eventsResult.get('items', [])
+#
+#    if not events:
+#        print('No upcoming events found.')
+#    for event in events:
+#        start = event['start'].get('dateTime', event['start'].get('date'))
+#        end = event['end'].get('dateTime',event['end'].get('date'))
+#        dte = dateutil.parser.parse(end)
+#
+#        dt =  dateutil.parser.parse(start)
+#        dte = dte.strftime('%H:%M')
+#        dt = dt.strftime('%H:%M')
+#        rn = str(dt) + " - " + str(dte)
+#        e = eventObj(rn,event['summary'])
+#        events_obj.append(e)
+#    return events_obj
+#get_messages()
 def hours_left():
     epoch_of_end_hack_ru = 1492970400
     curr_epoch_time = int(time.time())
