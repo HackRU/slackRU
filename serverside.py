@@ -5,6 +5,8 @@ from twilio.rest import Client
 app = Flask(__name__)
 dbpath = config.dbpath
 ph = config.twilioph
+qid = 1
+questionstruct = {}
 #setup twilio with sid and authid
 client = Client(config.sid, config.authid)
 def get_db():
@@ -40,18 +42,20 @@ def pairMentorWithHacker(comment:str,username:str):
     q = query_db("SELECT * from mentors")
     for keywordlist in q:
         for word in comment:
-            if word in keywordlist['kewywords']:
+            if word in keywordlist['keywords']:
                 mentorlist.append(q)
-    #insert the question and mentor list into the datavatse
-    query_db("INSERT INTO ActiveQuestions (question,phones,is_ans) VALUES (?,?,?)",comment,str(mentorlist),False)
-
+    questionstruct[str(qid)] = {}
+    questionstruct[str(qid)]['id'] = qid
+    questionstruct[str(qid)]['phones'] =mentorlist
+    questionstruct[str(qid)]['answered'] = False
     for mentor in mentorlist:
         #message all the mentor
         message = client.messages.create(
         mentor['phone'],
-        body="Hi, A Hacker had a question, " + comment + " " + "please meet the hacker at the mentor table"),
+        body="Hi, A Hacker had a question, " + comment + " " + "please type accept " + str(qid) " to accept" + " or " + "decline " + str(qid) " to decline"),
         from_=ph,
        ) 
+    qid +=1
     return mentorlist
 
 @app.route('/makeRequest',methods = ['POST'])
