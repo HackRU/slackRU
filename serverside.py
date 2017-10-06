@@ -43,7 +43,7 @@ def pairMentorWithHacker(comment:str,username:str):
     for keywordlist in q:
         for word in comment:
             if word in keywordlist['keywords']:
-                mentorlist.append(q)
+                mentorlist.append(q['phone'])
     questionstruct[str(qid)] = {}
     questionstruct[str(qid)]['id'] = qid
     questionstruct[str(qid)]['phones'] =mentorlist
@@ -56,7 +56,6 @@ def pairMentorWithHacker(comment:str,username:str):
         from_=ph,
        ) 
     qid +=1
-    return mentorlist
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
