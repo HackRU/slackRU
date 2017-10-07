@@ -131,11 +131,11 @@ def handle_command(command:str, channel:str,userid:str,username:str) -> None:
         """
     print (command)
     dividedCommand = command.split()
-    command = dividedCommand[0]
-    command = command.lower()
-    if command == 'mentors':
-        findMentor(dividedCommand[0:],username,userid)
-    elif command == 'help':
+    cmd = dividedCommand[0]
+    cmd = cmd.lower()
+    if cmd == 'mentors':
+        findMentor(command[0:],username,userid)
+    elif cmd == 'help':
         help(userid,username)
         #call the findAvailMentorCommand
 

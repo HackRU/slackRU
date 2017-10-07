@@ -54,10 +54,13 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     q = query_db("SELECT * from mentors")
     for keywordlist in q:
         print (keywordlist['phone'])
-        for word in comment:
 
-            if word in keywordlist['keywords']:
+        li  = keywordlist['keywords'].split(',')
+        for word in comment:
+            if word in li:
                 mentorlist.append(keywordlist)
+                break
+                
     questionstruct[str(qid)] = {}
     questionstruct[str(qid)]['id'] = qid
     questionstruct[str(qid)]['phones'] =mentorlist
