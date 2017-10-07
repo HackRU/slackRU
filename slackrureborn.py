@@ -32,14 +32,14 @@ class eventObj:
 LOWH = []
 #List Of Active Channels -> Active channels created from the mentor chat.
 LOAC = []
-BOT_NAME = 'lfg'
+BOT_NAME = 'letsmake'
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
 BOT_CHANNEL = "#general"
 #authorize google calender stuff
-''' def get_messages():
+def get_messages():
     events_obj =  []
     scopes = ['https://www.googleapis.com/auth/calendar']
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -69,7 +69,7 @@ BOT_CHANNEL = "#general"
         e = eventObj(rn,event['summary'])
         events_obj.append(e)
     return events_obj
-get_messages()'''
+# get_messages()
 
 class Comms:
     def __init__(self, username='', channel='', text='', timestamp=''):
@@ -88,16 +88,9 @@ def parse_slack_output(slack_rtm_output):
         this parsing function returns None unless a message is
         directed at the Bot, based on its ID.
     """
-    output_list = slack_rtm_output
-    if output_list and len(output_list) > 0:
-        for output in output_list:
-            if output and 'text' in output and AT_BOT in output['text']:
-
-                user_name =  util.grab_user(output['user'])
-                return output['text'].split(AT_BOT)[1].strip().lower(), \
-                       output['channel'], \
-                       output['user'], \
-                       user_name
+    output_list = filter(lambda out: 'type' in out and out['type'] == 'message', slack_rtm_output)
+    for out in output_list:
+        print("OUT", out)
     return None, None, "", ""
 
 #userid, mentorid

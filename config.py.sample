@@ -1,3 +1,4 @@
+
 apiT        = "<slack api token>"
 oauthT      = "<slack oauth token>"
 botID       = "<bot id>"
