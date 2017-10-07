@@ -84,7 +84,7 @@ def parse_slack_output(slack_rtm_output):
     if output_list and len(output_list) > 0:
         for output in output_list:
             if output and 'text' in output and AT_BOT in output['text']:
-
+                print(output['text'])
                 user_name =  util.grab_user(output['user'])
                 return output['text'].split(AT_BOT)[1].strip().lower(), \
                        output['channel'], \
@@ -129,12 +129,14 @@ def handle_command(command:str, channel:str,userid:str,username:str) -> None:
         :param userid:str the user id
         :param:str the username 
         """
+    print (command)
     dividedCommand = command.split()
     command = dividedCommand[0]
     command = command.lower()
     if command == 'mentors':
         findMentor(command,username)
-       
+    elif command == 'help':
+        help(userid,username)
         #call the findAvailMentorCommand
 
 
@@ -146,7 +148,7 @@ def findMentor(command:str,username:str) -> str:
     """
     postData = {}
     postData[username] = command
-    req = requests.post(config.serverurl,data = postData)
+    req = requests.post(config.serverurl +'pairmentor',data = postData)
     return req.text
     
 
@@ -407,7 +409,7 @@ def checkOnChannels():
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
-        print("StarterBot connected and running!")
+        print("SlackRU connected and running!")
         while True:
             command, channel, userid,username = parse_slack_output(slack_client.rtm_read())
             if command and channel:

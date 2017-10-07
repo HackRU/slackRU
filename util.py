@@ -10,7 +10,7 @@ slack_web_client = SlackClient(config.oauthT)
 converts an id to usernamae
 :param the user id to convert
 '''
-def grab_user(user:str) ->str:
+def grab_user(use:str) ->str:
     api = slack_client.api_call('users.list')
     if (api.get('ok')):
         users = api.get('members')
@@ -30,4 +30,8 @@ def username_to_id(username:str) -> str:
         for user in users:
             if 'id' in user and user['name'] == username:
                 return user['id']
-
+def message(channelid:str, message:str) -> None:
+    """
+        Util Function to send a message
+    """
+    slack_client.api_call("chat.postMessage", channel=channelid,text=message, as_user=True)

@@ -29,8 +29,8 @@ def query_db(query, args=(), one=False):
 
 @app.route("/pairmentor")
 def pairMentor(methods = ['POST']):
-    return "Hello World!"
-
+    print(request.params)
+    return "done"
 #the twilio end point that will text mentors
 def textMentorsQuestion(comment:str,username:str) -> None:
     """
@@ -51,25 +51,26 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     questionstruct[str(qid)]['answered'] = False
     for mentor in mentorlist:
         #message all the mentor
-        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(qid) " to accept" + " or " + "decline " + str(qid) " to decline")
+        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(qid) + " to accept" + " or " + "decline " + str(qid) +  " to decline")
     qid +=1
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
     from_no = request.form['From']
     body = request.form['Body']
-    if len(body.split() !=2):
+    if len(body.split()) !=2:
         sendMessage(from_no,"please fix your formatting, either accept <id> or decline <id>")
-    splitBody = body.split()
-    else:
+    else :
+
+        splitBody = body.split()
         if splitBody[0] == 'accept':
             if questionstruct[str(splitBody[0])]['answered']  == True:
                 sendMessage(from_no,"Hi, Another mentor has already accepted this question")
-            else:
+            else :
                 #message the user via slack using the util class as we are storing the USERNAME of the person
                 name = query_db('select name from mentors where phone=?',from_no,one = True)
                 util.message(questionstruct[str(splitBody[1])]['id'], "Hi You Have been paired with" + name + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
-                questionstruct[splitBody[1]['answered'] = True
+                questionstruct[splitBody[1]]['answered'] = True
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         
 
