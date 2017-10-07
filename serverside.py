@@ -6,7 +6,7 @@ from twilio.rest import Client
 app = Flask(__name__)
 dbpath = config.dbpath
 ph = config.twilioph
-qid = 1
+qid = 0
 questionstruct = {}
 #setup twilio with sid and authid
 client = Client(config.sid, config.authid)
@@ -17,13 +17,12 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(dbpath)
-    return db
-with app.app_context():
     def make_dicts(cursor, row):
         return dict((cursor.description[idx][0], value)
                     for idx, value in enumerate(row))
 
-    get_db().row_factory = make_dicts
+    db.row_factory = make_dicts
+    return db
 def query_db(query, args=(), one=False):
     """
     Query function from flask documentation to avoid the usage of a raw cursor
@@ -31,6 +30,7 @@ def query_db(query, args=(), one=False):
     cur = get_db().execute(query, args)
     rv = cur.fetchall()
     cur.close()
+
     return (rv[0] if rv else None) if one else rv
 
 @app.route("/pairmentor",methods = ['POST'])
@@ -48,14 +48,16 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     :param comment:str -> the input string the parse
     :param username:str -> the username of the person asking the question
     """
+    global qid
     mentorlist = []
     #selec all the mentors 
     q = query_db("SELECT * from mentors")
-    print (q)
     for keywordlist in q:
+        print (keywordlist['phone'])
         for word in comment:
+
             if word in keywordlist['keywords']:
-                mentorlist.append(q['phone'])
+                mentorlist.append(keywordlist)
     questionstruct[str(qid)] = {}
     questionstruct[str(qid)]['id'] = qid
     questionstruct[str(qid)]['phones'] =mentorlist
