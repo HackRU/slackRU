@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,request,jsonify,g
 import sqlite3
 import config
 import util
@@ -18,6 +18,12 @@ def get_db():
     if db is None:
         db = g._database = sqlite3.connect(dbpath)
     return db
+with app.app_context():
+    def make_dicts(cursor, row):
+        return dict((cursor.description[idx][0], value)
+                    for idx, value in enumerate(row))
+
+    get_db().row_factory = make_dicts
 def query_db(query, args=(), one=False):
     """
     Query function from flask documentation to avoid the usage of a raw cursor
@@ -27,9 +33,13 @@ def query_db(query, args=(), one=False):
     cur.close()
     return (rv[0] if rv else None) if one else rv
 
-@app.route("/pairmentor")
-def pairMentor(methods = ['POST']):
-    print(request.params)
+@app.route("/pairmentor",methods = ['POST'])
+def pairMentor():
+    print(request.form.to_dict())
+    jsonreqest = request.form.to_dict()
+    dat = jsonreqest['data']
+    user = jsonreqest['user']
+    textMentorsQuestion(dat,user)
     return "done"
 #the twilio end point that will text mentors
 def textMentorsQuestion(comment:str,username:str) -> None:
@@ -41,6 +51,7 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     mentorlist = []
     #selec all the mentors 
     q = query_db("SELECT * from mentors")
+    print (q)
     for keywordlist in q:
         for word in comment:
             if word in keywordlist['keywords']:
@@ -87,4 +98,5 @@ def sendMessage(to:str,message:str) -> None:
         body=message,
         from_=ph
        ) 
-    
+if __name__ == '__main__':
+    app.run(debug=True)
