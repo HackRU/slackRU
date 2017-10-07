@@ -18,6 +18,7 @@ import dateutil.parser
 import pygal
 import util
 import requests
+import re
 class wHacker:
     def __init__(self,hackerID,request):
         self.h = hackerID
@@ -36,7 +37,8 @@ BOT_NAME = 'letsmake'
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
-AT_BOT = "<@" + BOTID + ">"
+BOTNAME = "letsmake"
+AT_BOT = "@" + BOTNAME
 BOT_CHANNEL = "#general"
 #authorize google calender stuff
 def get_messages():
@@ -71,27 +73,39 @@ def get_messages():
     return events_obj
 # get_messages()
 
-class Comms:
-    def __init__(self, username='', channel='', text='', timestamp=''):
+class Message:
+    def __init__(self, botname='', username='', channel='', text='', timestamp='', _type=''):
+        self.botname = botname
         self.username = username
         self.channel = channel
         self.text = text
         self.timestamp = timestamp
+        self.type = _type
 
 def hours_left():
     epoch_of_end_hack_ru = 1492970400
     curr_epoch_time = int(time.time())
     return (epoch_of_end_hack_ru/3600 - curr_epoch_time/3600)
+
+MESSAGE_TYPE = 'desktop_notification'
+botID = re.compile('')
 def parse_slack_output(slack_rtm_output):
     """
         The Slack Real Time Messaging API is an events firehose.
         this parsing function returns None unless a message is
         directed at the Bot, based on its ID.
     """
-    output_list = filter(lambda out: 'type' in out and out['type'] == 'message', slack_rtm_output)
+    messages = []
+    output_list = filter(lambda out: 'type' in out and out['type'] == MESSAGE_TYPE and AT_BOT in out['content'],
+                         slack_rtm_output)
     for out in output_list:
-        print("OUT", out)
-    return None, None, "", ""
+        print(out)
+        channel = out['subtitle']
+        username, text = out['content'].split(':')
+        timestamp = out['event_ts']
+        _type = out['type']
+        messages.append(Message(botname, username, channel, text, timestamp, _type))
+    return messages
 
 #userid, mentorid
 #opens a multiparty im with some users
@@ -148,12 +162,7 @@ def findMentor(command:str,username:str) -> str:
     postData[username] = command
     req = requests.post(config.serverurl,data = postData)
     return req.text
-    
-
-
-
-     
-
+   
 def help(userid, username):
     message(userid,"Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
     message(userid,"All commands will begin with <AT character>slackru")
@@ -402,7 +411,8 @@ def checkOnChannels():
             LOAC.remove(i)
     print("LOAC", LOAC)
 
-
+def central_dispatch(msg):
+    pass
 
 #sends message to a channel
 if __name__ == "__main__":
@@ -411,14 +421,8 @@ if __name__ == "__main__":
     if slack_client.rtm_connect():
         print("StarterBot connected and running!")
         while True:
-            command, channel, userid, username = parse_slack_output(slack_client.rtm_read())
-            if command and channel:
-                handle_command(command, channel,userid,username)
-                #check busy status of all users, their last time busy and if they have been busy for more than 35 minutes
-            time.sleep(READ_WEBSOCKET_DELAY)
-            #This function will check on all the active channels and if the latest response was an hour ago from the current time
-            #The bot will message the channel and let them know it will be stop being monitored and give them insturctions
-            #For certain scenarios.
-            # checkOnChannels()
+            messages = parse_slack_output(slack_client.rtm_read())
+            for msg in messages:
+                central_dispatch(msg)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
