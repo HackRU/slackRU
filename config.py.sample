@@ -1,0 +1,6 @@
+apiT        = "<slack api token>"
+oauthT      = "<slack oauth token>"
+botID       = "<bot id>"
+serverurl   = "<server url>"
+mpass       = "<what>"
+dbpass      = "<db password>"

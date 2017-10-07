@@ -32,14 +32,14 @@ class eventObj:
 LOWH = []
 #List Of Active Channels -> Active channels created from the mentor chat.
 LOAC = []
-BOT_NAME = 'slackru'
+BOT_NAME = 'lfg'
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
-BOT_CHANNEl = "D4GSK3HG9"
+BOT_CHANNEL = "#general"
 #authorize google calender stuff
-def get_messages():
+''' def get_messages():
     events_obj =  []
     scopes = ['https://www.googleapis.com/auth/calendar']
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -69,7 +69,15 @@ def get_messages():
         e = eventObj(rn,event['summary'])
         events_obj.append(e)
     return events_obj
-get_messages()
+get_messages()'''
+
+class Comms:
+    def __init__(self, username='', channel='', text='', timestamp=''):
+        self.username = username
+        self.channel = channel
+        self.text = text
+        self.timestamp = timestamp
+
 def hours_left():
     epoch_of_end_hack_ru = 1492970400
     curr_epoch_time = int(time.time())
@@ -90,7 +98,6 @@ def parse_slack_output(slack_rtm_output):
                        output['channel'], \
                        output['user'], \
                        user_name
-
     return None, None, "", ""
 
 #userid, mentorid
@@ -400,16 +407,18 @@ def checkOnChannels():
             message(i,"If your mentor is not responding, you can run the command for a mentor again")
             message(i,"This channel will stop being monitored by slackru.")
             LOAC.remove(i)
+    print("LOAC", LOAC)
 
 
 
 #sends message to a channel
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
+    LOAC.append("#general")
     if slack_client.rtm_connect():
         print("StarterBot connected and running!")
         while True:
-            command, channel, userid,username = parse_slack_output(slack_client.rtm_read())
+            command, channel, userid, username = parse_slack_output(slack_client.rtm_read())
             if command and channel:
                 handle_command(command, channel,userid,username)
                 #check busy status of all users, their last time busy and if they have been busy for more than 35 minutes
@@ -417,6 +426,6 @@ if __name__ == "__main__":
             #This function will check on all the active channels and if the latest response was an hour ago from the current time
             #The bot will message the channel and let them know it will be stop being monitored and give them insturctions
             #For certain scenarios.
-            checkOnChannels()
+            # checkOnChannels()
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
