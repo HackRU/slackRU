@@ -35,6 +35,9 @@ def query_db(query, args=(), one=False):
 
 @app.route("/pairmentor",methods = ['POST'])
 def pairMentor():
+    '''
+        Route that client sends the question to
+    '''
     print(request.form.to_dict())
     jsonreqest = request.form.to_dict()
     dat = jsonreqest['data']
@@ -49,6 +52,7 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     :param username:str -> the username of the person asking the question
     """
     global qid
+    q_test = 0
     mentorlist = []
     #selec all the mentors 
     q = query_db("SELECT * from mentors")
@@ -59,15 +63,18 @@ def textMentorsQuestion(comment:str,username:str) -> None:
         for word in comment:
             if word in li:
                 mentorlist.append(keywordlist)
+
+                get_db().execute("INSERT into activequestions (answered,userid) VALUES(?,?)",[0,username]) 
+                get_db().commit()
+                q_test = query_db("SELECT last_insert_rowid()",one = True)
                 break
-                
     questionstruct[str(qid)] = {}
     questionstruct[str(qid)]['id'] = qid
     questionstruct[str(qid)]['phones'] =mentorlist
     questionstruct[str(qid)]['answered'] = False
     for mentor in mentorlist:
         #message all the mentor
-        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(qid) + " to accept" + " or " + "decline " + str(qid) +  " to decline")
+        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(q_test['last_insert_rowid()']) + " to accept" + " or " + "decline " + str(qid) +  " to decline")
     qid +=1
 
 @app.route('/makeRequest',methods = ['POST'])
@@ -80,6 +87,7 @@ def makeRequest():
 
         splitBody = body.split()
         if splitBody[0] == 'accept':
+
             if questionstruct[str(splitBody[0])]['answered']  == True:
                 sendMessage(from_no,"Hi, Another mentor has already accepted this question")
             else :
