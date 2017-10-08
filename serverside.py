@@ -35,9 +35,9 @@ def query_db(query, args=(), one=False):
 
 @app.route("/pairmentor",methods = ['POST'])
 def pairMentor():
-    '''
+    """
         Route that client sends the question to
-    '''
+    """
     print(request.form.to_dict())
     jsonreqest = request.form.to_dict()
     dat = jsonreqest['data']
@@ -74,11 +74,14 @@ def textMentorsQuestion(comment:str,username:str) -> None:
     questionstruct[str(qid)]['answered'] = False
     for mentor in mentorlist:
         #message all the mentor
-        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(q_test['last_insert_rowid()']) + " to accept" + " or " + "decline " + str(qid) +  " to decline")
+        sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(q_test['last_insert_rowid()']) + " to accept" + " or " + "decline " + str(q_test['last_insert_rowid()']) +  " to decline")
     qid +=1
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
+    """
+        The Route that handles responded to the user after they accept or decline
+    """
     from_no = request.form['From']
     body = request.form['Body']
     if len(body.split()) !=2:
@@ -87,8 +90,16 @@ def makeRequest():
 
         splitBody = body.split()
         if splitBody[0] == 'accept':
+            """
+                if answewered == 0 its falske if ==1 its true
 
-            if questionstruct[str(splitBody[0])]['answered']  == True:
+            """
+            #grab the id and check
+            id_ = query_db("SELECT id from activequestions WHERE id=?",int(splitBody[1]),one = True)
+            id_chec = id_['id']
+            print(id_chec)
+
+            if questionstruct[str(splitBody[1])]['answered']  == True:
                 sendMessage(from_no,"Hi, Another mentor has already accepted this question")
             else :
                 #message the user via slack using the util class as we are storing the USERNAME of the person
