@@ -33,11 +33,11 @@ class eventObj:
 LOWH = []
 #List Of Active Channels -> Active channels created from the mentor chat.
 LOAC = []
-BOT_NAME = 'letsmake'
+BOT_NAME = 'and'
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
-BOTNAME = "letsmake"
+BOTNAME = "and"
 AT_BOT = "@" + BOTNAME
 BOT_CHANNEL = "#general"
 
@@ -68,7 +68,7 @@ def parse_slack_output(slack_rtm_output):
         username, text = out['content'].split(':')
         timestamp = out['event_ts']
         _type = out['type']
-        messages.append(Message(botname, username, channel, text, timestamp, _type))
+        messages.append(Message(BOTNAME, username, channel, text, timestamp, _type))
     return messages
 
 '''
@@ -95,6 +95,16 @@ def central_dispatch(msg):
     elif:
         process_posting_short(sentences)'''
 
+def parse_message(message_dict): #takes in a dictionary that contains message metadata
+	username_string = message_dict['username']
+	time_original = message_dict['timestamp'] #weird ass time that must be parsed
+
+	
+	
+
+
+	
+
 #sends message to a channel
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
@@ -104,6 +114,6 @@ if __name__ == "__main__":
         while True:
             messages = parse_slack_output(slack_client.rtm_read())
             for msg in messages:
-                central_dispatch(msg)
+                print(msg.__dict__)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
