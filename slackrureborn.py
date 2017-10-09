@@ -154,7 +154,7 @@ def findMentor(command:str,username:str,userid:str) -> str:
     postData = {}
     postData['data'] = command
     postData['user'] = username
-    post['userid'] = userid
+    postData['userid'] = userid
     util.message(userid,"Trying to find a mentor")
     req = requests.post(config.serverurl +'pairmentor',data = postData)
     return req.text
