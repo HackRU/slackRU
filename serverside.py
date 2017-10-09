@@ -59,14 +59,13 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     #selec all the mentors 
     q = query_db("SELECT * from mentors")
     for keywordlist in q:
-        print (keywordlist['phone'])
 
         li  = keywordlist['keywords'].split(',')
         for word in comment:
             if word in li:
                 mentorlist.append(keywordlist)
 
-                get_db().execute("INSERT into activequestions (answered,username,userid) VALUES(?,?,?)",[0,userid,username]) 
+                get_db().execute("INSERT into activequestions (answered,username,userid,timestamp) VALUES(?,?,?,?)",[0,userid,username,epoch]) 
                 get_db().commit()
                 q_test = query_db("SELECT last_insert_rowid()",one = True)
                 break
