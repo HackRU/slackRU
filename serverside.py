@@ -3,6 +3,7 @@ import sqlite3
 import config
 import util
 from twilio.rest import Client
+import time,first
 app = Flask(__name__)
 dbpath = config.dbpath
 ph = config.twilioph
@@ -42,17 +43,18 @@ def pairMentor():
     jsonreqest = request.form.to_dict()
     dat = jsonreqest['data']
     user = jsonreqest['user']
-    textMentorsQuestion(dat,user)
+    userid = jsonreqest['userid']
+    textMentorsQuestion(dat,user,userid)
     return "done"
 #the twilio end point that will text mentors
-def textMentorsQuestion(comment:str,username:str) -> None:
+def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     """
      Given a question , tries to find mentors with the keywords with the key words and sends a message that a hacker needs help
     :param comment:str -> the input string the parse
     :param username:str -> the username of the person asking the question
     """
-    global qid
     q_test = 0
+    epoch = int(time.time())
     mentorlist = []
     #selec all the mentors 
     q = query_db("SELECT * from mentors")
@@ -64,14 +66,17 @@ def textMentorsQuestion(comment:str,username:str) -> None:
             if word in li:
                 mentorlist.append(keywordlist)
 
-                get_db().execute("INSERT into activequestions (answered,userid) VALUES(?,?)",[0,username]) 
+                get_db().execute("INSERT into activequestions (answered,username,userid) VALUES(?,?,?)",[0,userid,username]) 
                 get_db().commit()
                 q_test = query_db("SELECT last_insert_rowid()",one = True)
                 break
-    questionstruct[str(qid)] = {}
-    questionstruct[str(qid)]['id'] = qid
+    qid = q_test['last_insert_rowid()']
+    questionstruct[(str(qid)] = {}
+    questionstruct[str(qid)]['id'] = userid
     questionstruct[str(qid)]['phones'] =mentorlist
     questionstruct[str(qid)]['answered'] = False
+    questionstruct[str(qid)]['timestamp'] = epoch
+    questionstruct[str(qid)]['peoplewhoanswered'] = []
     for mentor in mentorlist:
         #message all the mentor
         sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(q_test['last_insert_rowid()']) + " to accept" + " or " + "decline " + str(q_test['last_insert_rowid()']) +  " to decline")
