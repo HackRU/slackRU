@@ -36,7 +36,7 @@ def scraper(message):
     tagStr= " ".join(keywords_list) #keywords joined by " "
     keywords_list = [w for w in keywords_list if w not in stopwords_set]
     SITE = StackAPI('stackoverflow')
-    questions_dict = SITE.fetch("search/advanced", q=tagStr,  tagged=keywords_list, sort="relevance")
+    questions_dict = SITE.fetch("search/advanced", q=message,  tagged=keywords_list, sort="relevance")
     return questions_dict['items'][:10]
 
 def main():
