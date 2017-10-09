@@ -1,9 +1,9 @@
 import requests
 from stackapi import StackAPI
+import json
+import re
 
-
-def scraper(message):  
-	stopwords =  " a about above across after  again  against  all  almost  alone  along  already  also  although\
+stopwords =  " a about above across after  again  against  all  almost  alone  along  already  also  although\
   always  among  an am  and  another  any  anybody  anyone  anything  anywhere  are\
   area  areas  around  as  ask  asked  asking  asks  at  away  backing  backs  be\
   became  because  become  becomes  been  before  began  behind  being  beings  best\
@@ -26,26 +26,24 @@ def scraper(message):
   turns  under  until  up  upon  us  use  used  uses    very   want  wanted  wanting  wants  was  way  ways  we  well\
   wells  went  were  what  when  where  whether  which  while  who  whole  whose  why  will  with  within  without  work\
   worked  working  works  would   year  years  yet  you  young  younger  youngest  your  yours" 
-	msg_lwr = message.lower(); #lowercases words
-	stopwords_set = set(stopwords.split(" ")) #stopwords delimintated into a list
-	message_list = msg_lwr.split(" ", 30) #the length of search is limited to 30 words  	
-	keywords_list = [x for x in message_list if( x not in stopwords_set )]# long list of keywords
+stopwords_set = set([s.strip() for s in stopwords.split(" ")]) #stopwords delimintated into a list
 
-	tagStr= " ".join(keywords_list) #keywords joined by " "
-	SITE = StackAPI("stackoverflow")
-	questions_dict = SITE.fetch("search/advanced", q=tagStr,  sort="relevance")
-	questions_list = questions_dict['items'] 
-		
-	if len(questions_list) > 10:
-		questions_list = questions_list[:10] #slice
-
-	return questions_list
+def scraper(message):  
+    message = message.lower() #lowercases words
+    message_list = message.split(" ", 30) #the length of search is limited to 30 words      
+    keywords_list = message_list
+    # keywords_list = [x for x in message_list if x not in stopwords_set]# long list of keywords
+    tagStr= " ".join(keywords_list) #keywords joined by " "
+    keywords_list = [w for w in keywords_list if w not in stopwords_set]
+    SITE = StackAPI('stackoverflow')
+    questions_dict = SITE.fetch("search/advanced", q=tagStr,  tagged=keywords_list, sort="relevance")
+    return questions_dict['items'][:10]
 
 def main():
-	st = "how do i install linux on my computer :("
-	lis = scraper(st)
-	print(lis)
+    st = "how do i install linux on my computer :("
+    lis = scraper(st)
+    print(json.dumps(lis))
 
 if __name__ == "__main__":
-	main()
+    main()
   
