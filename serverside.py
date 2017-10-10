@@ -91,6 +91,7 @@ def makeRequest():
         The Route that handles responded to the user after they accept or decline
     """
     from_no = request.form['From']
+    print(from_no)
     body = request.form['Body']
     if len(body.split()) !=2:
         sendMessage(from_no,"please fix your formatting, either accept <id> or decline <id>")
@@ -100,21 +101,23 @@ def makeRequest():
         if splitBody[0] == 'accept':
             #grab the id and check
             id_ = query_db("SELECT id,answered,peoplewhoans,userid from activequestions WHERE id=?",[int(splitBody[1])],one = True)
+            print("The ID Is" + str(id_))
             id_chec = id_['id']
             people = json.loads(id_['peoplewhoans'])
             people.append(from_no)
-            get_db.execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?',[json.dumps(people),id_chec])
-            get_db.commit()
+            get_db().execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?',[json.dumps(people),id_chec])
+            get_db().commit()
 
             if id_['answered']  == 1:
                 sendMessage(from_no,"Hi, Another mentor has already accepted this question")
             else :
                 #append to answered question sql table
                 #message the user via slack using the util class as we are storing the USERNAME of the person
-                name = query_db('select name from mentors where phone=?',from_no,one = True)
-                util.message(id_['userid'], "Hi You Have been paired with" + name + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
-                get_db.execute('UPDATE activequestions SET answered=? WHERE id=?',[1,id_chec])
-                get_db.commit()
+                name = query_db('select name from mentors where phone=?',[from_no],one = True)
+                print(str(name))
+                util.message(id_['userid'], "Hi You Have been paired with" + name['name'] + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
+                get_db().execute('UPDATE activequestions SET answered=? WHERE id=?',[1,id_chec])
+                get_db().commit()
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         
 
