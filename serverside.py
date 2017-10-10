@@ -117,7 +117,12 @@ def makeRequest():
                 print(str(name))
                 util.message(id_['userid'], "Hi You Have been paired with " + name['name'] + " , please goto the mentor table and meet "  + name['name'] + " your question id is " + str(id_chec))
                 get_db().execute('UPDATE activequestions SET answered=? WHERE id=?',[1,id_chec])
+                
                 get_db().commit()
+
+                get_db().execute('UPDATE activequestions SET assignedmentor=? WHERE id=?',[name['name'],id_chec])
+                get_db().commit()
+
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         
 
