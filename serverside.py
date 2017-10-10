@@ -115,7 +115,7 @@ def makeRequest():
                 #message the user via slack using the util class as we are storing the USERNAME of the person
                 name = query_db('select name from mentors where phone=?',[from_no],one = True)
                 print(str(name))
-                util.message(id_['userid'], "Hi You Have been paired with" + name['name'] + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
+                util.message(id_['userid'], "Hi You Have been paired with " + name['name'] + " , please goto the mentor table and meet "  + name['name'] + " your question id is " + str(id_chec))
                 get_db().execute('UPDATE activequestions SET answered=? WHERE id=?',[1,id_chec])
                 get_db().commit()
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
