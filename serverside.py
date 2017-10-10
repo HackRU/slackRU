@@ -3,7 +3,7 @@ import sqlite3
 import config
 import util
 from twilio.rest import Client
-import time,first
+import time
 import sched
 import json
 app = Flask(__name__)
@@ -66,26 +66,20 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
         for word in comment:
             if word in li:
                 mentorlist.append(keywordlist)
-
                 break
         #Text All mentors
         #if no mentors, text all mentors asking the question
         if mentorlist == []:
             for i in q:
-
                 mentorlist.append(i)
-    get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans) VALUES(?,?,?,?,?,?)",[0,userid,username,epoch,json.dumps(mentorlist),[]]) 
+    li = json.dumps(mentorlist)
+    li2 = json.dumps([])
+    get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans) VALUES(?,?,?,?,?,?)",[0,username,userid,epoch,li,li2]) 
     get_db().commit()
     q_test = query_db("SELECT last_insert_rowid()",one = True)
 
 
     qid = q_test['last_insert_rowid()']
-    questionstruct[(str(qid)] = {}
-    questionstruct[str(qid)]['id'] = userid
-    questionstruct[str(qid)]['phones'] =mentorlist
-    questionstruct[str(qid)]['answered'] = False
-    questionstruct[str(qid)]['timestamp'] = epoch
-    questionstruct[str(qid)]['peoplewhoanswered'] = []
     for mentor in mentorlist:
         #message all the mentor
         sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(q_test['last_insert_rowid()']) + " to accept" + " or " + "decline " + str(q_test['last_insert_rowid()']) +  " to decline")
@@ -104,16 +98,12 @@ def makeRequest():
 
         splitBody = body.split()
         if splitBody[0] == 'accept':
-            """
-                if answewered == 0 its falske if ==1 its true
-
-            """
             #grab the id and check
-            id_ = query_db("SELECT id,answered,peoplewhoans from activequestions WHERE id=?",int(splitBody[1]),one = True)
+            id_ = query_db("SELECT id,answered,peoplewhoans,userid from activequestions WHERE id=?",[int(splitBody[1])],one = True)
             id_chec = id_['id']
-            people = json.loads(id_chec['peoplewhoans'])
+            people = json.loads(id_['peoplewhoans'])
             people.append(from_no)
-            get_db.execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?',json.dumps(people),id_chec)
+            get_db.execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?',[json.dumps(people),id_chec])
             get_db.commit()
 
             if id_['answered']  == 1:
@@ -122,26 +112,26 @@ def makeRequest():
                 #append to answered question sql table
                 #message the user via slack using the util class as we are storing the USERNAME of the person
                 name = query_db('select name from mentors where phone=?',from_no,one = True)
-                util.message(questionstruct[str(splitBody[1])]['id'], "Hi You Have been paired with" + name + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
+                util.message(id_['userid'], "Hi You Have been paired with" + name + " , please goto the mentor table and meet the mentor and take the mentor back to you work area")
                 get_db.execute('UPDATE activequestions SET answered=? WHERE id=?',[1,id_chec])
                 get_db.commit()
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         
 
     return "done"
-def messageHackersToTryAgain(id_ : int) -> None:
+def messageHackersToTryAgain(id_:int):
     """
         When all mentors respond No, it is been 10 minutes and no mentor has accepted
     """
     #select from the databse
-    question = query_db("SELECT * from activequestions WHERE id=?",id_i,one = True)
+    question = query_db("SELECT * from activequestions WHERE id=?",[id_],one = True)
     if question['answered'] == 0:
         util.message(question['userid'],"All mentors are busy, please try again later in 10 or 15 min")
         #call out mentors who ignored
         #SELECT from the DB
         listofphones = json.loads(question['phones'])
         peoplewhoans = json.loads(question['peoplewhoans'])
-        for i listofphones:
+        for i in listofphones :
             if i not in peoplewhoans:
                 sendMessage(i,"Hi, To Ensure the smoothness of the hackathon, please respond to all requests with either accept or decline")
 
