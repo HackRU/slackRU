@@ -74,7 +74,7 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
                 mentorlist.append(i)
     li = json.dumps(mentorlist)
     li2 = json.dumps([])
-    get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans) VALUES(?,?,?,?,?,?)",[0,username,userid,epoch,li,li2]) 
+    get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",[0,username,userid,epoch,li,li2,None]) 
     get_db().commit()
     q_test = query_db("SELECT last_insert_rowid()",one = True)
 
