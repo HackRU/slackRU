@@ -124,11 +124,27 @@ def makeRequest():
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         elif splitBody[0] == 'decline':
             #append to the people who answered thing and then check if
-            ans_ = query_db('SELECT peoplewhoans,phones,answered FROM activequestions WHERE id=?',[int(splitBody[1])],one = True)
+            ans_ = query_db('SELECT peoplewhoans,phones,answered,userid FROM activequestions WHERE id=?',[int(splitBody[1])],one = True)
             peoplewhoans = json.loads(ans_['peoplewhoans'])
+            phones = json.loads(ans_['phones'])
             peoplewhoans.append(from_no)
+            sendMessage(from_no,'Thanks for responding')
             get_db().execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?',[json.dumps(peoplewhoans),int(splitBody[1])])
             get_db().commit()
+            #scan the list and check if all the people responded and the answered state is false
+            phlist = []
+            brokeFunctions = False
+            for i in phones:
+                phlist.append(i['phone'])
+            for j in peoplewhoans:
+                if j not in phlist:
+                    brokeFunctions = True
+                    break
+            if brokeFunctions == False and ans_['answered'] == 0:
+                util.message(ans_['userid'],"All mentors are busy, please try again in a few miniutes")
+                
+
+
         
 
     return "done"
