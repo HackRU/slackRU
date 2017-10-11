@@ -83,7 +83,6 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     for mentor in mentorlist:
         #message all the mentor
         sendMessage(mentor['phone'],"hi, a hacker had a question, " + comment + " " + "please type accept " + str(q_test['last_insert_rowid()']) + " to accept" + " or " + "decline " + str(q_test['last_insert_rowid()']) +  " to decline")
-    qid +=1
 
 @app.route('/makeRequest',methods = ['POST'])
 def makeRequest():
@@ -92,7 +91,7 @@ def makeRequest():
     """
     from_no = request.form['From']
     print(from_no)
-    body = request.form['Body']
+    body = request.form['Body'].lower()
     if len(body.split()) !=2:
         sendMessage(from_no,"please fix your formatting, either accept <id> or decline <id>")
     else :
@@ -123,6 +122,13 @@ def makeRequest():
                 get_db().commit()
 
                 sendMessage(from_no,"Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
+        elif splitBody[0] == 'decline':
+            #append to the people who answered thing and then check if
+            ans_ = query_db('SELECT peoplewhoans,phones,answered FROM activequestions WHERE id=?',[int(splitBody[1])],one = True)
+            peoplewhoans = json.loads(ans_['peoplewhoans'])
+            peoplewhoans.append(from_no)
+            get_db().execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?',[json.dumps(peoplewhoans),int(splitBody[1])])
+            get_db().commit()
         
 
     return "done"
