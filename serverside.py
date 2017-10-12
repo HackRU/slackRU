@@ -59,7 +59,7 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     epoch = int(time.time())
     mentorlist = []
     #selec all the mentors 
-    q = query_db("SELECT DISTINCT mentors.* from shifts, mentors WHERE datetime('now','localtime') >= datetime(shifts.fromtime,'localtime') and datetime('now','localtime') < datetime(shifts.totime)")
+    q = query_db("SELECT mentors.* FROM shifts JOIN mentors ON mentors.phone = shifts.phoneno WHERE datetime('now','localtime') >= datetime(shifts.fromtime,'localtime') AND datetime('now','localtime') < datetime(shifts.totime)")
     for keywordlist in q:
 
         li  = keywordlist['keywords'].split(',')
