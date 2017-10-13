@@ -11,6 +11,8 @@ dbpath = config.dbpath
 ph = config.twilioph
 qid = 0
 questionstruct = {}
+shed_ = sched.scheduler(time.time, time.sleep)
+
 #setup twilio with sid and authid
 client = Client(config.sid, config.authid)
 def get_db():
@@ -136,7 +138,9 @@ def makeRequest():
             brokeFunctions = False
             for i in phones:
                 phlist.append(i['phone'])
+            print(phlist)
             for j in peoplewhoans:
+                print (j)
                 if j not in phlist:
                     brokeFunctions = True
                     break
@@ -151,7 +155,9 @@ def makeRequest():
 def messageHackersToTryAgain(id_:int):
     """
         When all mentors respond No, it is been 10 minutes and no mentor has accepted
+
     """
+    print(id_)
     #select from the databse
     question = query_db("SELECT * from activequestions WHERE id=?",[id_],one = True)
     if question['answered'] == 0:
@@ -161,8 +167,8 @@ def messageHackersToTryAgain(id_:int):
         listofphones = json.loads(question['phones'])
         peoplewhoans = json.loads(question['peoplewhoans'])
         for i in listofphones :
-            if i not in peoplewhoans:
-                sendMessage(i,"Hi, To Ensure the smoothness of the hackathon, please respond to all requests with either accept or decline")
+            if i['phone'] not in peoplewhoans:
+                sendMessage(i['phone'],"Hi, To Ensure the smoothness of the hackathon, please respond to all requests with either accept or decline")
 
 
      
