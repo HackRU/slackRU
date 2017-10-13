@@ -138,7 +138,7 @@ def makeRequest():
             brokeFunctions = False
             for i in phones:
                 phlist.append(i['phone'])
-            print(phlist)
+            print (phlist)
             for j in peoplewhoans:
                 print (j)
                 if j not in phlist:
