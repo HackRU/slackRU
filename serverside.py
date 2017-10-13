@@ -73,9 +73,9 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
                 break
         #Text All mentors
         #if no mentors, text all mentors asking the question
-        if mentorlist == []:
-            for i in q:
-                mentorlist.append(i)
+    if mentorlist == []:
+        for i in q:
+             mentorlist.append(i)
     li = json.dumps(mentorlist)
     li2 = json.dumps([])
     get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",[0,username,userid,epoch,li,li2,None]) 
@@ -191,7 +191,7 @@ def schedulequeueScan():
             else:
                 queoftimes.put(quest['timestamp'])
     #every 5 min run the scanner
-    threading.Timer(300,schedulequeueScan).start()
+    threading.Timer(300.0,schedulequeueScan).start()
 
 schedulequeueScan()
     
