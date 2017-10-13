@@ -178,6 +178,8 @@ def messageHackersToTryAgain(id_:int):
 
 def scanqueueforslackers():
     
+
+def schedulequeueScan():
     if not queoftimes.empty():
         print ("test")
         ep = queoftimes.get(True)
@@ -185,9 +187,7 @@ def scanqueueforslackers():
         currentepoch = int(time.time()) 
         if ((currentepoch - quest['epoch']) >= 5): 
             messageHackersToTryAgain(ep['id'])
-
-def schedulequeueScan():
-    threading.Timer(5,scanqueueforslackers).start()
+    threading.Timer(5,schedulequeueScan).start()
 
 schedulequeueScan()
     
