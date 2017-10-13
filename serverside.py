@@ -81,7 +81,7 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",[0,username,userid,epoch,li,li2,None]) 
     get_db().commit()
     q_test = query_db("SELECT last_insert_rowid()",one = True)
-    queoftimes.put(epoch)
+    queoftimes.append(epoch)
 
     qid = q_test['last_insert_rowid()']
     for mentor in mentorlist:
