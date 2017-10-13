@@ -181,7 +181,7 @@ def scanqueueforslackers():
         ep = queoftimes.get(True)
         quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
         currentepoch = int(time.time()) 
-        if ((currentepoch - quest['epoch']) >= 600): 
+        if ((currentepoch - quest['epoch']) >= 5): 
             messageHackersToTryAgain(ep['id'])
 
 def schedulequeueScan():
