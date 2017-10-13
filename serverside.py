@@ -185,7 +185,7 @@ def scanqueueforslackers():
             messageHackersToTryAgain(ep['id'])
 
 def schedulequeueScan():
-    threading.Timer(180.0,scanqueueforslackers).start()
+    threading.Timer(5,scanqueueforslackers).start()
 
 schedulequeueScan()
     
