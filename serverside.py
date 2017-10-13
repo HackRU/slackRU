@@ -180,7 +180,7 @@ def messageHackersToTryAgain(id_:int):
 
 def schedulequeueScan():
     print ("test")
-    if queftimes.qsize() > 0:
+    if queoftimes.qsize() > 0:
         ep = queftimes.get()
         print(ep)
         with app.app_context():
