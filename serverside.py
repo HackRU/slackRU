@@ -177,7 +177,9 @@ def messageHackersToTryAgain(id_:int):
 
 
 def scanqueueforslackers():
+    
     if not queoftimes.empty():
+        print ("test")
         ep = queoftimes.get(True)
         quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
         currentepoch = int(time.time()) 
