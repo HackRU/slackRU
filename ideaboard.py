@@ -11,7 +11,7 @@ Ideaboard
     -q List all projects that match query (au:[author-name], tu:[posted x hrs prior] pn:[project name contains these words]
         sh:[poster has these skills] sw:[poster wants these skills] sl:[Find projects seeking x or fewer people]
         sg:[find projects seeking x or more people]
-    -s=(a|t|u|o)i Sorts list of projects alphabetically (a), timestamp (t), username (u), open status (o), invert order (i)
+    -s (a|t|u|o)i Sorts list of projects alphabetically (a), timestamp (t), username (u), open status (o), invert order (i)
 
 @letsmake status ([project-id]|all) [status]
     Change project status
@@ -98,7 +98,7 @@ def parse_slack_output(slack_rtm_output):
                          slack_rtm_output)
     for out in output_list:
         channel = out['subtitle']
-        username, text = out['content'].split(':')
+        username, text = out['content'].split(':', 1)
         timestamp = out['event_ts']
         _type = out['type']
         messages.append(Message(BOTNAME, username, channel, text, timestamp, _type))
@@ -284,8 +284,9 @@ def list_projects(msg):
     # RESULT ORDERING
     ordering = None
     invert_order = 'ASC'
+    print("INFO", info)
     if not 'a' in info:
-        criteria.append('status = 1')
+        criteria.append('status = 0')
     if 'm' in info:
         criteria.append('author = "%s"' % msg.username)
     if 's' in info:
@@ -301,7 +302,8 @@ def list_projects(msg):
         if len(info['s'][0]) == 2 and info['s'][0][1] == 'i':
             invert_order = 'DESC'
     if 'q' in info:
-        qs = info['q'][1:]
+        qs = info['q']
+        print("QS", qs)
         search_keys = {}
         curr_key = None
         q_pattern = re.compile('^[a-z]{2}:.+')
@@ -335,9 +337,9 @@ def list_projects(msg):
             elif k == 'sg':
                 criteria.append('team_size >= %d' % cnt)
     filter_query = ' AND '.join(criteria)
-    sql_query = 'SELECT %s FROM %s WHERE %s %s' % (
-                ','.join(KEYS), PROJECT_TABLE_NAME,
-                filter_query, '%s %s' % (ordering, invert_order) if ordering else '')
+    sql_query = 'SELECT %s FROM %s' % (','.join(KEYS), PROJECT_TABLE_NAME)   
+    if len(criteria) > 0:
+        sql_query += ' WHERE %s %s' % (filter_query, 'ORDER BY %s %s' % (ordering, invert_order) if ordering else '')
     print(sql_query)
 
 def show_project_statuses(msg):
@@ -345,7 +347,8 @@ def show_project_statuses(msg):
 
 # Handles commands given by the user
 def central_dispatch(msg):
-    cmd = re.split('\s+', msg.text)[1]
+    cmd = re.split('\s+', msg.text.strip())[1]
+    print(cmd)
     if cmd == 'list-projects':
         list_projects(msg)
     elif cmd == 'status':
