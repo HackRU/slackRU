@@ -181,7 +181,7 @@ def messageHackersToTryAgain(id_:int):
 def schedulequeueScan():
     print ("test")
     if queoftimes.qsize() > 0:
-        ep = queftimes.get()
+        ep = queoftimes.get()
         print(ep)
         with app.app_context():
             quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
