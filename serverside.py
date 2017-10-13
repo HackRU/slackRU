@@ -184,9 +184,9 @@ def schedulequeueScan():
         ep = queoftimes.get()
         print(ep)
         with app.app_context():
-            quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
+            quest = query_db("SELECT * from activequestions WHERE timestamp = ?",[ep],one = True)
             currentepoch = int(time.time()) 
-            if ((currentepoch - quest['epoch']) > 5):
+            if ((currentepoch - quest['timestamp']) > 5):
 
                 messageHackersToTryAgain(quest['id'])
     threading.Timer(5,schedulequeueScan).start()
