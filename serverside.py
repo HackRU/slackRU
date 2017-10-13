@@ -6,13 +6,15 @@ from twilio.rest import Client
 import time
 import sched
 import json
+import queue 
+import threading
 app = Flask(__name__)
 dbpath = config.dbpath
 ph = config.twilioph
 qid = 0
 questionstruct = {}
 shed_ = sched.scheduler(time.time, time.sleep)
-
+queoftimes = queue.Queue()
 #setup twilio with sid and authid
 client = Client(config.sid, config.authid)
 def get_db():
@@ -79,7 +81,7 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",[0,username,userid,epoch,li,li2,None]) 
     get_db().commit()
     q_test = query_db("SELECT last_insert_rowid()",one = True)
-
+    queoftimes.put(epoch,True)
 
     qid = q_test['last_insert_rowid()']
     for mentor in mentorlist:
@@ -102,6 +104,7 @@ def makeRequest():
         if splitBody[0] == 'accept':
             #grab the id and check
             id_ = query_db("SELECT id,answered,peoplewhoans,userid from activequestions WHERE id=?",[int(splitBody[1])],one = True)
+            
             print("The ID Is" + str(id_))
             id_chec = id_['id']
             people = json.loads(id_['peoplewhoans'])
@@ -152,6 +155,8 @@ def makeRequest():
         
 
     return "done"
+
+
 def messageHackersToTryAgain(id_:int):
     """
         When all mentors respond No, it is been 10 minutes and no mentor has accepted
@@ -171,7 +176,18 @@ def messageHackersToTryAgain(id_:int):
                 sendMessage(i['phone'],"Hi, To Ensure the smoothness of the hackathon, please respond to all requests with either accept or decline")
 
 
-     
+def scanqueueforslackers():
+    if not queoftimes.empty():
+        ep = queoftimes.get(True)
+        quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
+        messageHackersToTryAgain(ep['id'])
+
+def schedulequeueScan():
+    threading.Timer(180.0,scanqueueforslackers).start()
+
+schedulequeueScan()
+    
+
 
             
 def sendMessage(to:str,message:str) -> None:
