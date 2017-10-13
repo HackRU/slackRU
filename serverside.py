@@ -14,7 +14,7 @@ ph = config.twilioph
 qid = 0
 questionstruct = {}
 shed_ = sched.scheduler(time.time, time.sleep)
-queoftimes = []
+queoftimes = queue.Queue()
 #setup twilio with sid and authid
 client = Client(config.sid, config.authid)
 def get_db():
@@ -81,7 +81,7 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",[0,username,userid,epoch,li,li2,None]) 
     get_db().commit()
     q_test = query_db("SELECT last_insert_rowid()",one = True)
-    queoftimes.append(epoch)
+    queoftimes.put(epoch)
 
     qid = q_test['last_insert_rowid()']
     for mentor in mentorlist:
@@ -164,7 +164,7 @@ def messageHackersToTryAgain(id_:int):
     """
     print(id_)
     #select from the databse
-    question = query_db("SELECT * from activequestions WHERE id=?",[id_],one = True)
+    question = g.query_db("SELECT * from activequestions WHERE id=?",[id_],one = True)
     if question['answered'] == 0:
         util.message(question['userid'],"All mentors are busy, please try again later in 10 or 15 min")
         #call out mentors who ignored
@@ -180,14 +180,15 @@ def messageHackersToTryAgain(id_:int):
 
 def schedulequeueScan():
     print ("test")
-    for ep in queoftimes:
+    if queftimes.qsize() > 0:
+        ep = queftimes.get()
         print(ep)
-        quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
-        currentepoch = int(time.time()) 
-        if ((currentepoch - quest['epoch']) > 5):
+        with app.app_context():
+            quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
+            currentepoch = int(time.time()) 
+            if ((currentepoch - quest['epoch']) > 5):
 
-            queoftimes.remove(ep)
-            messageHackersToTryAgain(quest['id'])
+                messageHackersToTryAgain(quest['id'])
     threading.Timer(5,schedulequeueScan).start()
 
 schedulequeueScan()
