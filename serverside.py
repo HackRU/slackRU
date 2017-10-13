@@ -14,7 +14,7 @@ ph = config.twilioph
 qid = 0
 questionstruct = {}
 shed_ = sched.scheduler(time.time, time.sleep)
-queoftimes = queue.Queue()
+queoftimes = []
 #setup twilio with sid and authid
 client = Client(config.sid, config.authid)
 def get_db():
@@ -180,13 +180,13 @@ def messageHackersToTryAgain(id_:int):
 
 def schedulequeueScan():
     print ("test")
-    ep = queoftimes.get()
-    print(ep)
+    for ep in queoftimes:
+        print(ep)
     #quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
-    currentepoch = int(time.time()) 
-    if ((currentepoch) >= 5): 
-        messageHackersToTryAgain(ep['id'])
-    threading.Timer(5,schedulequeueScan).start()
+        currentepoch = int(time.time()) 
+        if ((currentepoch) >= 5): 
+            messageHackersToTryAgain(ep['id'])
+        threading.Timer(5,schedulequeueScan).start()
 
 schedulequeueScan()
     
