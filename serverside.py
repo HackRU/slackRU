@@ -138,10 +138,10 @@ def makeRequest():
             brokeFunctions = False
             for i in phones:
                 phlist.append(i['phone'])
-            print (phlist)
-            for j in peoplewhoans:
+
+            for j in phlist:
                 print (j)
-                if j not in phlist:
+                if j not in peoplewhoans:
                     brokeFunctions = True
                     break
             if brokeFunctions == False and ans_['answered'] == 0:
