@@ -176,7 +176,6 @@ def messageHackersToTryAgain(id_:int):
                 sendMessage(i['phone'],"Hi, To Ensure the smoothness of the hackathon, please respond to all requests with either accept or decline")
 
 
-def scanqueueforslackers():
     
 
 def schedulequeueScan():
