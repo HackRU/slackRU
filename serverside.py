@@ -164,7 +164,7 @@ def messageHackersToTryAgain(id_:int):
     """
     print(id_)
     #select from the databse
-    question = g.query_db("SELECT * from activequestions WHERE id=?",[id_],one = True)
+    question = query_db("SELECT * from activequestions WHERE id=?",[id_],one = True)
     if question['answered'] == 0:
         util.message(question['userid'],"All mentors are busy, please try again later in 10 or 15 min")
         #call out mentors who ignored
@@ -187,8 +187,9 @@ def schedulequeueScan():
             quest = query_db("SELECT * from activequestions WHERE timestamp = ?",[ep],one = True)
             currentepoch = int(time.time()) 
             if ((currentepoch - quest['timestamp']) > 5):
-
                 messageHackersToTryAgain(quest['id'])
+            else:
+                queoftimes.put(quest['timestamp'])
     threading.Timer(5,schedulequeueScan).start()
 
 schedulequeueScan()
