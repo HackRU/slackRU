@@ -184,7 +184,7 @@ def schedulequeueScan():
         print(ep)
         quest = query_db("SELECT * from activequestions WHERE epoch = ?",[ep],one = True)
         currentepoch = int(time.time()) 
-        if ((currentepoch - quest['epoch'] > 5):
+        if ((currentepoch - quest['epoch']) > 5):
 
             queoftimes.remove(ep)
             messageHackersToTryAgain(quest['id'])
