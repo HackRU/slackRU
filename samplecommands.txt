@@ -1,3 +1,0 @@
-IDEABOARD
-LONG FORM @letsmake a/an [project-type] called "[project-name]" (that can|is able to|will) [what it does]. (I know [tools] ((and (I am looking for people who know|looking for|need help with) [skills]).|If anyone is interested, pm me.)
-SHORT FORM @letsmake --title: [project-name] --type: [project-type] --desc: [project-description] --know: [skills-known] --need: [skills-needed]
