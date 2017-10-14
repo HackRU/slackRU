@@ -36,7 +36,6 @@ slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 BOTNAME = "U7ET9GFD1"
-CHANNEL = "#general"
 AT_BOT = "<@" + BOTNAME + ">"
 
 SQL_CONN = sqlite3.connect('projects.db')
@@ -44,12 +43,13 @@ PROJECT_PRIMARY_KEY_SIZE = 5
 PROJECT_TABLE_NAME = "projects"
 
 class Message:
-    def __init__(self, botname='', userid='', username='', text='', timestamp='', _type=''):
+    def __init__(self, botname='', userid='', username='', text='', timestamp='', _type='', channel=''):
         self.botname = botname
         self.userid = userid
         self.username = username
         self.text = text
         self.timestamp = timestamp
+        self.channel = channel
         self.type = _type
 
 class Project:
@@ -218,12 +218,13 @@ def parse_slack_output(slack_rtm_output):
     output_list = filter(lambda out: 'type' in out and out['type'] == MESSAGE_TYPE and AT_BOT in out['text'],
                          slack_rtm_output)
     for out in output_list:
+        print(out)
         userid = out['user']
         username = search_userid_or_update(userid)
         text = out['text']
         timestamp = out['ts']
         _type = out['type']
-        messages.append(Message(BOTNAME, userid, username, text, timestamp, _type))
+        messages.append(Message(BOTNAME, userid, username, text, timestamp, _type, out['channel']))
     return messages
 
 class SQL(Enum):
@@ -235,9 +236,9 @@ class SQL(Enum):
 def send_message(msg, user):
     slack_client.api_call(
         "chat.postEphemeral",
-        channel=CHANNEL,
+        channel=user.channel,
         text=msg,
-        user=user)
+        user=user.userid)
 
 def send_projects_to_user(projects, user):
     for project in projects:
@@ -402,14 +403,14 @@ def modify_status(msg):
 def central_dispatch(msg):
     cmd = re.split('\s+', msg.text.strip())[1]
     if cmd == 'list-projects':
-        send_projects_to_user(list_projects(msg), msg.userid)
+        send_projects_to_user(list_projects(msg), msg)
     elif cmd == 'status':
         modify_status(msg)
     elif cmd == 'help':
-        send_message(ideaboard_man, msg.userid)
+        send_message(ideaboard_man, msg)
     else:
         resp = process_posting(msg)
-        send_message(resp[1], msg.userid)
+        send_message(resp[1], msg)
 
 #sends message to a channel
 def run():
