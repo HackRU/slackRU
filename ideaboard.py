@@ -166,7 +166,7 @@ def get_project_from_timerange(stime, etime):
 def insert_project(proj):
     keys, values = [], []
     for k,v in proj.__dict__.items():
-        if not v:
+        if v == None:
             continue
         keys.append(k)
         if isinstance(v, str):
@@ -241,7 +241,13 @@ def send_message(msg, user):
         user=user.userid)
 
 def send_projects_to_user(projects, user):
+    print("SENDING PROJECTS", projects)
     for project in projects:
+        status_str = 'Open'
+        if project['status'] == 1:
+            status_str = 'Fulfilled'
+        elif project['status'] == 2:
+            status_str = 'Closed'
         data = '''\t----------------------------------------------------------------------------------------
         Project Name: %s
         Project Description: %s
@@ -249,10 +255,12 @@ def send_projects_to_user(projects, user):
         Seeking Team Size: %d
         Skills Needed: %s
         Skills Team Has: %s
+        Status: %s
         -----------------------------------------------------------------------------------
         ''' % ( project['project_name'], project['project_desc'], project['project_desc'],
                 project['team_size'], project['skills_wanted'].replace('|', ', ') if project['skills_wanted'] else '',
-                project['skills_have'].replace('|', ', ') if project['skills_have'] else '' )
+                project['skills_have'].replace('|', ', ') if project['skills_have'] else '' ,
+                status_str)
         send_message(data, user)
 
 #######################################################################################
@@ -301,6 +309,7 @@ def process_posting(msg):
     project.id = generate_project_id()
     project.authorid = msg.userid
     project.author = msg.username
+    print("PROJECT", project.__dict__)
     insert_project(project)
     return (200, 'Project submission successful!')
 
@@ -378,6 +387,7 @@ def list_projects(msg):
     sql_query = 'SELECT %s FROM %s' % (','.join(KEYS), PROJECT_TABLE_NAME)
     if len(criteria) > 0:
         sql_query += ' WHERE %s %s' % (filter_query, 'ORDER BY %s %s' % (ordering, invert_order) if ordering else '')
+    print(sql_query)
     return gather(execute(sql_query).fetchall())
 
 def modify_status(msg):
