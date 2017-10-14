@@ -256,7 +256,7 @@ def send_projects_to_user(projects, user):
         Skills Team Has: %s
         Status: %s
         -----------------------------------------------------------------------------------
-        ''' % ( project['project_name'], project['project_desc'], project['project_desc'],
+        ''' % ( project['project_name'], project['project_desc'], project['author'],
                 project['team_size'], project['skills_wanted'].replace('|', ', ') if project['skills_wanted'] else '',
                 project['skills_have'].replace('|', ', ') if project['skills_have'] else '' ,
                 status_str)
