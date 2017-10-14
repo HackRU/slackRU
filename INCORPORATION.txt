@@ -1,0 +1,5 @@
+How to Incorporate
+
+1. Copy all ideaboard.py and modules folder to project root
+2. cp config.py.sample config.py and Configure as needed
+3. Execute ideaboard.run()

@@ -412,7 +412,7 @@ def central_dispatch(msg):
         send_message(resp[1], msg.userid)
 
 #sends message to a channel
-if __name__ == "__main__":
+def run():
     create_tables()
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
@@ -424,3 +424,6 @@ if __name__ == "__main__":
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
+
+if __name__ == '__main__':
+    run()
