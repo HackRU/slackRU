@@ -1,9 +1,9 @@
-letsmake_man = """
+ideaboard_man = """
 Letsmake - The Projects Board
-@letsmake -pn [project-name] -pd [project-description] -sh [skills-possessed] -sw [skills-wanted] -sz [team-size]
+@ideaboard -pn [project-name] -pd [project-description] -sh [skills-possessed] -sw [skills-wanted] -sz [team-size]
     Posts a request for a team
 
-@letsmake list-projects
+@ideaboard list-projects
     Lists all open projects
 
     -a List all projects including those not open
@@ -12,7 +12,7 @@ Letsmake - The Projects Board
         sh:[poster has these skills] sw:[poster wants these skills] sl:[Find projects seeking x or fewer people]
         sg:[find projects seeking x or more people] -s (a|t|u|o)i Sorts list of projects alphabetically (a), timestamp (t), username (u), open status (o), invert order (i)
 
-@letsmake status ([project-id]|all) [status]
+@ideaboard status ([project-id]|all) [status]
     Change project status
     all - applies status change to all projects
     STATUSES
@@ -289,9 +289,9 @@ def process_posting(msg):
     if_in_else = lambda k, d, dv: d[k] if k in d else dv # k: key, d: dictionary, dv: default value
     # inflating project
     if 'pn' not in info:
-        return (400, 'Please specify a project name. Use @letsmake help to see usage.')
+        return (400, 'Please specify a project name. Use @ideaboard help to see usage.')
     if 'pd' not in info:
-        return (400, 'Please specify a project description. Use @letsmake help to see usage.')
+        return (400, 'Please specify a project description. Use @ideaboard help to see usage.')
     project.project_name = ' '.join(info['pn']) if 'pn' in info else project.project_name
     project.project_desc = ' '.join(info['pd']).lower() if 'pd' in info else project.project_desc
     project.skills_have = '|'.join(info['sh']).lower() if 'sh' in info else None
@@ -305,7 +305,7 @@ def process_posting(msg):
 
 # Lists projects according to user specification
 def list_projects(msg):
-    posting = [w.strip() for w in re.split('\s+', msg.text)][2:] # elimintes '@letsmake list-projects' string
+    posting = [w.strip() for w in re.split('\s+', msg.text)][2:] # elimintes '@ideaboard list-projects' string
     arg_pattern = re.compile('^-(a|m|q|s)$')
     info = {}
     criteria = []
@@ -380,7 +380,7 @@ def list_projects(msg):
     return gather(execute(sql_query).fetchall())
 
 def modify_status(msg):
-    posting = [w.strip() for w in re.split('\s+', msg.text) if w][2:] # eliminates "@letsmake status" string
+    posting = [w.strip() for w in re.split('\s+', msg.text) if w][2:] # eliminates "@ideaboard status" string
     status_str = posting[-1].lower()
     status = 0
     if status_str == 'fulfilled':
@@ -406,7 +406,7 @@ def central_dispatch(msg):
     elif cmd == 'status':
         modify_status(msg)
     elif cmd == 'help':
-        send_message(letsmake_man, msg.userid)
+        send_message(ideaboard_man, msg.userid)
     else:
         resp = process_posting(msg)
         send_message(resp[1], msg.userid)
