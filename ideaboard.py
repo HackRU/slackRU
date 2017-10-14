@@ -25,22 +25,10 @@ NOTE: When entering skills, do not use spaces. If you need to, use underscores (
 
 from slackclient import SlackClient
 from enum import Enum
-from oauth2client.service_account import ServiceAccountCredentials
-from sqlalchemy.sql import select
-from sqlalchemy import create_engine
-from random import randint
 import random as rnd
-import os
 import config
 import time
 import sqlite3
-import httplib2
-from apiclient.discovery import build
-import datetime
-import dateutil.parser
-import pygal
-from modules.tools import util
-import requests
 import re
 from modules.tools import tools 
 
