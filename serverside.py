@@ -67,7 +67,8 @@ def textMentorsQuestion(comment:str,username:str,userid:str) -> None:
     for keywordlist in q:
 
         li  = keywordlist['keywords'].split(',')
-        for word in comment:
+        
+        for word in comment.split():
             if word in li:
                 mentorlist.append(keywordlist)
                 break
