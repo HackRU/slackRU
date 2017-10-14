@@ -225,7 +225,6 @@ def parse_slack_output(slack_rtm_output):
     output_list = filter(lambda out: 'type' in out and out['type'] == MESSAGE_TYPE and AT_BOT in out['text'],
                          slack_rtm_output)
     for out in output_list:
-        print(out)
         userid = out['user']
         username = search_userid_or_update(userid)
         text = out['text']
@@ -248,7 +247,6 @@ def send_message(msg, user):
         user=user.userid)
 
 def send_projects_to_user(projects, user):
-    print("SENDING PROJECTS", projects)
     for project in projects:
         status_str = 'Open'
         if project['status'] == 1: status_str = 'Fulfilled'
@@ -307,15 +305,16 @@ def process_posting(msg):
         return (400, 'Please specify a project name. Use @ideaboard help to see usage.')
     if 'pd' not in info:
         return (400, 'Please specify a project description. Use @ideaboard help to see usage.')
-    project.project_name = ' '.join(info['pn']) if 'pn' in info else project.project_name
-    project.project_desc = ' '.join(info['pd']).lower() if 'pd' in info else project.project_desc
-    project.skills_have = '|'.join(info['sh']).lower() if 'sh' in info else None
-    project.skills_wanted = '|'.join(info['sw']).lower() if 'sw' in info else None
-    project.team_size = int(info['sz'][0]) if 'sz' in info else 3
+    project.project_name = ' '.join(info['pn']) if 'pn' in info and len(info['pn']) > 0 else None
+    project.project_desc = ' '.join(info['pd']).lower() if 'pd' in info and len(info['pd']) > 0 else None
+    project.skills_have = '|'.join(info['sh']).lower() if 'sh' in info and len(info['sh']) > 0 else None
+    project.skills_wanted = '|'.join(info['sw']).lower() if 'sw' in info and len(info['sw']) > 0 else None
+    project.team_size = int(info['sz'][0]) if 'sz' in info and len(info['sz']) > 0 else 3
     project.id = generate_project_id()
     project.authorid = msg.userid
     project.author = msg.username
-    print("PROJECT", project.__dict__)
+    if not project.project_name or not project.project_desc:
+        return (400, "Please specify project name and description. Use @ideaboard help to see usage.")
     insert_project(project)
     return (200, 'Project submission successful!')
 
@@ -393,7 +392,6 @@ def list_projects(msg):
     sql_query = 'SELECT %s FROM %s' % (','.join(KEYS), PROJECT_TABLE_NAME)
     if len(criteria) > 0:
         sql_query += ' WHERE %s %s' % (filter_query, 'ORDER BY %s %s' % (ordering, invert_order) if ordering else '')
-    print(sql_query)
     return gather(execute(sql_query).fetchall())
 
 def modify_status(msg):
@@ -418,7 +416,6 @@ def modify_status(msg):
 def log_bug_report(msg):
     msg.text = ' '.join(msg.text.split(' ')[2:])
     sql_query = 'INSERT INTO bugreports (username, timestamp, report) values ("%s", %s, "%s")' % (msg.username, msg.timestamp, msg.text)
-    print("QUERY", sql_query)
     execute(sql_query)
     return ("Report Submitted! Thank you!")
 
