@@ -10,8 +10,7 @@ Ideaboard
     -m List all projects posted by current user
     -q List all projects that match query (au:[author-name], tu:[posted x hrs prior] pn:[project name contains these words]
         sh:[poster has these skills] sw:[poster wants these skills] sl:[Find projects seeking x or fewer people]
-        sg:[find projects seeking x or more people]
-    -s (a|t|u|o)i Sorts list of projects alphabetically (a), timestamp (t), username (u), open status (o), invert order (i)
+        sg:[find projects seeking x or more people] -s (a|t|u|o)i Sorts list of projects alphabetically (a), timestamp (t), username (u), open status (o), invert order (i)
 
 @letsmake status ([project-id]|all) [status]
     Change project status
@@ -48,25 +47,25 @@ from modules.tools import tools
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
-BOTNAME = "letsmake"
-AT_BOT = "@" + BOTNAME
+BOTNAME = "U7ET9GFD1"
+AT_BOT = "<@" + BOTNAME + ">"
 
 SQL_CONN = sqlite3.connect('projects.db')
 PROJECT_PRIMARY_KEY_SIZE = 5
 PROJECT_TABLE_NAME = "projects"
 
 class Message:
-    def __init__(self, botname='', username='', channel='', text='', timestamp='', _type=''):
+    def __init__(self, botname='', userid='', username='', text='', timestamp='', _type=''):
         self.botname = botname
+        self.userid = userid
         self.username = username
-        self.channel = channel
         self.text = text
         self.timestamp = timestamp
         self.type = _type
 
 class Project:
-    def __init__(self, pid='', pn='', pd='', sh=[], sw=[], sz=3, author='',
-                        timestamp=int(round(time.time() * 1000)), status=1):
+    def __init__(self, pid='', pn='', pd='', sh=[], sw=[], sz=3, author='', authorid='',
+                        timestamp=int(round(time.time() * 1000)), status=0):
         self.id = pid
         self.project_name = pn
         self.project_desc = pd
@@ -74,41 +73,9 @@ class Project:
         self.skills_wanted = sw
         self.team_size = sz
         self.author = author
+        self.authorid = authorid
         self.timestamp = timestamp
         self.status = 1
-
-#######################################################################################
-#######################################################################################
-#######################################################################################
-                                    # SLACK #
-#######################################################################################
-#######################################################################################
-#######################################################################################
-
-MESSAGE_TYPE = 'desktop_notification'
-
-def parse_slack_output(slack_rtm_output):
-    """
-        The Slack Real Time Messaging API is an events firehose.
-        this parsing function returns None unless a message is
-        directed at the Bot, based on its ID.
-    """
-    messages = []
-    output_list = filter(lambda out: 'type' in out and out['type'] == MESSAGE_TYPE and AT_BOT in out['content'],
-                         slack_rtm_output)
-    for out in output_list:
-        channel = out['subtitle']
-        username, text = out['content'].split(':', 1)
-        timestamp = out['event_ts']
-        _type = out['type']
-        messages.append(Message(BOTNAME, username, channel, text, timestamp, _type))
-    return messages
-
-class SQL(Enum):
-    EQL = 0
-    IS = 1
-    LIKE = 2
-    BETWEEN = 3
 
 #######################################################################################
 #######################################################################################
@@ -122,6 +89,7 @@ KEYS = [key for key in Project().__dict__]
 print(KEYS)
 def execute(query):
     conn = SQL_CONN.cursor()
+    print(query)
     conn.execute(query)
     SQL_CONN.commit()
     return conn
@@ -133,11 +101,23 @@ def gather(data):
     return tuples
 
 def create_tables():
+    # creating users table
+    table_create = 'CREATE TABLE IF NOT EXISTS users('
+    fields = {
+        'id': 'CHAR(9)',
+        'username': 'VARCHAR(100)'
+    }
+    table_create += ','.join(['%s %s' % (k, t) for k, t in fields.items()]) + ',PRIMARY KEY (id));'
+    print("CREATING TABLE users")
+    execute(table_create)
+    
+    # creating projects table
     table_create = "CREATE TABLE IF NOT EXISTS projects("
     fields = {
         'id': 'CHAR(5)',
         'project_name': 'VARCHAR(500)',
         'project_desc': 'VARCHAR(3000)',
+        'authorid': 'CHAR(9) NOT NULL',
         'author': 'VARCHAR(300)',
         'skills_have': 'VARCHAR(1000)',
         'skills_wanted': 'VARCHAR(1000)',
@@ -145,10 +125,8 @@ def create_tables():
         'timestamp': 'FLOAT',
         'status': 'INTEGER'
     }
-
-    table_create += ','.join(['%s %s' % (k, t) for k, t in fields.items()]) + ',PRIMARY KEY (id));'
-    print("EXECUTING", table_create)
-    print()
+    table_create += ','.join(['%s %s' % (k, t) for k, t in fields.items()]) + ',PRIMARY KEY (id), FOREIGN KEY (authorid) REFERENCES users(id));'
+    print("CREATING TABLE projects")
     execute(table_create)
 
 #### DATABASE QUERY ####
@@ -218,6 +196,58 @@ def generate_project_id():
         if not get_project_by_id(_id):
             return _id
 
+def search_userid_or_update(uid):
+    data = execute('SELECT username FROM users WHERE id = "%s"' % uid).fetchone()
+    if not data:
+        members = slack_client.api_call('users.list')['members']
+        members_list = []
+        for member in members:
+            members_list.append((member['id'], member['name']))
+            if member['id'] == uid:
+                data = member['name']
+        conn = SQL_CONN.cursor()
+        print(members_list)
+        conn.executemany("INSERT OR REPLACE INTO users (id, username) VALUES (?, ?);", members_list)
+        SQL_CONN.commit()
+    print(data[0])
+    return data
+
+#######################################################################################
+#######################################################################################
+#######################################################################################
+                                    # SLACK #
+#######################################################################################
+#######################################################################################
+#######################################################################################
+
+MESSAGE_TYPE = 'message'
+
+def parse_slack_output(slack_rtm_output):
+    """
+        The Slack Real Time Messaging API is an events firehose.
+        this parsing function returns None unless a message is
+        directed at the Bot, based on its ID.
+    """
+    messages = []
+    output_list = filter(lambda out: 'type' in out and out['type'] == MESSAGE_TYPE and AT_BOT in out['text'],
+                         slack_rtm_output)
+    for out in output_list:
+        print(out)
+        userid = out['user']
+        username = search_userid_or_update(userid)
+        text = out['text']
+        timestamp = out['ts']
+        _type = out['type']
+        messages.append(Message(BOTNAME, userid, username, text, timestamp, _type))
+    print(messages)
+    return messages
+
+class SQL(Enum):
+    EQL = 0
+    IS = 1
+    LIKE = 2
+    BETWEEN = 3
+
 #######################################################################################
 #######################################################################################
 #######################################################################################
@@ -262,6 +292,7 @@ def process_posting(msg):
     project.skills_wanted = '|'.join(info['sw']) if 'sw' in info else ''
     project.team_size = int(info['sz'][0]) if 'sz' in info else 3
     project.id = generate_project_id()
+    project.authorid = msg.userid
     project.author = msg.username
     insert_project(project)
 
@@ -288,7 +319,7 @@ def list_projects(msg):
     if not 'a' in info:
         criteria.append('status = 0')
     if 'm' in info:
-        criteria.append('author = "%s"' % msg.username)
+        criteria.append('authorid = "%s"' % msg.userid)
     if 's' in info:
         order_type = info['s'][0][0]
         if order_type == 'o':
@@ -303,10 +334,9 @@ def list_projects(msg):
             invert_order = 'DESC'
     if 'q' in info:
         qs = info['q']
-        print("QS", qs)
         search_keys = {}
         curr_key = None
-        q_pattern = re.compile('^[a-z]{2}:.+')
+        q_pattern = re.compile('[a-z]{2}:.+')
         for q in qs:
             if q_pattern.match(q):
                 arg = q[:2] # xx:yyyy, only gets xx
@@ -316,34 +346,55 @@ def list_projects(msg):
                 if curr_key not in search_keys:
                     search_keys[curr_key] = []
                 search_keys[curr_key].append(rem)
+                print(curr_key, arg)
             elif curr_key != None:
-                search_keys[curr_key].append(w)
+                search_keys[curr_key].append(q)
         for k, v in search_keys.items():
             if k == 'au':
-                criteria.append('author LIKE %%%s%%' % '%'.join(v))
+                criteria.append('author LIKE "%%%s%%"' % '%'.join(v))
             elif k == 'tu':
                 deltaT = 1000 * 3600 * int(v[0])
                 target = int(time.time() * 1000) - deltaT
-                criteria.append('timestamp >= %d' % deltaT)
+                print(deltaT, target)
+                criteria.append('timestamp >= %d' % target)
             elif k == 'pn':
-                criteria.append('project_name LIKE %%%s%%' % '%'.join(v))
+                criteria.append('project_name LIKE "%%%s%%"' % '%'.join(v))
             elif k == 'sh':
-                criteria.append('skills_have LIKE %%%s%%' % '%'.join(v))
+                criteria.append('skills_have LIKE "%%%s%%"' % '%'.join(v))
             elif k == 'sw':
-                criteria.append('skills_wnated LIKE %%%s%%' % '%'.join(v))
+                criteria.append('skills_wanted LIKE "%%%s%%"' % '%'.join(v))
             elif k == 'sl':
                 cnt = int(v[0])
-                critiera.append('team_size <= %d' % cnt)
+                criteria.append('team_size <= %d' % cnt)
             elif k == 'sg':
+                cnt = int(v[0])
                 criteria.append('team_size >= %d' % cnt)
     filter_query = ' AND '.join(criteria)
-    sql_query = 'SELECT %s FROM %s' % (','.join(KEYS), PROJECT_TABLE_NAME)   
+    sql_query = 'SELECT %s FROM %s' % (','.join(KEYS), PROJECT_TABLE_NAME)
     if len(criteria) > 0:
         sql_query += ' WHERE %s %s' % (filter_query, 'ORDER BY %s %s' % (ordering, invert_order) if ordering else '')
-    print(sql_query)
+    return gather(execute(sql_query).fetchall())
 
 def show_project_statuses(msg):
-    pass
+    posting = [w.strip() for w in re.split('\s+', msg.text) if w][2:] # eliminates "@letsmake status" string
+    print(posting)
+    status_str = posting[-1]
+    status = 0
+    if status_str == 'fulfilled':
+        status = 1
+    elif status_str == 'closed':
+        status = 2
+    elif status_str != 'open':
+        return
+    projects = posting[:len(posting)-1]
+    sql_query = ''
+    if 'all' in projects:
+        sql_query = 'UPDATE %s SET status = %d WHERE authorid = %s' % (PROJECT_TABLE_NAME, status, msg.userid)
+    else:
+        update_constraint = 'pid IN (%s)' % ','.join(['"%s"' % _id for _id in projects])
+        sql_query = 'UPDATE %s SET status = %d WHERE authorid = "%s" AND %s' % (PROJECT_TABLE_NAME, status, msg.userid, update_constraint)
+    print(sql_query)
+
 
 # Handles commands given by the user
 def central_dispatch(msg):
@@ -360,12 +411,12 @@ def central_dispatch(msg):
 if __name__ == "__main__":
     create_tables()
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
-    print(get_all_projects())
     if slack_client.rtm_connect():
         print("StarterBot connected and running!")
         while True:
             messages = parse_slack_output(slack_client.rtm_read())
             for msg in messages:
                 central_dispatch(msg)
+            time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
