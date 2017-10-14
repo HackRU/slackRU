@@ -34,8 +34,7 @@ from modules.tools import tools
 
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
-BOTID = config.botID
-BOTNAME = "U7ET9GFD1"
+BOTNAME = config.botID
 AT_BOT = "<@" + BOTNAME + ">"
 
 SQL_CONN = sqlite3.connect('projects.db')
