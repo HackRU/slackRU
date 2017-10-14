@@ -20,6 +20,8 @@ Letsmake - The Projects Board
     fulfilled - Project has enough hands (1)
     noneed - Decision to not proceed with project (2)
 
+@ideaboard bug [report]
+    Submit a bug report!
 NOTE: When entering skills, do not use spaces. If you need to, use underscores (e.g. Python3 OR Python_3)
 """
 
@@ -114,6 +116,15 @@ def create_tables():
     table_create += ','.join(['%s %s' % (k, t) for k, t in fields.items()]) + ',PRIMARY KEY (id), FOREIGN KEY (authorid) REFERENCES users(id));'
     print("CREATING TABLE projects")
     execute(table_create)
+    table_create = "CREATE TABLE IF NOT EXISTS bugreports("
+    fields = {
+        'username': 'VARCHAR(200)',
+        "report": "VARCHAR(3000)",
+        "timestamp": "FLOAT"
+    }
+    table_create += ','.join(['%s %s' % (k, t) for k, t in fields.items()]) + ");"
+    print("CREATING TABLE bugreports")
+    execute(table_create)
 
 #### DATABASE QUERY ####
 def query_projects(queries, keys=['*']):
@@ -196,10 +207,7 @@ def search_userid_or_update(uid):
         conn.executemany("INSERT OR REPLACE INTO users (id, username) VALUES (?, ?);", members_list)
         SQL_CONN.commit()
     return data if isinstance(data, str) else data[0]
-
-#######################################################################################
-#######################################################################################
-#######################################################################################
+####################################################################################### ####################################################################################### #######################################################################################
                                     # SLACK #
 #######################################################################################
 #######################################################################################
@@ -243,8 +251,7 @@ def send_projects_to_user(projects, user):
     print("SENDING PROJECTS", projects)
     for project in projects:
         status_str = 'Open'
-        if project['status'] == 1:
-            status_str = 'Fulfilled'
+        if project['status'] == 1: status_str = 'Fulfilled'
         elif project['status'] == 2:
             status_str = 'Closed'
         data = '''\t----------------------------------------------------------------------------------------
@@ -408,15 +415,32 @@ def modify_status(msg):
         sql_query = 'UPDATE %s SET status = %d WHERE authorid = "%s" AND %s' % (PROJECT_TABLE_NAME, status.lower(), msg.userid, update_constraint)
     execute(sql_query)
 
+def log_bug_report(msg):
+    msg.text = ' '.join(msg.text.split(' ')[2:])
+    sql_query = 'INSERT INTO bugreports (username, timestamp, report) values ("%s", %s, "%s")' % (msg.username, msg.timestamp, msg.text)
+    print("QUERY", sql_query)
+    execute(sql_query)
+    return ("Report Submitted! Thank you!")
+
+def show_reports(msgs):
+    data = execute('SELECT * FROM bugreports;').fetchall()
+    bugs = []
+    for d in data:
+        bugs.append("Submitter: %s | Report: %s | Timestamp: %s" % (d['username'], d['report'], d['timestamp']))
+    bugs_str = '\n'.join(bugs)
+    send_message(bug_str, msg)
+
 # Handles commands given by the user
 def central_dispatch(msg):
     cmd = re.split('\s+', msg.text.strip())[1]
-    if cmd == 'list-projects':
+    if cmd == 'list-projects' or cmd == 'lp':
         send_projects_to_user(list_projects(msg), msg)
     elif cmd == 'status':
         modify_status(msg)
     elif cmd == 'help':
         send_message(ideaboard_man, msg)
+    elif cmd == 'bug':
+        send_message(log_bug_report(msg), msg)
     else:
         resp = process_posting(msg)
         send_message(resp[1], msg)
