@@ -2,4 +2,4 @@ slackru
 config.py
 __pycache__
 .pyc
-.db
+*.db

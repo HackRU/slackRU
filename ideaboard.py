@@ -1,5 +1,5 @@
-"""
-Ideaboard
+letsmake_man = """
+Letsmake - The Projects Board
 @letsmake -pn [project-name] -pd [project-description] -sh [skills-possessed] -sw [skills-wanted] -sz [team-size]
     Posts a request for a team
 
@@ -48,6 +48,7 @@ slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 BOTNAME = "U7ET9GFD1"
+CHANNEL = "#general"
 AT_BOT = "<@" + BOTNAME + ">"
 
 SQL_CONN = sqlite3.connect('projects.db')
@@ -75,7 +76,7 @@ class Project:
         self.author = author
         self.authorid = authorid
         self.timestamp = timestamp
-        self.status = 1
+        self.status = status
 
 #######################################################################################
 #######################################################################################
@@ -86,10 +87,8 @@ class Project:
 #######################################################################################
 
 KEYS = [key for key in Project().__dict__]
-print(KEYS)
 def execute(query):
     conn = SQL_CONN.cursor()
-    print(query)
     conn.execute(query)
     SQL_CONN.commit()
     return conn
@@ -148,7 +147,6 @@ def query_projects(queries, keys=['*']):
     query_str = ' AND '.join(query_params)
     keys = ','.join(KEYS)
     sql_query = 'SELECT %s FROM %s WHERE %s' % (keys, PROJECT_TABLE_NAME, query_str)
-    print(sql_query)
     conn.execute(sql_query)
     SQL_CONN.commit()
     return gather(conn.fetchall())
@@ -180,6 +178,8 @@ def get_project_from_timerange(stime, etime):
 def insert_project(proj):
     keys, values = [], []
     for k,v in proj.__dict__.items():
+        if not v:
+            continue
         keys.append(k)
         if isinstance(v, str):
             values.append('"%s"' % v)
@@ -192,7 +192,7 @@ def insert_project(proj):
 
 def generate_project_id():
     while True:
-        _id = ''.join([chr(ord('A') + rnd.randint(0, 25)) for x in range(PROJECT_PRIMARY_KEY_SIZE)])
+        _id = ''.join([chr(ord('a') + rnd.randint(0, 25)) for x in range(PROJECT_PRIMARY_KEY_SIZE)])
         if not get_project_by_id(_id):
             return _id
 
@@ -206,11 +206,9 @@ def search_userid_or_update(uid):
             if member['id'] == uid:
                 data = member['name']
         conn = SQL_CONN.cursor()
-        print(members_list)
         conn.executemany("INSERT OR REPLACE INTO users (id, username) VALUES (?, ?);", members_list)
         SQL_CONN.commit()
-    print(data[0])
-    return data
+    return data if isinstance(data, str) else data[0]
 
 #######################################################################################
 #######################################################################################
@@ -232,14 +230,12 @@ def parse_slack_output(slack_rtm_output):
     output_list = filter(lambda out: 'type' in out and out['type'] == MESSAGE_TYPE and AT_BOT in out['text'],
                          slack_rtm_output)
     for out in output_list:
-        print(out)
         userid = out['user']
         username = search_userid_or_update(userid)
         text = out['text']
         timestamp = out['ts']
         _type = out['type']
         messages.append(Message(BOTNAME, userid, username, text, timestamp, _type))
-    print(messages)
     return messages
 
 class SQL(Enum):
@@ -247,6 +243,28 @@ class SQL(Enum):
     IS = 1
     LIKE = 2
     BETWEEN = 3
+
+def send_message(msg, user):
+    slack_client.api_call(
+        "chat.postEphemeral",
+        channel=CHANNEL,
+        text=msg,
+        user=user)
+
+def send_projects_to_user(projects, user):
+    for project in projects:
+        data = '''\t----------------------------------------------------------------------------------------
+        Project Name: %s
+        Project Description: %s
+        Project Submitter: %s
+        Seeking Team Size: %d
+        Skills Needed: %s
+        Skills Team Has: %s
+        -----------------------------------------------------------------------------------
+        ''' % ( project['project_name'], project['project_desc'], project['project_desc'],
+                project['team_size'], project['skills_wanted'].replace('|', ', ') if project['skills_wanted'] else '',
+                project['skills_have'].replace('|', ', ') if project['skills_have'] else '' )
+        send_message(data, user)
 
 #######################################################################################
 #######################################################################################
@@ -287,14 +305,15 @@ def process_posting(msg):
     if 'pd' not in info:
         return (400, 'Please specify a project description. Use @letsmake help to see usage.')
     project.project_name = ' '.join(info['pn']) if 'pn' in info else project.project_name
-    project.project_desc = ' '.join(info['pd']) if 'pd' in info else project.project_desc
-    project.skills_have = '|'.join(info['sh']) if 'sh' in info else ''
-    project.skills_wanted = '|'.join(info['sw']) if 'sw' in info else ''
+    project.project_desc = ' '.join(info['pd']).lower() if 'pd' in info else project.project_desc
+    project.skills_have = '|'.join(info['sh']).lower() if 'sh' in info else None
+    project.skills_wanted = '|'.join(info['sw']).lower() if 'sw' in info else None
     project.team_size = int(info['sz'][0]) if 'sz' in info else 3
     project.id = generate_project_id()
     project.authorid = msg.userid
     project.author = msg.username
     insert_project(project)
+    return (200, 'Project submission successful!')
 
 # Lists projects according to user specification
 def list_projects(msg):
@@ -315,7 +334,6 @@ def list_projects(msg):
     # RESULT ORDERING
     ordering = None
     invert_order = 'ASC'
-    print("INFO", info)
     if not 'a' in info:
         criteria.append('status = 0')
     if 'm' in info:
@@ -346,23 +364,21 @@ def list_projects(msg):
                 if curr_key not in search_keys:
                     search_keys[curr_key] = []
                 search_keys[curr_key].append(rem)
-                print(curr_key, arg)
             elif curr_key != None:
                 search_keys[curr_key].append(q)
         for k, v in search_keys.items():
             if k == 'au':
-                criteria.append('author LIKE "%%%s%%"' % '%'.join(v))
+                criteria.append('author LIKE "%%%s%%"' % '%'.join(v.lower()))
             elif k == 'tu':
                 deltaT = 1000 * 3600 * int(v[0])
                 target = int(time.time() * 1000) - deltaT
-                print(deltaT, target)
                 criteria.append('timestamp >= %d' % target)
             elif k == 'pn':
                 criteria.append('project_name LIKE "%%%s%%"' % '%'.join(v))
             elif k == 'sh':
-                criteria.append('skills_have LIKE "%%%s%%"' % '%'.join(v))
+                criteria.append('skills_have LIKE "%%%s%%"' % '%'.join(v.lower()))
             elif k == 'sw':
-                criteria.append('skills_wanted LIKE "%%%s%%"' % '%'.join(v))
+                criteria.append('skills_wanted LIKE "%%%s%%"' % '%'.join(v.lower()))
             elif k == 'sl':
                 cnt = int(v[0])
                 criteria.append('team_size <= %d' % cnt)
@@ -375,10 +391,9 @@ def list_projects(msg):
         sql_query += ' WHERE %s %s' % (filter_query, 'ORDER BY %s %s' % (ordering, invert_order) if ordering else '')
     return gather(execute(sql_query).fetchall())
 
-def show_project_statuses(msg):
+def modify_status(msg):
     posting = [w.strip() for w in re.split('\s+', msg.text) if w][2:] # eliminates "@letsmake status" string
-    print(posting)
-    status_str = posting[-1]
+    status_str = posting[-1].lower()
     status = 0
     if status_str == 'fulfilled':
         status = 1
@@ -391,21 +406,22 @@ def show_project_statuses(msg):
     if 'all' in projects:
         sql_query = 'UPDATE %s SET status = %d WHERE authorid = %s' % (PROJECT_TABLE_NAME, status, msg.userid)
     else:
-        update_constraint = 'pid IN (%s)' % ','.join(['"%s"' % _id for _id in projects])
-        sql_query = 'UPDATE %s SET status = %d WHERE authorid = "%s" AND %s' % (PROJECT_TABLE_NAME, status, msg.userid, update_constraint)
-    print(sql_query)
-
+        update_constraint = 'id IN (%s)' % ','.join(['"%s"' % _id.lower() for _id in projects])
+        sql_query = 'UPDATE %s SET status = %d WHERE authorid = "%s" AND %s' % (PROJECT_TABLE_NAME, status.lower(), msg.userid, update_constraint)
+    execute(sql_query)
 
 # Handles commands given by the user
 def central_dispatch(msg):
     cmd = re.split('\s+', msg.text.strip())[1]
-    print(cmd)
     if cmd == 'list-projects':
-        list_projects(msg)
+        send_projects_to_user(list_projects(msg), msg.userid)
     elif cmd == 'status':
-        show_project_statuses(msg)
+        modify_status(msg)
+    elif cmd == 'help':
+        send_message(letsmake_man, msg.userid)
     else:
-        process_posting(msg)
+        resp = process_posting(msg)
+        send_message(resp[1], msg.userid)
 
 #sends message to a channel
 if __name__ == "__main__":
