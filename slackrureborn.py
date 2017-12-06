@@ -22,50 +22,9 @@ class eventObj:
 
 # List Of Waiting Hacker -> Hackers who are currently waiting for a mentor to respond to them!
 # List Of Active Channels -> Active channels created from the mentor chat.
-BOT_NAME = 'slackru'
 slack_client = SlackClient(config.apiT)
-slack_web_client = SlackClient(config.oauthT)
 BOTID = config.botID
 AT_BOT = "<@" + BOTID + ">"
-BOT_CHANNEl = "D4GSK3HG9"
-# authorize google calender stuff
-# def get_messages():
-#    events_obj =  []
-#    scopes = ['https://www.googleapis.com/auth/calendar']
-#    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-# 'creds.json', scopes=scopes)
-#    http_auth = credentials.authorize(httplib2.Http())
-#    service = build('calendar', 'v3', http=http_auth)
-#    page_token = None
-#
-#
-#    now = datetime.datetime.utcnow().isoformat() + 'Z'
-#    eventsResult = service.events().list(
-#            calendarId='hl4bsn6030jr76nql68cen2jto@group.calendar.google.com', timeMin=now, maxResults=5, singleEvents=True,
-#            orderBy='startTime').execute()
-#    events = eventsResult.get('items', [])
-#
-#    if not events:
-#        print('No upcoming events found.')
-#    for event in events:
-#        start = event['start'].get('dateTime', event['start'].get('date'))
-#        end = event['end'].get('dateTime',event['end'].get('date'))
-#        dte = dateutil.parser.parse(end)
-#
-#        dt =  dateutil.parser.parse(start)
-#        dte = dte.strftime('%H:%M')
-#        dt = dt.strftime('%H:%M')
-#        rn = str(dt) + " - " + str(dte)
-#        e = eventObj(rn,event['summary'])
-#        events_obj.append(e)
-#    return events_obj
-# get_messages()
-
-
-def hours_left():
-    epoch_of_end_hack_ru = 1492970400
-    curr_epoch_time = int(time.time())
-    return ((epoch_of_end_hack_ru / 3600) - (curr_epoch_time / 3600))
 
 
 def parse_slack_output(slack_rtm_output):
@@ -86,30 +45,6 @@ def parse_slack_output(slack_rtm_output):
                        user_name
 
     return None, None, "", ""
-
-
-# userid, mentorid
-# opens a multiparty im with some users
-def create_channel_pair(userid, mentorid, username, mentorname, question):
-    userlist = []
-    userlist.append(config.botID)
-    userlist.append(mentorid)
-    print("This is the question: " + question)
-    print("MENTOR ID    " + mentorid)
-    print("USERID  " + userid)
-    newGroup = slack_web_client.api_call("mpim.open",
-                                         token=config.oauthT,
-                                         users=userid + ',' + mentorid + ',' + config.botID)
-    if not newGroup.get('ok'):
-        return
-
-    print(newGroup)
-    test = slack_client.api_call("chat.postMessage", channel=newGroup['group']['id'], text="This channel has been created to resolve the issue " + mentorname + "'s issue. When the issue has been resolved, mentor please call the @slackru <password> unbusy command. If you do not know the password please contact Architect's Sam or Srihari. Good luck!\nIssue: " + question, as_user=True)
-    print(test)
-
-    # Once the active channel is created, put it in the LOAC array so it can be monitored
-    # And reminded if things go sour (afk mentor, afk hacker, etc)
-    LOAC.append(newGroup['group']['id'])
 
 
 def handle_command(command: str, channel: str, userid: str, username: str) -> None:
@@ -162,18 +97,6 @@ def help(userid, username):
                     \nMentor:\n| shortenList <password> <hacker id> | -> Used to help a hackers whose keywords could not be found.
                    \n | unbusy | makes your busy status 0, so you can help more people!
                    \n | busy | -> opposite of the guy above, used when you want to afk I guess""")
-
-
-def checkTime(channelid):
-    ts = time.time()
-    timeStuff = slack_web_client.api_call("channels.history", token=config.oauthT, channel=channelid, latest=ts - 1850)
-    if not timeStuff.get('ok'):
-        print("The api call did not work as intended!")
-        print(timeStuff)
-        return
-    latestMessage = timeStuff['messages'][1]['text']
-    message(channelid, "This is the latest message: " + latestMessage)
-    return
 
 
 # sends message to a channel
