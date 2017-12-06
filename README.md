@@ -26,7 +26,7 @@
 - [X] MentorID's and Mentor Channel ID's integrated
 - [ ] Message all directors function
 - [X] How many hours left in the hackathon?
-- [] Add Mentors using SlackBot
+- [ ] Add Mentors using SlackBot
 
 # SlackRU for F 2017
 - Text the issue to all people who are related to question after a few minutes if not dequed it would go to the help desk. Mentors and Hackers go to Mentor Desk when you dequeue request.
