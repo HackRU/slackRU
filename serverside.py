@@ -1,4 +1,5 @@
 from flask import Flask, request, g
+from DB import DB
 import sqlite3
 import config
 import util
@@ -10,6 +11,7 @@ import threading
 
 app = Flask(__name__)
 dbpath = config.dbpath
+DB(dbpath)  # Initializes Database
 ph = config.twilioph
 queoftimes = queue.Queue()
 
