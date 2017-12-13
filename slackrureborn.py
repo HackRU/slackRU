@@ -39,10 +39,10 @@ def parse_slack_output(slack_rtm_output):
             if output and 'text' in output and AT_BOT in output['text']:
                 print(output['text'])
                 user_name = util.grab_user(output['user'])
-                return output['text'].split(AT_BOT)[1].strip().lower(), \
-                       output['channel'], \
-                       output['user'], \
-                       user_name
+                return (output['text'].split(AT_BOT)[1].strip().lower(),
+                        output['channel'],
+                        output['user'],
+                        user_name)
 
     return None, None, "", ""
 

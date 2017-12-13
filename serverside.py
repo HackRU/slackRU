@@ -4,7 +4,6 @@ import config
 import util
 from twilio.rest import Client
 import time
-import sched
 import json
 import queue
 import threading
@@ -12,9 +11,6 @@ import threading
 app = Flask(__name__)
 dbpath = config.dbpath
 ph = config.twilioph
-qid = 0
-questionstruct = {}
-shed_ = sched.scheduler(time.time, time.sleep)
 queoftimes = queue.Queue()
 
 # setup twilio with sid and authid
@@ -53,11 +49,11 @@ def pairMentor():
     """
         Route that client sends the question to
     """
-    print(request.form.to_dict())
-    jsonreqest = request.form.to_dict()
-    dat = jsonreqest['data']
-    user = jsonreqest['user']
-    userid = jsonreqest['userid']
+    jsonrequest = request.form.to_dict()
+    print(jsonrequest)
+    dat = jsonrequest['data']
+    user = jsonrequest['user']
+    userid = jsonrequest['userid']
     textMentorsQuestion(dat, user, userid)
     return "done"
 
@@ -65,7 +61,7 @@ def pairMentor():
 # the twilio end point that will text mentors
 def textMentorsQuestion(comment: str, username: str, userid: str) -> None:
     """
-     Given a question , tries to find mentors with the keywords with the key words and sends a message that a hacker needs help
+     Given a question , tries to find mentors with the keywords and sends a message that a hacker needs help
     :param comment:str -> the input string the parse
     :param username:str -> the username of the person asking the question
     """
@@ -73,7 +69,7 @@ def textMentorsQuestion(comment: str, username: str, userid: str) -> None:
     epoch = int(time.time())
     mentorlist = []
     # select all the mentors
-    q = query_db("SELECT mentors.* FROM shifts JOIN mentors ON mentors.phone = shifts.phoneno WHERE datetime('now','localtime') >= datetime(shifts.fromtime,'localtime') AND datetime('now','localtime') < datetime(shifts.totime)")
+    q = query_db("SELECT * from mentors")
     for keywordlist in q:
 
         li = keywordlist['keywords'].split(',')
@@ -83,7 +79,7 @@ def textMentorsQuestion(comment: str, username: str, userid: str) -> None:
                 mentorlist.append(keywordlist)
                 break
         # Text All mentors
-        # if no mentors, text all mentors asking the question
+    # if no mentors, text all mentors asking the question
     if mentorlist == []:
         for i in q:
             mentorlist.append(i)
