@@ -14,12 +14,9 @@ class Base:
         self.c = self.conn.cursor()
 
         if not tablesExist:
-            self.initAll()
-
-    def initAll(self):
-        self.initMentors()
-        self.initShifts()
-        self.initActiveQuestions()
+            self.initMentors()
+            self.initShifts()
+            self.initActiveQuestions()
 
     def initMentors(self):
         self.c.execute("CREATE TABLE mentors "
@@ -34,7 +31,6 @@ class Base:
                        "fromtime TEXT, "
                        "totime TEXT, "
                        "FOREIGN KEY(phoneno) REFERENCES mentors(phone));")
-
         self.conn.commit()
 
     def initActiveQuestions(self):
@@ -47,7 +43,6 @@ class Base:
                        "phones BLOB, "
                        "peoplewhoans BLOB, "
                        "assignedmentor VARCHAR(255));")
-
         self.conn.commit()
 
 
