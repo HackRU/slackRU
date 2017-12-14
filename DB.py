@@ -2,8 +2,8 @@ import sqlite3
 import os
 
 
-class DB:
-    """ This class is used to interface into the database """
+class Base:
+    """ Initializes Database """
     def __init__(self, dbpath):
         if not os.path.isfile(dbpath):
             tablesExist = False
@@ -49,3 +49,8 @@ class DB:
                        "assignedmentor VARCHAR(255));")
 
         self.conn.commit()
+
+
+class DB(Base):
+    def __init__(self, dbpath):
+        Base.__init__(self, dbpath)

@@ -1,6 +1,5 @@
-from flask import Flask, request, g
+from flask import Flask, request
 from DB import DB
-import sqlite3
 import config
 import util
 from twilio.rest import Client
@@ -11,35 +10,19 @@ import threading
 
 app = Flask(__name__)
 dbpath = config.dbpath
-DB(dbpath)  # Initializes Database
+db = DB(dbpath)  # Initializes Database
 ph = config.twilioph
-queoftimes = queue.Queue()
+queueOfTimes = queue.Queue()
 
 # setup twilio with sid and authid
 client = Client(config.sid, config.authid)
-
-
-def get_db():
-    """
-    From the Flask Websitei, probs best practice to connect to the databse this way
-    """
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(dbpath)
-
-    def make_dicts(cursor, row):
-        return dict((cursor.description[idx][0], value)
-                    for idx, value in enumerate(row))
-
-    db.row_factory = make_dicts
-    return db
 
 
 def query_db(query, args=(), one=False):
     """
     Query function from flask documentation to avoid the usage of a raw cursor
     """
-    cur = get_db().execute(query, args)
+    cur = db.conn.execute(query, args)
     rv = cur.fetchall()
     cur.close()
 
@@ -87,11 +70,11 @@ def textMentorsQuestion(comment: str, username: str, userid: str) -> None:
             mentorlist.append(i)
     li = json.dumps(mentorlist)
     li2 = json.dumps([])
-    get_db().execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",
-                     [0, username, userid, epoch, li, li2, None])
-    get_db().commit()
+    db.conn.execute("INSERT into activequestions (answered,username,userid,timestamp,phones,peoplewhoans,assignedmentor) VALUES(?,?,?,?,?,?,?)",
+                    [0, username, userid, epoch, li, li2, None])
+    db.conn.commit()
     q_test = query_db("SELECT last_insert_rowid()", one=True)
-    queoftimes.put(epoch)
+    queueOfTimes.put(epoch)
 
     for mentor in mentorlist:
         # message all the mentor
@@ -119,8 +102,8 @@ def makeRequest():
             id_chec = id_['id']
             people = json.loads(id_['peoplewhoans'])
             people.append(from_no)
-            get_db().execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?', [json.dumps(people), id_chec])
-            get_db().commit()
+            db.conn.execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?', [json.dumps(people), id_chec])
+            db.conn.commit()
 
             if id_['answered'] == 1:
                 sendMessage(from_no, "Hi, Another mentor has already accepted this question")
@@ -129,12 +112,12 @@ def makeRequest():
                 # message the user via slack using the util class as we are storing the USERNAME of the person
                 name = query_db('select name from mentors where phone=?', [from_no], one=True)
                 util.message(id_['userid'], "Hi You Have been paired with " + name['name'] + " , please goto the mentor table and meet " + name['name'] + " your question id is " + str(id_chec))
-                get_db().execute('UPDATE activequestions SET answered=? WHERE id=?', [1, id_chec])
+                db.conn.execute('UPDATE activequestions SET answered=? WHERE id=?', [1, id_chec])
 
-                get_db().commit()
+                db.conn.commit()
 
-                get_db().execute('UPDATE activequestions SET assignedmentor=? WHERE id=?', [name['name'], id_chec])
-                get_db().commit()
+                db.conn.execute('UPDATE activequestions SET assignedmentor=? WHERE id=?', [name['name'], id_chec])
+                db.conn.commit()
 
                 sendMessage(from_no, "Hi, You have been assigned this question, please goto the mentor desk and find the hacker")
         elif splitBody[0] == 'decline':
@@ -144,8 +127,8 @@ def makeRequest():
             phones = json.loads(ans_['phones'])
             peoplewhoans.append(from_no)
             sendMessage(from_no, 'Thanks for responding')
-            get_db().execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?', [json.dumps(peoplewhoans), int(splitBody[1])])
-            get_db().commit()
+            db.conn.execute('UPDATE activequestions SET peoplewhoans=? WHERE id=?', [json.dumps(peoplewhoans), int(splitBody[1])])
+            db.conn.commit()
             # scan the list and check if all the people responded and the answered state is false
             phlist = []
             brokeFunctions = False
@@ -183,15 +166,15 @@ def messageHackersToTryAgain(id_: int):
 
 
 def schedulequeueScan():
-    if queoftimes.qsize() > 0:
-        ep = queoftimes.get()
+    if queueOfTimes.qsize() > 0:
+        ep = queueOfTimes.get()
         with app.app_context():
             quest = query_db("SELECT * from activequestions WHERE timestamp = ?", [ep], one=True)
             currentepoch = int(time.time())
             if ((currentepoch - quest['timestamp']) > 600):
                 messageHackersToTryAgain(quest['id'])
             else:
-                queoftimes.put(quest['timestamp'])
+                queueOfTimes.put(quest['timestamp'])
     # every 5 min run the scanner
     threading.Timer(300.0, schedulequeueScan).start()
 
