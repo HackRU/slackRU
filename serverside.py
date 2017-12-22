@@ -8,7 +8,14 @@ import json
 import queue
 import threading
 
-app = Flask(__name__)
+
+def createApp(debug=False):
+    app = Flask(__name__)
+    app.debug = debug
+    return app
+
+
+app = createApp(debug=True)
 dbpath = config.dbpath
 db = DB(dbpath)  # Initializes Database
 ph = config.twilioph
@@ -35,11 +42,11 @@ def pairMentor():
         Route that client sends the question to
     """
     jsonrequest = request.form.to_dict()
-    print(jsonrequest)
     dat = jsonrequest['data']
     user = jsonrequest['user']
     userid = jsonrequest['userid']
-    textMentorsQuestion(dat, user, userid)
+    print(locals())
+    # textMentorsQuestion(dat, user, userid)
     return "done"
 
 
@@ -179,9 +186,6 @@ def schedulequeueScan():
     threading.Timer(300.0, schedulequeueScan).start()
 
 
-schedulequeueScan()
-
-
 def sendMessage(to: str, message: str) -> None:
     """
         Helper method to send messages
@@ -193,4 +197,5 @@ def sendMessage(to: str, message: str) -> None:
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
+    schedulequeueScan()
