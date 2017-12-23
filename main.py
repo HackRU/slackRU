@@ -1,8 +1,10 @@
 import sys
-from slackru.serverside import app
+from slackru.config import getConfig
 
 
 def server():
+    from slackru import create_app
+    app = create_app(getConfig['development'])
     app.run()
 
 
