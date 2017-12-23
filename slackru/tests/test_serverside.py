@@ -1,6 +1,6 @@
 import unittest
 import flask
-from serverside import query_db, createApp
+from ..serverside import query_db, createApp
 
 
 class TestServer(unittest.TestCase):

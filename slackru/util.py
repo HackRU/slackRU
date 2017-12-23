@@ -2,7 +2,7 @@
 This file contains util methods that we can use
 '''
 from slackclient import SlackClient
-import config
+from . import config
 
 slack_client = SlackClient(config.apiT)
 slack_web_client = SlackClient(config.oauthT)

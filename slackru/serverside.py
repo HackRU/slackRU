@@ -1,7 +1,7 @@
 from flask import Flask, request
-from DB import DB
-import config
-import util
+from .DB import DB
+from . import config
+from . import util
 from twilio.rest import Client
 import time
 import json
@@ -172,7 +172,7 @@ def messageHackersToTryAgain(id_: int):
                 sendMessage(i['phone'], "Hi, To Ensure the smoothness of the hackathon, please respond to all requests with either accept or decline")
 
 
-def schedulequeueScan():
+def schedulequeueScan(app):
     if queueOfTimes.qsize() > 0:
         ep = queueOfTimes.get()
         with app.app_context():
@@ -194,8 +194,3 @@ def sendMessage(to: str, message: str) -> None:
     """
 
     message = client.messages.create(to, body=message, from_=ph)
-
-
-if __name__ == '__main__':
-    app.run()
-    schedulequeueScan()
