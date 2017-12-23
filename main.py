@@ -12,4 +12,8 @@ def client():
     print("Running Client!")
 
 
-{'-s': server, '-c': client}[sys.argv[1]]()
+options = dict.fromkeys(['-s', '--server'], server)
+options.update(dict.fromkeys(['-c', '--client'], client))
+
+if __name__ == '__main__':
+    options[sys.argv[1]]()
