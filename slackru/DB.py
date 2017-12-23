@@ -1,22 +1,24 @@
 import sqlite3
-import os
 
 
 class Base:
     """ Initializes Database """
     def __init__(self, dbpath):
-        if not os.path.isfile(dbpath):
-            tablesExist = False
-        else:
-            tablesExist = True
-
+        self.dbpath = dbpath
         self.conn = sqlite3.connect(dbpath)
         self.c = self.conn.cursor()
 
-        if not tablesExist:
+        if self.isEmpty():
             self.initMentors()
             self.initShifts()
             self.initActiveQuestions()
+
+    def isEmpty(self):
+        self.c.execute('SELECT name FROM sqlite_master WHERE type="table";')
+        return self.c.fetchall() == []
+
+    def reconnect(self):
+        self.__init__(self.dbpath)
 
     def initMentors(self):
         self.c.execute("CREATE TABLE mentors "
