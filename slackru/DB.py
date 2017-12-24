@@ -37,30 +37,38 @@ class Init(Base):
 
     def initMentors(self):
         self.c.execute("CREATE TABLE mentors "
-                       "(name VARCHAR(255), "
+                       "(name TEXT, "
                        "keywords VARCHAR(1000), "
-                       "phone VARCHAR(1000) PRIMARY KEY);")
+                       "id INTEGER PRIMARY KEY);")
         self.conn.commit()
 
     def initShifts(self):
         self.c.execute("CREATE TABLE shifts "
-                       "(phoneno VARCHAR(300), "
-                       "fromtime TEXT, "
-                       "totime TEXT, "
-                       "FOREIGN KEY(phoneno) REFERENCES mentors(phone));")
+                       "(userid INTEGER, "
+                       "start TEXT, "
+                       "end TEXT, "
+                       "FOREIGN KEY(userid) REFERENCES mentors(id));")
         self.conn.commit()
 
     def initQuestions(self):
         self.c.execute("CREATE TABLE questions "
                        "(id INTEGER PRIMARY KEY, "
+                       "question TEXT, "
                        "answered INTEGER, "
                        "username INTEGER, "
                        "userid INTEGER, "
                        "timestamp INTEGER, "
-                       "phones BLOB, "
-                       "peoplewhoans BLOB, "
-                       "assignedmentor VARCHAR(255));")
+                       "matchedMentors BLOB, "
+                       "assignedMentor VARCHAR(255));")
         self.conn.commit()
+
+
+def id_counter(method):
+    def wrapper(*args):
+        wrapper.id += 1
+        return method(*args)
+    wrapper.id = -1
+    return wrapper
 
 
 class DB(Init):
@@ -73,3 +81,11 @@ class DB(Init):
         cur.close()
 
         return (rv[0] if rv else None) if one else rv
+
+    @id_counter
+    def insertQuestion(self, question, username, userid, matchedMentors):
+        CMD = "INSERT INTO questions " \
+              "(id, question, answered, username, userid, timestamp, matchedMentors, assignedmentor) " \
+              "VALUES (?, ?, 0, ?, ?, datetime('now', 'localtime'), ?, NULL)"
+        self.c.execute(CMD, [self.insertQuestion.id, question, username, userid, matchedMentors])
+        return self.insertQuestion.id

@@ -1,21 +1,23 @@
-import time
-import queue
-import threading
-
-queueOfTimes = queue.Queue()
+import json
 
 
+def askQuestion(db, question, username, userid):
+    query = "SELECT mentors.* FROM shifts " \
+            "JOIN mentors ON mentors.id = shifts.userid " \
+            "WHERE datetime('now', 'localtime') >= datetime(shifts.start) AND " \
+            "datetime('now', 'localtime') < datetime(shifts.end)"
 
+    matchedMentors = []
+    query_results = db.query_db(query)
+    for mentor in query_results:
+        keywords = mentor['keywords'].split(',')
+        for word in question.split():
+            if word in keywords:
+                matchedMentors.append(mentor)
+                break
 
-def schedulequeueScan(app):
-    if queueOfTimes.qsize() > 0:
-        ep = queueOfTimes.get()
-        with app.app_context():
-            quest = query_db("SELECT * from activequestions WHERE timestamp = ?", [ep], one=True)
-            currentepoch = int(time.time())
-            if ((currentepoch - quest['timestamp']) > 600):
-                pass  # messageHackersToTryAgain(quest['id'])
-            else:
-                queueOfTimes.put(quest['timestamp'])
-    # every 5 min run the scanner
-    threading.Timer(300.0, schedulequeueScan).start()
+    if matchedMentors == []:
+        for mentor in query_results:
+            matchedMentors.append(mentor)
+
+    return db.insertQuestion(question, username, userid, json.dumps(matchedMentors))
