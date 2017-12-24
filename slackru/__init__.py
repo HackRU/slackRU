@@ -9,7 +9,7 @@ def create_app(config):
     app = Flask(__name__)
     app.debug = config.debug
     app.register_blueprint(main)
-    app.database = DB(config.dbpath)  # Initializes Database
+    app.db = DB(config.dbpath)  # Initializes Database
 
     return app
 

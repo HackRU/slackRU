@@ -2,19 +2,9 @@ import time
 import queue
 import threading
 
-
 queueOfTimes = queue.Queue()
 
 
-def query_db(db, query, args=(), one=False):
-    """
-    Query function from flask documentation to avoid the usage of a raw cursor
-    """
-    cur = db.conn.execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-
-    return (rv[0] if rv else None) if one else rv
 
 
 def schedulequeueScan(app):
