@@ -1,8 +1,11 @@
+import os
+
+
 class TestConfig:
     debug = True
-    botID = "U86U670N8"
     dbpath = 'var/mentors-test.db'
     serverurl = 'http://127.0.0.1:5000/'
+    botID = "U86U670N8"
 
 
 class DevelopmentConfig(TestConfig):
@@ -11,11 +14,11 @@ class DevelopmentConfig(TestConfig):
 
 class ProductionConfig:
     debug = False
-    botID = ""
     dbpath = "var/mentors.db"
     serverurl = ""
+    botID = ""
 
 
-getConfig = {'development': DevelopmentConfig,
-             'testing': TestConfig,
-             'production': ProductionConfig}
+config = {'development': DevelopmentConfig,
+          'testing': TestConfig,
+          'production': ProductionConfig}[os.environ['SLACK_CONFIG']]
