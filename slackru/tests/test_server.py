@@ -14,6 +14,8 @@ class TestServer(unittest.TestCase):
         from slackru.config import config
         from slackru import create_app
 
+        config.setup()
+
         if os.path.isfile(config.dbpath):
             os.remove(config.dbpath)
         app = create_app(config)

@@ -1,22 +1,30 @@
 import os
 
 
-class TestConfig:
-    debug = True
-    dbpath = 'var/mentors-test.db'
-    serverurl = 'http://127.0.0.1:5000/'
+class Base:
     botID = "U86U670N8"
+    debug = True
+    serverurl = 'http://127.0.0.1:5000/'
+
+    @classmethod
+    def setup(cls):
+        db_dir = os.path.dirname(cls.dbpath)
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
 
 
-class DevelopmentConfig(TestConfig):
+class TestConfig(Base):
+    dbpath = 'var/mentors-test.db'
+
+
+class DevelopmentConfig(Base):
     dbpath = 'var/mentors-dev.db'
 
 
-class ProductionConfig:
+class ProductionConfig(Base):
     debug = False
-    dbpath = "var/mentors.db"
-    serverurl = ""
-    botID = ""
+    serverurl = "http://slackru.pythonanywhere.com/"
+    dbpath = "/home/slackru/SlackRU/var/mentors.db"
 
 
 config = {'development': DevelopmentConfig,
