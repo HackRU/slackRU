@@ -26,9 +26,9 @@ def askQuestion(db, question: str, username: str, userid: str) -> (int, list):
     return (questionId, matchedMentors)
 
 
-def answerQuestion(db, userid: str, questionId: int, accept: bool):
-    if accept:
-        db.answerQuestion(userid, questionId)
-        util.deleteDirectMessages(questionId, all=True)
-    else:
-        util.deleteDirectMessages(userid=userid)
+def answerQuestion(db, userid: str, questionId: int):
+    db.answerQuestion(userid, questionId)
+    query = "SELECT channel,timestamp FROM posts " \
+            "WHERE questionId=?"
+    for post in db.query_db(query, [questionId]):
+        util.deleteDirectMessages(post['channel'], post['timestamp'])

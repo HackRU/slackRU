@@ -64,7 +64,7 @@ class TestServer(unittest.TestCase):
 
     def test_answerQuestion(self):
         with self.app.test_client() as client:
-            client.get(self.config.serverurl + 'answer/' + self.userid + '/1/' + str(self.questionId))
+            client.get(self.config.serverurl + 'answer/' + self.userid + '/' + str(self.questionId))
             expected = ["Test Question", 1, self.username, self.userid,
                         '["{0}"]'.format(self.userid), self.userid]
 

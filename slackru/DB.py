@@ -45,6 +45,7 @@ class Init(Base):
         self.initMentors()
         self.initShifts()
         self.initQuestions()
+        self.initPosts()
 
     def initMentors(self):
         self.c.execute("CREATE TABLE mentors "
@@ -73,6 +74,16 @@ class Init(Base):
                        "matchedMentors BLOB, "
                        "assignedMentor TEXT, "
                        "FOREIGN KEY(assignedMentor) REFERENCES mentors(userid))")
+        self.conn.commit()
+
+    def initPosts(self):
+        self.c.execute("CREATE TABLE posts "
+                       "(questionId INTEGER, "
+                       "userid TEXT, "
+                       "channel TEXT, "
+                       "timestamp TEXT, "
+                       "FOREIGN KEY(questionId) REFERENCES questions(id), "
+                       "FOREIGN KEY(userid) REFERENCES mentors(userid))")
         self.conn.commit()
 
 
@@ -108,6 +119,13 @@ class DB(Init):
         self.c.execute(CMD, [question, username, userid, matchedMentors])
         self.conn.commit()
         return self.c.lastrowid
+
+    def insertPost(self, questionId, userid, channel, timestamp):
+        CMD = "INSERT INTO posts " \
+              "(questionId, userid, channel, timestamp) " \
+              "VALUES (?, ?, ?, ?)"
+        self.c.execute(CMD, [questionId, userid, channel, timestamp])
+        self.conn.commit()
 
     def answerQuestion(self, userid, questionId):
         CMD = "UPDATE questions " \

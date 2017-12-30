@@ -19,23 +19,23 @@ def pairMentor():
         db.reconnect()
         questionId, matchedMentors = askQuestion(db, **postData)
 
-    message = "{0} has requested to be assisted by a mentor. " \
-              "Can you answer this question?\n>_\"{1}\"_\n" \
-              "<{2}answer/{4}/1/{3}|ACCEPT> " \
-              "or <{2}answer/{4}/0/{3}|DECLINE>".format(postData['username'],
-                                                        postData['question'],
-                                                        app.conf.serverurl,
-                                                        questionId,
-                                                        "{0}")
+    fmt = "*A HACKER NEEDS YOUR HELP!!!*\n" \
+          "<@{0}> has requested to be assisted by a mentor.\n" \
+          "They provided the following statement:\n" \
+          ">_\"{1}\"_\nDo you think you are a good match for this? If so, click " \
+          "<{2}answer/{4}/{3}|ACCEPT>."
+
+    message = fmt.format(postData['userid'], postData['question'], app.conf.serverurl, questionId, "{0}")
 
     for userid in matchedMentors:
         channel = util.getDirectMessageChannel(userid)
-        util.message(channel, message.format(userid))
+        timestamp = util.message(channel, message.format(userid))
+        db.insertPost(questionId, userid, channel, timestamp)
 
     return flask.jsonify(matchedMentors)
 
 
-@main.route("/answer/<userid>/<accept>/<questionId>")
-def answer(userid, accept, questionId):
-    answerQuestion(app.db.get_db(), userid, int(questionId), accept=accept)
+@main.route("/answer/<userid>/<questionId>")
+def answer(userid, questionId):
+    answerQuestion(app.db.get_db(), userid, int(questionId))
     return "done"

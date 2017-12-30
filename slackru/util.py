@@ -38,8 +38,9 @@ def getDirectMessageChannel(userid: str) -> str:
 
 def message(channelid: str, message: str) -> None:
     """ Util Function to send a message """
-    slack_client.api_call("chat.postMessage", channel=channelid, text=message, as_user=True)
+    resp = slack_client.api_call("chat.postMessage", channel=channelid, text=message, as_user=True)
+    return resp['ts']
 
 
-def deleteDirectMessages(questionId, all=False, userid=None):
-    pass
+def deleteDirectMessages(channel, ts):
+    slack_client.api_call("chat.delete", channel=channel, ts=ts, as_user=True)
