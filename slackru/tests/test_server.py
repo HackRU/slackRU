@@ -19,11 +19,16 @@ class TestServer(unittest.TestCase):
         app = create_app(config)
         db = app.db.get_db()
 
-        mentor_id = db.insertMentor("Bryan Bugyi", "bryan.bugyi", "U86U3G52Q", "Python")
+        cls.user = "Bryan Bugyi"
+        cls.username = "bryan.bugyi"
+        cls.userid = "U86U3G52Q"
+        db.insertMentor(cls.user, cls.username, cls.userid, "Python")
 
         start = datetime.now().strftime('%Y-%m-%d %H:%M')
         end = (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M')
-        db.insertShift(mentor_id, start, end)
+        db.insertShift(cls.userid, start, end)
+
+        cls.questionId = db.insertQuestion("Test Question", cls.username, cls.userid, json.dumps([cls.userid]))
 
         cls.db = db
         cls.app = app
@@ -35,31 +40,37 @@ class TestServer(unittest.TestCase):
 
     def test_query_db(self):
         query = self.db.query_db("SELECT * FROM mentors", one=True)
-        self.assertEqual(query['name'], "Bryan Bugyi")
+        self.assertEqual(query['name'], self.user)
         self.assertEqual(query['keywords'], "Python")
-        self.assertEqual(query['id'], 1)
 
     def test_pairMentor(self):
         postData = {'question': 'I need help with Python',
-                    'username': 'bryan.bugyi',
-                    'userid': 'U86U3G52Q'}
+                    'username': self.username,
+                    'userid': self.userid}
 
         with self.app.test_client() as client:
             resp = client.post(self.config.serverurl + 'pairmentor', data=postData)
-            self.assertEqual(json.loads(resp.data), ['U86U3G52Q'])
+            self.assertEqual(json.loads(resp.data), [self.userid])
 
     def test_askQuestion(self):
         from slackru.serverside import askQuestion
-        askQuestion(self.db, "What is 2+2?", "bryan.bugyi", "U86U3G52Q")
+        askQuestion(self.db, "What is 2+2?", self.username, self.userid)
 
-        actual = [val for val in self.db.query_db("SELECT * FROM questions WHERE question='What is 2+2?'", one=True).values()]
-        expected = [1, "What is 2+2?", 0, "bryan.bugyi", "U86U3G52Q",
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"), '["U86U3G52Q"]', None]
+        actual = [val for val in self.db.query_db("SELECT question,answered,username,userid,matchedMentors,assignedMentor FROM questions WHERE question='What is 2+2?'", one=True).values()]
+        expected = ["What is 2+2?", 0, self.username, self.userid,
+                    '["{0}"]'.format(self.userid), None]
 
         self.assertEqual(expected, actual)
 
     def test_answerQuestion(self):
-        pass
+        with self.app.test_client() as client:
+            client.get(self.config.serverurl + 'answer/' + self.userid + '/1/' + str(self.questionId))
+            expected = ["Test Question", 1, self.username, self.userid,
+                        '["{0}"]'.format(self.userid), self.userid]
+
+            actual = [val for val in self.db.query_db("SELECT question,answered,username,userid,matchedMentors,assignedMentor FROM questions WHERE question='Test Question'", one=True).values()]
+
+            self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

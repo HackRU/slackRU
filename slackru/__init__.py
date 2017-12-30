@@ -10,6 +10,7 @@ def create_app(config):
     app.debug = config.debug
     app.register_blueprint(main)
     app.db = DB(config.dbpath)  # Initializes Database
+    app.conf = config
 
     return app
 

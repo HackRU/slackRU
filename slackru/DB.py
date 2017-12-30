@@ -48,19 +48,18 @@ class Init(Base):
 
     def initMentors(self):
         self.c.execute("CREATE TABLE mentors "
-                       "(id INTEGER PRIMARY KEY, "
+                       "(userid TEXT PRIMARY KEY, "
                        "name TEXT, "
                        "username, "
-                       "userid TEXT, "
                        "keywords VARCHAR(1000))")
         self.conn.commit()
 
     def initShifts(self):
         self.c.execute("CREATE TABLE shifts "
-                       "(mentor_id INTEGER, "
+                       "(userid TEXT, "
                        "start TEXT, "
                        "end TEXT, "
-                       "FOREIGN KEY(mentor_id) REFERENCES mentors(id));")
+                       "FOREIGN KEY(userid) REFERENCES mentors(userid))")
         self.conn.commit()
 
     def initQuestions(self):
@@ -72,7 +71,8 @@ class Init(Base):
                        "userid TEXT, "
                        "timestamp INTEGER, "
                        "matchedMentors BLOB, "
-                       "assignedMentor VARCHAR(255));")
+                       "assignedMentor TEXT, "
+                       "FOREIGN KEY(assignedMentor) REFERENCES mentors(userid))")
         self.conn.commit()
 
 
@@ -93,13 +93,12 @@ class DB(Init):
               "VALUES (?, ?, ?, ?)"
         self.c.execute(CMD, [name, username, userid, keywords])
         self.conn.commit()
-        return self.c.lastrowid
 
-    def insertShift(self, mentor_id, start, end):
+    def insertShift(self, userid, start, end):
         CMD = "INSERT INTO shifts " \
-              "(mentor_id, start, end) " \
+              "(userid, start, end) " \
               "VALUES (?, ?, ?)"
-        self.c.execute(CMD, [mentor_id, start, end])
+        self.c.execute(CMD, [userid, start, end])
         self.conn.commit()
 
     def insertQuestion(self, question, username, userid, matchedMentors):
@@ -109,3 +108,12 @@ class DB(Init):
         self.c.execute(CMD, [question, username, userid, matchedMentors])
         self.conn.commit()
         return self.c.lastrowid
+
+    def answerQuestion(self, userid, questionId):
+        CMD = "UPDATE questions " \
+              "SET answered=1, " \
+              "assignedMentor=? " \
+              "WHERE id=?"
+
+        self.c.execute(CMD, [userid, questionId])
+        self.conn.commit()
