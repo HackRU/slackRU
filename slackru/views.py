@@ -13,7 +13,7 @@ class PairMentorView(View):
 
     def __init__(self):
         self.postData = flask.request.form.to_dict()
-        self.db = app.db.reconnect()
+        self.db = app.db.open()
 
     def matchMentors(self):
         query = "SELECT mentors.* FROM shifts " \
@@ -77,7 +77,7 @@ class MessageActionView(View):
     methods = ['POST']
 
     def __init__(self):
-        self.db = app.db.reconnect()
+        self.db = app.db.open()
 
         payload = flask.request.form.to_dict()['payload']
         self.postData = json.loads(payload)

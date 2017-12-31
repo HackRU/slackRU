@@ -19,7 +19,7 @@ class TestViews(unittest.TestCase):
         if os.path.isfile(config.dbpath):
             os.remove(config.dbpath)
         app = create_app(config)
-        db = app.db.get_db()
+        db = app.db.open()
 
         cls.user = "Bryan Bugyi"
         cls.username = "bryan.bugyi"

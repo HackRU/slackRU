@@ -7,14 +7,6 @@ class Base:
         self.conn = None
         self.c = None
 
-        # Convenient Alias
-        self.reconnect = self.open
-
-    def get_db(self):
-        if not self.conn:
-            self.open()
-        return self
-
     def open(self):
         self.conn = sqlite3.connect(self.dbpath)
 
