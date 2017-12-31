@@ -26,8 +26,8 @@ def username_to_id(username):
 
 
 def getDirectMessageChannel(users):
-    resp = slack_client.api_call("conversations.open", users=users)
     try:
+        resp = slack_client.api_call("conversations.open", users=users)
         return resp['channel']['id']
     except KeyError as e:
         raise KeyError(locals())

@@ -7,6 +7,7 @@ class Base:
         self.conn = None
         self.c = None
 
+        # Convenient Alias
         self.reconnect = self.open
 
     def get_db(self):
@@ -26,6 +27,10 @@ class Base:
 
     def close(self):
         self.conn.close()
+
+    def execAndCommit(self, *args):
+        self.c.execute(*args)
+        self.conn.commit()
 
 
 class Init(Base):
@@ -48,50 +53,46 @@ class Init(Base):
         self.initPosts()
 
     def initMentors(self):
-        self.c.execute("CREATE TABLE mentors "
-                       "(userid TEXT PRIMARY KEY, "
-                       "name TEXT, "
-                       "username, "
-                       "keywords VARCHAR(1000))")
-        self.conn.commit()
+        self.execAndCommit("CREATE TABLE mentors "
+                           "(userid TEXT PRIMARY KEY, "
+                           "name TEXT, "
+                           "username, "
+                           "keywords VARCHAR(1000))")
 
     def initShifts(self):
-        self.c.execute("CREATE TABLE shifts "
-                       "(userid TEXT, "
-                       "start TEXT, "
-                       "end TEXT, "
-                       "FOREIGN KEY(userid) REFERENCES mentors(userid))")
-        self.conn.commit()
+        self.execAndCommit("CREATE TABLE shifts "
+                           "(userid TEXT, "
+                           "start TEXT, "
+                           "end TEXT, "
+                           "FOREIGN KEY(userid) REFERENCES mentors(userid))")
 
     def initQuestions(self):
-        self.c.execute("CREATE TABLE questions "
-                       "(id INTEGER PRIMARY KEY, "
-                       "question TEXT, "
-                       "answered INTEGER, "
-                       "username TEXT, "
-                       "userid TEXT, "
-                       "timestamp INTEGER, "
-                       "matchedMentors BLOB, "
-                       "assignedMentor TEXT, "
-                       "FOREIGN KEY(assignedMentor) REFERENCES mentors(userid))")
-        self.conn.commit()
+        self.execAndCommit("CREATE TABLE questions "
+                           "(id INTEGER PRIMARY KEY, "
+                           "question TEXT, "
+                           "answered INTEGER, "
+                           "username TEXT, "
+                           "userid TEXT, "
+                           "timestamp INTEGER, "
+                           "matchedMentors BLOB, "
+                           "assignedMentor TEXT, "
+                           "FOREIGN KEY(assignedMentor) REFERENCES mentors(userid))")
 
     def initPosts(self):
-        self.c.execute("CREATE TABLE posts "
-                       "(questionId INTEGER, "
-                       "userid TEXT, "
-                       "channel TEXT, "
-                       "timestamp TEXT, "
-                       "FOREIGN KEY(questionId) REFERENCES questions(id), "
-                       "FOREIGN KEY(userid) REFERENCES mentors(userid))")
-        self.conn.commit()
+        self.execAndCommit("CREATE TABLE posts "
+                           "(questionId INTEGER, "
+                           "userid TEXT, "
+                           "channel TEXT, "
+                           "timestamp TEXT, "
+                           "FOREIGN KEY(questionId) REFERENCES questions(id), "
+                           "FOREIGN KEY(userid) REFERENCES mentors(userid))")
 
 
 class DB(Init):
     def __init__(self, dbpath):
         Init.__init__(self, dbpath)
 
-    def query_db(self, query, args=(), one=False):
+    def runQuery(self, query, args=(), one=False):
         cur = self.conn.execute(query, args)
         rv = cur.fetchall()
         cur.close()
@@ -102,36 +103,31 @@ class DB(Init):
         CMD = "INSERT INTO mentors " \
               "(name, username, userid, keywords) " \
               "VALUES (?, ?, ?, ?)"
-        self.c.execute(CMD, [name, username, userid, keywords])
-        self.conn.commit()
+        self.execAndCommit(CMD, [name, username, userid, keywords])
 
     def insertShift(self, userid, start, end):
         CMD = "INSERT INTO shifts " \
               "(userid, start, end) " \
               "VALUES (?, ?, ?)"
-        self.c.execute(CMD, [userid, start, end])
-        self.conn.commit()
+        self.execAndCommit(CMD, [userid, start, end])
 
     def insertQuestion(self, question, username, userid, matchedMentors):
         CMD = "INSERT INTO questions " \
               "(question, answered, username, userid, timestamp, matchedMentors, assignedmentor) " \
               "VALUES (?, 0, ?, ?, datetime('now', 'localtime'), ?, NULL)"
-        self.c.execute(CMD, [question, username, userid, matchedMentors])
-        self.conn.commit()
+        self.execAndCommit(CMD, [question, username, userid, matchedMentors])
         return self.c.lastrowid
 
     def insertPost(self, questionId, userid, channel, timestamp):
         CMD = "INSERT INTO posts " \
               "(questionId, userid, channel, timestamp) " \
               "VALUES (?, ?, ?, ?)"
-        self.c.execute(CMD, [questionId, userid, channel, timestamp])
-        self.conn.commit()
+        self.execAndCommit(CMD, [questionId, userid, channel, timestamp])
 
-    def mentorAccept(self, userid, questionId):
+    def markAnswered(self, userid, questionId):
         CMD = "UPDATE questions " \
               "SET answered=1, " \
               "assignedMentor=? " \
               "WHERE id=?"
 
-        self.c.execute(CMD, [userid, questionId])
-        self.conn.commit()
+        self.execAndCommit(CMD, [userid, questionId])

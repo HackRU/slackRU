@@ -22,7 +22,7 @@ def pairMentor():
                 "AND datetime('now', 'localtime') < datetime(shifts.end)"
 
         matched = []
-        query_results = db.query_db(query)
+        query_results = db.runQuery(query)
         for mentor in query_results:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]
             for word in postData['question'].split():
@@ -86,13 +86,13 @@ def message_action():
         questionId = postData['callback_id'].split('_')[1]
 
         def mentorAccept():
-            db.mentorAccept(mentorid, questionId)
+            db.markAnswered(mentorid, questionId)
             query = "SELECT channel,timestamp FROM posts " \
                     "WHERE questionId=? AND userid!=?"
-            for post in db.query_db(query, [questionId, mentorid]):
+            for post in db.runQuery(query, [questionId, mentorid]):
                 util.deleteDirectMessages(post['channel'], post['timestamp'])
 
-            hackerid, question = db.query_db('SELECT userid,question FROM questions WHERE id=?',
+            hackerid, question = db.runQuery('SELECT userid,question FROM questions WHERE id=?',
                                              [questionId],
                                              one=True).values()
 
