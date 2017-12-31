@@ -5,6 +5,7 @@ import time
 import requests
 import os
 import slackru.util as util
+from slackru import ifDebug
 from slackru.config import config
 from slackclient import SlackClient
 
@@ -15,16 +16,11 @@ BOTID = config.botID
 AT_BOTID = "<@" + BOTID + ">"
 
 
-def debug_print(*args, **kwargs):
-    if config.debug:
-        print(*args, **kwargs)
-
-
 class SlackBot:
     def run(self):
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
-            debug_print("SlackRU connected and running!")
+            ifDebug(print, "SlackRU connected and running!")
             while True:
                 command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
@@ -35,7 +31,7 @@ class SlackBot:
                 # The bot will message the channel and let them know it will be stop being monitored and give them insturctions
                 # For certain scenarios.
         else:
-            debug_print("Connection failed. Invalid Slack token or bot ID?")
+            ifDebug(print, "Connection failed. Invalid Slack token or bot ID?")
 
     def parse_slack_output(self, slack_rtm_output):
         """
@@ -47,7 +43,7 @@ class SlackBot:
         if output_list and len(output_list) > 0:
             for output in output_list:
                 if output and 'text' in output and AT_BOTID in output['text']:
-                    debug_print(output['channel'])
+                    ifDebug(print, output['channel'])
                     user_name = util.id_to_username(output['user'])
                     return (output['text'].split(AT_BOTID)[1].strip(),
                             output['channel'],
@@ -66,13 +62,13 @@ class SlackBot:
             :param userid:str the user id
             :param:str the username
             """
-        debug_print(username + ": " + userid + ": " + channel + ": " + command)
+        ifDebug(print, username + ": " + userid + ": " + channel + ": " + command)
         dividedCommand = command.split()
         cmd = dividedCommand[0]
         cmd = cmd.lower()
 
         if cmd == 'mentors':
-            debug_print(len(dividedCommand))
+            ifDebug(print, len(dividedCommand))
             if len(dividedCommand) == 1:
                 util.sendMessage(userid, "Please input a question")
             else:

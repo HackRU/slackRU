@@ -3,7 +3,7 @@ import json
 import time
 import slackru.util as util
 from threading import Thread
-from slackru import main
+from slackru import main, ifNotDebug
 from flask import current_app as app
 from flask.views import View
 
@@ -106,7 +106,7 @@ class MessageActionView(View):
         resp = {'text': 'That\'s the spirit! Connecting you to <@{0}>...'.format(hackerid)}
 
         def startGroupMessage():
-            time.sleep(3)
+            ifNotDebug(time.sleep, 3)
             channel = util.getDirectMessageChannel(hackerid + ',' + self.mentorid)
             fmt = "Hello <@{0}>. Your request for a mentor with regards to the following question has been processed:\n" \
                   ">{2}\n" \
@@ -120,7 +120,7 @@ class MessageActionView(View):
         resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
         def delayedDeleteMessage():
-            time.sleep(3)
+            ifNotDebug(time.sleep, 3)
             util.deleteDirectMessages(self.postData['channel']['id'], self.postData['message_ts'])
 
         Thread(target=delayedDeleteMessage).start()
