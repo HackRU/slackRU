@@ -22,7 +22,6 @@ class DevelopmentConfig(Base):
 
 
 class ProductionConfig(Base):
-    debug = False
     serverurl = "http://slackru.pythonanywhere.com/"
     dbpath = "/home/slackru/SlackRU/var/mentors.db"
 

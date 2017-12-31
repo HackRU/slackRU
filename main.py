@@ -1,10 +1,12 @@
-import sys
+import argparse
 import os
 
-os.environ['SLACK_CONFIG'] = 'development'
-if sys.argv[1] == '--prodbot':
-    os.environ['SLACK_CONFIG'] = 'production'
+parser = argparse.ArgumentParser()
+parser.add_argument('runtype')
+parser.add_argument('-c', '--config', dest='config', default='development')
+args = parser.parse_args()
 
+os.environ['SLACK_CONFIG'] = args.config
 from slackru.config import config
 
 
@@ -21,8 +23,5 @@ def slackbot():
     bot.run()
 
 
-options = dict.fromkeys(['-s', '--server'], server)
-options.update(dict.fromkeys(['-b', '--slackbot', '--prodbot'], slackbot))
-
-if __name__ == '__main__':
-    options[sys.argv[1]]()
+if __name__ == "__main__":
+    {'server': server, 'slackbot': slackbot}[args.runtype]()

@@ -29,6 +29,6 @@ def askQuestion(db, question: str, username: str, userid: str) -> (int, list):
 def answerQuestion(db, userid: str, questionId: int):
     db.answerQuestion(userid, questionId)
     query = "SELECT channel,timestamp FROM posts " \
-            "WHERE questionId=?"
-    for post in db.query_db(query, [questionId]):
+            "WHERE questionId=? AND userid!=?"
+    for post in db.query_db(query, [questionId, userid]):
         util.deleteDirectMessages(post['channel'], post['timestamp'])
