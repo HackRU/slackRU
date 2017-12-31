@@ -5,7 +5,7 @@ from slackclient import SlackClient
 slack_client = SlackClient(os.environ['SLACK_API_KEY'])
 
 
-def grab_user(use: str) -> str:
+def grab_user(use):
     """
         converts an id to username
         :param the user id to convert
@@ -18,7 +18,7 @@ def grab_user(use: str) -> str:
                 return user['name']
 
 
-def username_to_id(username: str) -> str:
+def username_to_id(username):
     """
         converts the username to an id
         :param the username
@@ -31,14 +31,14 @@ def username_to_id(username: str) -> str:
                 return user['id']
 
 
-def getDirectMessageChannel(userid: str) -> str:
+def getDirectMessageChannel(userid):
     resp = slack_client.api_call("conversations.open", users=userid)
     return resp['channel']['id']
 
 
-def message(channelid: str, message: str) -> None:
+def message(channel, text, attachments=None):
     """ Util Function to send a message """
-    resp = slack_client.api_call("chat.postMessage", channel=channelid, text=message, as_user=True)
+    resp = slack_client.api_call("chat.postMessage", channel=channel, text=text, attachments=attachments, as_user=False)
     return resp['ts']
 
 
