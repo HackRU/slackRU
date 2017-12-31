@@ -3,8 +3,6 @@ import os
 
 class Base:
     botID = "U86U670N8"
-    debug = True
-    serverurl = 'http://127.0.0.1:5000/'
 
     @classmethod
     def setup(cls):
@@ -13,19 +11,17 @@ class Base:
             os.makedirs(db_dir)
 
 
-class TestConfig(Base):
-    dbpath = 'var/mentors-test.db'
-
-
 class DevelopmentConfig(Base):
+    debug = True
+    serverurl = 'http://127.0.0.1:5000/'
     dbpath = 'var/mentors-dev.db'
 
 
 class ProductionConfig(Base):
+    debug = False
     serverurl = "http://slackru.pythonanywhere.com/"
     dbpath = "/home/slackru/SlackRU/var/mentors.db"
 
 
 config = {'development': DevelopmentConfig,
-          'testing': TestConfig,
           'production': ProductionConfig}[os.environ['SLACK_CONFIG']]

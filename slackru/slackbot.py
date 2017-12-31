@@ -48,7 +48,7 @@ class SlackBot:
             for output in output_list:
                 if output and 'text' in output and AT_BOTID in output['text']:
                     debug_print(output['channel'])
-                    user_name = util.grab_user(output['user'])
+                    user_name = util.id_to_username(output['user'])
                     return (output['text'].split(AT_BOTID)[1].strip(),
                             output['channel'],
                             output['user'],
@@ -74,7 +74,7 @@ class SlackBot:
         if cmd == 'mentors':
             debug_print(len(dividedCommand))
             if len(dividedCommand) == 1:
-                util.message(userid, "Please input a question")
+                util.sendMessage(userid, "Please input a question")
             else:
                 self.pairMentor(command[8:], username, userid)
         elif cmd == 'help':
@@ -91,14 +91,14 @@ class SlackBot:
         postData['question'] = question
         postData['username'] = username
         postData['userid'] = userid
-        util.message(userid, "Trying to find a mentor")
+        util.sendMessage(userid, "Trying to find a mentor")
         req = requests.post(config.serverurl + 'pairmentor', data=postData)
         return req.text
 
     def help(self, userid, username):
-        util.message(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
-        util.message(userid, "All commands will begin with <AT character>slackru")
-        util.message(userid, """Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
+        util.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
+        util.sendMessage(userid, "All commands will begin with <AT character>slackru")
+        util.sendMessage(userid, """Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
                         \n| help  | -> Wait what?
                         \n | announcements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
                         \nMentor:\n| shortenList <password> <hacker id> | -> Used to help a hackers whose keywords could not be found.

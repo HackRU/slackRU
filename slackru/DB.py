@@ -127,7 +127,7 @@ class DB(Init):
         self.c.execute(CMD, [questionId, userid, channel, timestamp])
         self.conn.commit()
 
-    def answerQuestion(self, userid, questionId):
+    def mentorAccept(self, userid, questionId):
         CMD = "UPDATE questions " \
               "SET answered=1, " \
               "assignedMentor=? " \
