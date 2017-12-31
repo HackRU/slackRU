@@ -5,27 +5,27 @@ import slackru.util as util
 from threading import Thread
 from slackru import main
 from flask import current_app as app
+from flask.views import View
 
 
-@main.route("/pairmentor", methods=['POST'])
-def pairMentor():
-    """ Route that client sends the question to """
+class PairMentorView(View):
+    methods = ['POST']
 
-    postData = flask.request.form.to_dict()
-    db = app.db.get_db()
-    db.reconnect()
+    def __init__(self):
+        self.postData = flask.request.form.to_dict()
+        self.db = app.db.reconnect()
 
-    def matchMentors():
+    def matchMentors(self):
         query = "SELECT mentors.* FROM shifts " \
                 "JOIN mentors ON mentors.userid = shifts.userid " \
                 "WHERE datetime('now', 'localtime') >= datetime(shifts.start) " \
                 "AND datetime('now', 'localtime') < datetime(shifts.end)"
 
         matched = []
-        query_results = db.runQuery(query)
+        query_results = self.db.runQuery(query)
         for mentor in query_results:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]
-            for word in postData['question'].split():
+            for word in self.postData['question'].split():
                 if word.lower() in keywords:
                     matched.append(mentor['userid'])
                     break
@@ -34,90 +34,104 @@ def pairMentor():
             for mentor in query_results:
                 matched.append(mentor['userid'])
 
-        questionId = db.insertQuestion(postData['question'],
-                                postData['username'],
-                                postData['userid'],
+        questionId = self.db.insertQuestion(self.postData['question'],
+                                self.postData['username'],
+                                self.postData['userid'],
                                 json.dumps(matched))
 
         return (questionId, matched)
 
-    questionId, matched = matchMentors()
+    def dispatch_request(self):
+        """ Route that client sends the question to """
 
-    fmt = "*A HACKER NEEDS YOUR HELP!!!*\n" \
-          "<@{0}> has requested to be assisted by a mentor.\n" \
-          "They provided the following statement:\n" \
-          ">_\"{1}\"_\nCan you help this hacker?\n"
+        questionId, matched = self.matchMentors()
 
-    text = fmt.format(postData['userid'], postData['question'])
+        fmt = "*A HACKER NEEDS YOUR HELP!!!*\n" \
+              "<@{0}> has requested to be assisted by a mentor.\n" \
+              "They provided the following statement:\n" \
+              ">_\"{1}\"_\nCan you help this hacker?\n"
 
-    attachments = [{'text': '',
-                    'attachment_type': 'default',
-                    'callback_id': 'mentorResponse_{0:d}'.format(questionId),
-                    'actions': [{'name': 'answer',
-                                 'text': 'Yes',
-                                 'type': 'button',
-                                 'value': 'yes'},
-                                {'name': 'answer',
-                                 'text': 'No',
-                                 'type': 'button',
-                                 'value': 'no'}]}]
+        text = fmt.format(self.postData['userid'], self.postData['question'])
 
-    for userid in matched:
-        channel = util.getDirectMessageChannel(userid)
-        timestamp = util.sendMessage(channel, text, attachments)
-        db.insertPost(questionId, userid, channel, timestamp)
+        attachments = [{'text': '',
+                        'attachment_type': 'default',
+                        'callback_id': 'mentorResponse_{0:d}'.format(questionId),
+                        'actions': [{'name': 'answer',
+                                     'text': 'Yes',
+                                     'type': 'button',
+                                     'value': 'yes'},
+                                    {'name': 'answer',
+                                     'text': 'No',
+                                     'type': 'button',
+                                     'value': 'no'}]}]
 
-    return flask.jsonify(matched)
+        for userid in matched:
+            channel = util.getDirectMessageChannel(userid)
+            timestamp = util.sendMessage(channel, text, attachments)
+            self.db.insertPost(questionId, userid, channel, timestamp)
+
+        return "done"
 
 
-@main.route("/message_action", methods=['POST'])
-def message_action():
-    """ Slack Action Request URL """
+class MessageActionView(View):
+    methods = ['POST']
 
-    payload = flask.request.form.to_dict()['payload']
-    postData = json.loads(payload)
+    def __init__(self):
+        self.db = app.db.reconnect()
 
-    db = app.db.get_db()
-    db.reconnect()
+        payload = flask.request.form.to_dict()['payload']
+        self.postData = json.loads(payload)
 
-    if 'mentorResponse' in postData['callback_id']:
-        answer = postData['actions'][0]['value']
-        mentorid = postData['user']['id']
-        questionId = postData['callback_id'].split('_')[1]
+        if 'mentorResponse' in self.postData['callback_id']:
+            self.answer = self.postData['actions'][0]['value']
+            self.mentorid = self.postData['user']['id']
+            self.questionId = self.postData['callback_id'].split('_')[1]
 
-        def mentorAccept():
-            db.markAnswered(mentorid, questionId)
-            query = "SELECT channel,timestamp FROM posts " \
-                    "WHERE questionId=? AND userid!=?"
-            for post in db.runQuery(query, [questionId, mentorid]):
-                util.deleteDirectMessages(post['channel'], post['timestamp'])
+            # Sets View Function
+            self.dispatch_request = self.DR_mentorResponse
+        else:
+            self.dispatch_request = lambda: "done"
 
-            hackerid, question = db.runQuery('SELECT userid,question FROM questions WHERE id=?',
-                                             [questionId],
-                                             one=True).values()
+    def mentorAccept(self):
+        self.db.markAnswered(self.mentorid, self.questionId)
+        query = "SELECT channel,timestamp FROM posts " \
+                "WHERE questionId=? AND userid!=?"
+        for post in self.db.runQuery(query, [self.questionId, self.mentorid]):
+            util.deleteDirectMessages(post['channel'], post['timestamp'])
 
-            resp = {'text': 'That\'s the spirit! Connecting you to <@{0}>...'.format(hackerid)}
+        hackerid, question = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',
+                                         [self.questionId],
+                                         one=True).values()
 
-            def startGroupMessage():
-                time.sleep(3)
-                channel = util.getDirectMessageChannel(hackerid + ',' + mentorid)
-                fmt = "Hello <@{0}>. Your request for a mentor with regards to the following question has been processed:\n" \
-                      ">{2}\n" \
-                      "You have been matched with <@{1}>. Take it away <@{1}>! :grinning:"
-                util.sendMessage(channel, fmt.format(hackerid, mentorid, question))
+        resp = {'text': 'That\'s the spirit! Connecting you to <@{0}>...'.format(hackerid)}
 
-            Thread(target=startGroupMessage).start()
-            return flask.jsonify(resp)
+        def startGroupMessage():
+            time.sleep(3)
+            channel = util.getDirectMessageChannel(hackerid + ',' + self.mentorid)
+            fmt = "Hello <@{0}>. Your request for a mentor with regards to the following question has been processed:\n" \
+                  ">{2}\n" \
+                  "You have been matched with <@{1}>. Take it away <@{1}>! :grinning:"
+            util.sendMessage(channel, fmt.format(hackerid, self.mentorid, question))
 
-        def mentorDecline():
-            resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
+        Thread(target=startGroupMessage).start()
+        return flask.jsonify(resp)
 
-            def delayedDeleteMessage():
-                time.sleep(3)
-                util.deleteDirectMessages(postData['channel']['id'], postData['message_ts'])
+    def mentorDecline(self):
+        resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
-            Thread(target=delayedDeleteMessage).start()
-            return flask.jsonify(resp)
+        def delayedDeleteMessage():
+            time.sleep(3)
+            util.deleteDirectMessages(self.postData['channel']['id'], self.postData['message_ts'])
 
-        return {'yes': mentorAccept,
-                'no': mentorDecline}[answer]()
+        Thread(target=delayedDeleteMessage).start()
+        return flask.jsonify(resp)
+
+    def DR_mentorResponse(self):
+        """ Slack Action Request URL """
+        return {'yes': self.mentorAccept,
+                'no': self.mentorDecline}[self.answer]()
+
+
+# These are equivalent to the '@main.route' function decorators
+main.add_url_rule('/pairmentor', view_func=PairMentorView.as_view('pairMentor'))
+main.add_url_rule('/message_action', view_func=MessageActionView.as_view('message_action'))

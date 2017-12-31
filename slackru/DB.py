@@ -24,6 +24,7 @@ class Base:
 
         self.conn.row_factory = make_dicts
         self.c = self.conn.cursor()
+        return self
 
     def close(self):
         self.conn.close()
