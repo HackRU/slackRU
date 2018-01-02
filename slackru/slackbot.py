@@ -1,13 +1,12 @@
-"""
-    The new main file for the slack bot
-"""
+""" The SlackBot class is defined here """
+import os
 import time
 import requests
-import os
-import slackru.util as util
-from slackru import ifDebug
-from slackru.config import config
+
 from slackclient import SlackClient
+
+import slackru.util as util
+from slackru.config import config
 
 # List Of Waiting Hacker -> Hackers who are currently waiting for a mentor to respond to them!
 # List Of Active Channels -> Active channels created from the mentor chat.
@@ -20,7 +19,7 @@ class SlackBot:
     def run(self):
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
-            ifDebug(print, "SlackRU connected and running!")
+            util.ifDebug(print, "SlackRU connected and running!")
             while True:
                 command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
@@ -31,7 +30,7 @@ class SlackBot:
                 # The bot will message the channel and let them know it will be stop being monitored and give them insturctions
                 # For certain scenarios.
         else:
-            ifDebug(print, "Connection failed. Invalid Slack token or bot ID?")
+            util.ifDebug(print, "Connection failed. Invalid Slack token or bot ID?")
 
     def parse_slack_output(self, slack_rtm_output):
         """
@@ -43,8 +42,8 @@ class SlackBot:
         if output_list and len(output_list) > 0:
             for output in output_list:
                 if output and 'text' in output and AT_BOTID in output['text']:
-                    ifDebug(print, output['channel'])
-                    user_name = util.id_to_username(output['user'])
+                    util.ifDebug(print, output['channel'])
+                    user_name = util.slack.id_to_username(output['user'])
                     return (output['text'].split(AT_BOTID)[1].strip(),
                             output['channel'],
                             output['user'],
@@ -62,15 +61,15 @@ class SlackBot:
             :param userid:str the user id
             :param:str the username
             """
-        ifDebug(print, username + ": " + userid + ": " + channel + ": " + command)
+        util.ifDebug(print, username + ": " + userid + ": " + channel + ": " + command)
         dividedCommand = command.split()
         cmd = dividedCommand[0]
         cmd = cmd.lower()
 
         if cmd == 'mentors':
-            ifDebug(print, len(dividedCommand))
+            util.ifDebug(print, len(dividedCommand))
             if len(dividedCommand) == 1:
-                util.sendMessage(userid, "Please input a question")
+                util.slack.sendMessage(userid, "Please input a question")
             else:
                 self.pairMentor(command[8:], username, userid)
         elif cmd == 'help':
@@ -87,14 +86,14 @@ class SlackBot:
         postData['question'] = question
         postData['username'] = username
         postData['userid'] = userid
-        util.sendMessage(userid, "Trying to find a mentor")
+        util.slack.sendMessage(userid, "Trying to find a mentor")
         req = requests.post(config.serverurl + 'pairmentor', data=postData)
         return req.text
 
     def help(self, userid, username):
-        util.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
-        util.sendMessage(userid, "All commands will begin with <AT character>slackru")
-        util.sendMessage(userid, """Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
+        util.slack.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
+        util.slack.sendMessage(userid, "All commands will begin with <AT character>slackru")
+        util.slack.sendMessage(userid, """Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
                         \n| help  | -> Wait what?
                         \n | announcements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
                         \nMentor:\n| shortenList <password> <hacker id> | -> Used to help a hackers whose keywords could not be found.

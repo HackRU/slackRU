@@ -1,11 +1,13 @@
-import flask
 import json
 import time
-import slackru.util as util
 from threading import Thread
-from slackru import main, ifNotDebug
+
+import flask
 from flask import current_app as app
 from flask.views import View
+
+import slackru.util as util
+from slackru import main
 
 
 class PairMentorView(View):
@@ -66,8 +68,8 @@ class PairMentorView(View):
                                      'value': 'no'}]}]
 
         for userid in matched:
-            channel = util.getDirectMessageChannel(userid)
-            timestamp = util.sendMessage(channel, text, attachments)
+            channel = util.slack.getDirectMessageChannel(userid)
+            timestamp = util.slack.sendMessage(channel, text, attachments)
             self.db.insertPost(questionId, userid, channel, timestamp)
 
         return "done"
@@ -97,7 +99,7 @@ class MessageActionView(View):
         query = "SELECT channel,timestamp FROM posts " \
                 "WHERE questionId=? AND userid!=?"
         for post in self.db.runQuery(query, [self.questionId, self.mentorid]):
-            util.deleteDirectMessages(post['channel'], post['timestamp'])
+            util.slack.deleteDirectMessages(post['channel'], post['timestamp'])
 
         hackerid, question = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',
                                          [self.questionId],
@@ -106,12 +108,12 @@ class MessageActionView(View):
         resp = {'text': 'That\'s the spirit! Connecting you to <@{0}>...'.format(hackerid)}
 
         def startGroupMessage():
-            ifNotDebug(time.sleep, 3)
-            channel = util.getDirectMessageChannel(hackerid + ',' + self.mentorid)
+            util.ifNotDebug(time.sleep, 3)
+            channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
             fmt = "Hello <@{0}>. Your request for a mentor with regards to the following question has been processed:\n" \
                   ">{2}\n" \
                   "You have been matched with <@{1}>. Take it away <@{1}>! :grinning:"
-            util.sendMessage(channel, fmt.format(hackerid, self.mentorid, question))
+            util.slack.sendMessage(channel, fmt.format(hackerid, self.mentorid, question))
 
         Thread(target=startGroupMessage).start()
         return flask.jsonify(resp)
@@ -120,8 +122,8 @@ class MessageActionView(View):
         resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
         def delayedDeleteMessage():
-            ifNotDebug(time.sleep, 3)
-            util.deleteDirectMessages(self.postData['channel']['id'], self.postData['message_ts'])
+            util.ifNotDebug(time.sleep, 3)
+            util.slack.deleteDirectMessages(self.postData['channel']['id'], self.postData['message_ts'])
 
         Thread(target=delayedDeleteMessage).start()
         return flask.jsonify(resp)

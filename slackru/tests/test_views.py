@@ -1,8 +1,9 @@
 import os
 import unittest
-import flask
 import json
 from datetime import datetime, timedelta
+
+import flask
 
 
 class TestViews(unittest.TestCase):

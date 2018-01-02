@@ -1,6 +1,7 @@
 """ Slack Wrapper Functions """
 
 import os
+
 from slackclient import SlackClient
 
 
