@@ -1,3 +1,5 @@
+""" All SQLite database interactions should route through a DB instance """
+
 import sqlite3
 
 

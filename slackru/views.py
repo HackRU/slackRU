@@ -1,3 +1,5 @@
+""" Flask View (URL Route) Definitions """
+
 import json
 import time
 from threading import Thread

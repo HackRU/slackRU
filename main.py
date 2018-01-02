@@ -1,3 +1,9 @@
+""" Use this script to start the server OR slackbot
+
+    usage:
+        python main.py <server|slackbot> [-c <production|development>]
+"""
+
 import os
 import argparse
 

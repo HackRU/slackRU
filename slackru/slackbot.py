@@ -1,4 +1,5 @@
 """ The SlackBot class is defined here """
+
 import os
 import time
 import requests
