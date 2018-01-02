@@ -9,7 +9,7 @@ class Base:
         self.conn = None
         self.c = None
 
-    def open(self):
+    def get(self):
         self.conn = sqlite3.connect(self.dbpath)
 
         def make_dicts(cursor, row):
@@ -32,36 +32,46 @@ class Init(Base):
     def __init__(self, dbpath):
         Base.__init__(self, dbpath)
 
-        self.open()
+        self.get()
 
         if self.isEmpty():
-            self.initAll()
+            self.create_all()
 
     def isEmpty(self):
         self.c.execute('SELECT name FROM sqlite_master WHERE type="table";')
         return self.c.fetchall() == []
 
-    def initAll(self):
-        self.initMentors()
-        self.initShifts()
-        self.initQuestions()
-        self.initPosts()
+    def create_all(self):
+        self.create_mentors()
+        self.create_shifts()
+        self.create_questions()
+        self.create_posts()
 
-    def initMentors(self):
+    def drop_table(self, table_name):
+        self.c.execute("DROP TABLE IF EXISTS " + table_name)
+        self.conn.commit()
+
+    def drop_all(self):
+        self.drop_table('mentors')
+        self.drop_table('shifts')
+        self.drop_table('questions')
+        self.drop_table('posts')
+
+    def create_mentors(self):
         self.execAndCommit("CREATE TABLE mentors "
                            "(userid TEXT PRIMARY KEY, "
                            "name TEXT, "
                            "username, "
                            "keywords VARCHAR(1000))")
 
-    def initShifts(self):
+    def create_shifts(self):
         self.execAndCommit("CREATE TABLE shifts "
                            "(userid TEXT, "
                            "start TEXT, "
                            "end TEXT, "
                            "FOREIGN KEY(userid) REFERENCES mentors(userid))")
 
-    def initQuestions(self):
+    def create_questions(self):
         self.execAndCommit("CREATE TABLE questions "
                            "(id INTEGER PRIMARY KEY, "
                            "question TEXT, "
@@ -73,7 +83,7 @@ class Init(Base):
                            "assignedMentor TEXT, "
                            "FOREIGN KEY(assignedMentor) REFERENCES mentors(userid))")
 
-    def initPosts(self):
+    def create_posts(self):
         self.execAndCommit("CREATE TABLE posts "
                            "(questionId INTEGER, "
                            "userid TEXT, "

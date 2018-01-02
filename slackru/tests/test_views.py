@@ -15,58 +15,82 @@ class TestViews(unittest.TestCase):
         from slackru.config import config
         from slackru import create_app
 
-        config.setup()
+        cls.app = create_app()
 
-        if os.path.isfile(config.dbpath):
-            os.remove(config.dbpath)
-        app = create_app()
-        db = app.db.open()
+        cls.db = cls.app.db.get()
+        cls.db.drop_all()
+        cls.db.create_all()
 
-        cls.user = "Bryan Bugyi"
-        cls.username = "bryan.bugyi"
-        cls.userid = "U86U3G52Q"
-        db.insertMentor(cls.user, cls.username, cls.userid, "Python")
+        cls.mentor = "Bryan Bugyi"
+        cls.mentorname = "bryan.bugyi"
+        cls.mentorid = "U86U3G52Q"
 
-        start = datetime.now().strftime('%Y-%m-%d %H:%M')
-        end = (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M')
-        db.insertShift(cls.userid, start, end)
+        cls.username = "bryanbugyi34"
+        cls.userid = "U8LRL4L5R"
+        cls.pythonQuestion = "I need help with Python. Something's not working the way it should."
 
-        db.insertQuestion("Who are you?", cls.username, cls.userid, '[{}]'.format(cls.userid))
+        start_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+        end_time = (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M')
+        cls.db.insertMentor(cls.mentor, cls.mentorname, cls.mentorid, "Python")
+        cls.db.insertShift(cls.mentorid, start_time, end_time)
 
-        cls.db = db
-        cls.app = app
         cls.config = config
+        config.setup()
 
     @classmethod
     def tearDownClass(cls):
         cls.db.close()
 
-    def test_pairMentor(self):
-        postData = {'question': 'I need help with Python',
+    def setUp(self):
+        self.db.drop_table('questions')
+        self.db.create_questions()
+
+
+class TestPairMentor(TestViews):
+    def send_request(self, question):
+        postData = {'question': question,
                     'username': self.username,
                     'userid': self.userid}
 
         with self.app.test_client() as client:
             resp = client.post(self.config.serverurl + 'pairmentor', data=postData)
-            self.assertEqual("200 OK", resp.status)
+            self.assertEqual(200, resp.status_code)
 
-    def test_message_action(self):
+    def test_match(self):
+        self.send_request(self.pythonQuestion)
+
+    def test_no_match(self):
+        self.send_request("What is 2+2?")
+
+
+class TestMessageAction(TestViews):
+    def setUp(self):
+        TestViews.setUp(self)
+        self.db.insertQuestion(self.pythonQuestion, self.username, self.userid, json.dumps([self.userid]))
+
+    def send_request(self, value, callback):
         payload = {"actions": [{"name": "answer",
-                                "value": "no",
+                                "value": value,
                                 "type": "button"}],
-                   "callback_id": "mentorResponse_1",
-                   "user": {'id': self.userid,
-                            'name': self.username},
+                   "callback_id": callback,
+                   "user": {'id': self.mentorid,
+                            'name': self.mentorname},
                    'message_ts': '111111111111',
-                   'channel': {'id': 'ABCDEFG',
+                   'channel': {'id': 'D86QQ6P2P',
                                'name': 'general'}}
-
         postData = {'payload': json.dumps(payload)}
-
         with self.app.test_client() as client:
             resp = client.post(self.config.serverurl + 'message_action', data=postData)
-            self.assertNotEqual(b'done', resp.data)
-            self.assertEqual("200 OK", resp.status)
+            self.assertEqual(200, resp.status_code)
+
+    def test_accept(self):
+        self.send_request("yes", "mentorResponse_1")
+
+    def test_decline(self):
+        self.send_request("no", "mentorResponse_1")
+
+    def test_invalid_callback(self):
+        self.send_request("yes", "INVALID")
 
 
 if __name__ == '__main__':

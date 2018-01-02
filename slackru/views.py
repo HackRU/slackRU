@@ -17,13 +17,13 @@ class PairMentorView(View):
 
     def __init__(self):
         self.postData = flask.request.form.to_dict()
-        self.db = app.db.open()
+        self.db = app.db.get()
 
     def matchMentors(self):
-        query = "SELECT mentors.* FROM shifts " \
-                "JOIN mentors ON mentors.userid = shifts.userid " \
-                "WHERE datetime('now', 'localtime') >= datetime(shifts.start) " \
-                "AND datetime('now', 'localtime') < datetime(shifts.end)"
+        query = ("SELECT mentors.* FROM shifts "
+                "JOIN mentors ON mentors.userid = shifts.userid "
+                "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
+                "AND datetime('now', 'localtime') < datetime(shifts.end)")
 
         matched = []
         query_results = self.db.runQuery(query)
@@ -50,10 +50,10 @@ class PairMentorView(View):
 
         questionId, matched = self.matchMentors()
 
-        fmt = "*A HACKER NEEDS YOUR HELP!!!*\n" \
-              "<@{0}> has requested to be assisted by a mentor.\n" \
-              "They provided the following statement:\n" \
-              ">_\"{1}\"_\nCan you help this hacker?\n"
+        fmt = ("*A HACKER NEEDS YOUR HELP!!!*\n"
+                "<@{0}> has requested to be assisted by a mentor.\n"
+                "They provided the following statement:\n"
+                ">_\"{1}\"_\nCan you help this hacker?\n")
 
         text = fmt.format(self.postData['userid'], self.postData['question'])
 
@@ -81,7 +81,7 @@ class MessageActionView(View):
     methods = ['POST']
 
     def __init__(self):
-        self.db = app.db.open()
+        self.db = app.db.get()
 
         payload = flask.request.form.to_dict()['payload']
         self.postData = json.loads(payload)
@@ -103,18 +103,23 @@ class MessageActionView(View):
         for post in self.db.runQuery(query, [self.questionId, self.mentorid]):
             util.slack.deleteDirectMessages(post['channel'], post['timestamp'])
 
-        hackerid, question = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',
+        query_result = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',
                                          [self.questionId],
-                                         one=True).values()
+                                         one=True)
 
-        resp = {'text': 'That\'s the spirit! Connecting you to <@{0}>...'.format(hackerid)}
+        assert query_result, "No question matches the given question ID!"
+
+        hackerid, question = query_result.values()
+
+        resp = {'text': 'That\'s the spirit! I have setup a direct message between you and <@{0}>. Please reach out to <@{0}> and let them know you are taking ownership of this request. Thanks! :grinning:'.format(hackerid)}
 
         def startGroupMessage():
             util.ifNotDebug(time.sleep, 3)
             channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
-            fmt = "Hello <@{0}>. Your request for a mentor with regards to the following question has been processed:\n" \
-                  ">{2}\n" \
-                  "You have been matched with <@{1}>. Take it away <@{1}>! :grinning:"
+            fmt = ("Hello <@{0}>. Your request for a mentor has been processed. "
+                    "You have been matched with <@{1}>.\n\n"
+                    "The following question/comment is associated with this request:\n>_\"{2}\"_\n"
+                    "Take it away <@{1}>! :grinning:")
             util.slack.sendMessage(channel, fmt.format(hackerid, self.mentorid, question))
 
         Thread(target=startGroupMessage).start()
