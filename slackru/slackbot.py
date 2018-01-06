@@ -17,21 +17,23 @@ AT_BOTID = "<@" + BOTID + ">"
 
 
 class SlackBot:
-    def run(self):
+    def __init__(self):
+        self.stayAlive = True
+
+    def start(self):
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
             util.ifDebug(print, "SlackRU connected and running!")
-            while True:
+            while self.stayAlive:
                 command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
                     self.handle_command(command, channel, userid, username)
-                    # check busy status of all users, their last time busy and if they have been busy for more than 35 minutes
                 time.sleep(READ_WEBSOCKET_DELAY)
-                # This function will check on all the active channels and if the latest response was an hour ago from the current time
-                # The bot will message the channel and let them know it will be stop being monitored and give them insturctions
-                # For certain scenarios.
         else:
             util.ifDebug(print, "Connection failed. Invalid Slack token or bot ID?")
+
+    def stop(self):
+        self.stayAlive = False
 
     def parse_slack_output(self, slack_rtm_output):
         """
@@ -61,7 +63,7 @@ class SlackBot:
             :param channel:str the channel id
             :param userid:str the user id
             :param:str the username
-            """
+        """
         util.ifDebug(print, username + ": " + userid + ": " + channel + ": " + command)
         dividedCommand = command.split()
         cmd = dividedCommand[0]
@@ -72,10 +74,10 @@ class SlackBot:
             if len(dividedCommand) == 1:
                 util.slack.sendMessage(userid, "Please input a question")
             else:
-                self.pairMentor(command[8:], username, userid)
+                question = ' '.join(dividedCommand[1:])
+                self.pairMentor(question, username, userid)
         elif cmd == 'help':
-            help(userid, username)
-            # call the findAvailMentorCommand
+            return self.help(userid, username)
 
     def pairMentor(self, question, username, userid):
         """
@@ -89,14 +91,16 @@ class SlackBot:
         postData['userid'] = userid
         util.slack.sendMessage(userid, "Trying to find a mentor")
         req = requests.post(config.serverurl + 'pairmentor', data=postData)
-        return req.text
+        return req.status_code
 
     def help(self, userid, username):
-        util.slack.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
-        util.slack.sendMessage(userid, "All commands will begin with <AT character>slackru")
-        util.slack.sendMessage(userid, """Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
+        resps = [None, None, None]
+        resps[0] = util.slack.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
+        resps[1] = util.slack.sendMessage(userid, "All commands will begin with <AT character>slackru")
+        resps[2] = util.slack.sendMessage(userid, """Hacker:\n| mentors <keywords> | -> This command takes keywords and attempts to set you up with a mentor
                         \n| help  | -> Wait what?
                         \n | announcements | -> returns next 5 events \n  | hours | -> returns hours left in the hackathon
                         \nMentor:\n| shortenList <password> <hacker id> | -> Used to help a hackers whose keywords could not be found.
                        \n | unbusy | makes your busy status 0, so you can help more people!
                        \n | busy | -> opposite of the guy above, used when you want to afk I guess""")
+        return all([resp['ok'] for resp in resps])

@@ -71,7 +71,7 @@ class PairMentorView(View):
 
         for userid in matched:
             channel = util.slack.getDirectMessageChannel(userid)
-            timestamp = util.slack.sendMessage(channel, text, attachments)
+            timestamp = util.slack.sendMessage(channel, text, attachments)['ts']
             self.db.insertPost(questionId, userid, channel, timestamp)
 
         return "done"

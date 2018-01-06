@@ -36,7 +36,7 @@ def getDirectMessageChannel(users):
 
 def sendMessage(channel, text, attachments=None):
     resp = slack_client.api_call("chat.postMessage", channel=channel, text=text, attachments=attachments, as_user=True)
-    return resp['ts']
+    return resp
 
 
 def deleteDirectMessages(channel, ts):

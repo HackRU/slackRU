@@ -24,7 +24,7 @@ def server():
 def slackbot():
     from slackru.slackbot import SlackBot
     bot = SlackBot()
-    bot.run()
+    bot.start()
 
 
 if __name__ == "__main__":

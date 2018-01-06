@@ -1,32 +1,22 @@
-import os
 import unittest
 import json
 from datetime import datetime, timedelta
 
-import flask
+from slackru.tests.test_base import TestBase
 
 
-class TestViews(unittest.TestCase):
+class TestViews(TestBase):
     @classmethod
     def setUpClass(cls):
-        os.environ['SLACK_CONFIG'] = 'development'
-        flask.testing = True
+        TestBase.setUpClass()
 
-        from slackru.config import config
         from slackru import create_app
-
         cls.app = create_app()
 
         cls.db = cls.app.db.get()
         cls.db.drop_all()
         cls.db.create_all()
 
-        cls.mentor = "Bryan Bugyi"
-        cls.mentorname = "bryan.bugyi"
-        cls.mentorid = "U86U3G52Q"
-
-        cls.username = "bryanbugyi34"
-        cls.userid = "U8LRL4L5R"
         cls.pythonQuestion = "I need help with Python. Something's not working the way it should."
 
         start_time = datetime.now().strftime('%Y-%m-%d %H:%M')
@@ -34,11 +24,9 @@ class TestViews(unittest.TestCase):
         cls.db.insertMentor(cls.mentor, cls.mentorname, cls.mentorid, "Python")
         cls.db.insertShift(cls.mentorid, start_time, end_time)
 
-        cls.config = config
-        config.setup()
-
     @classmethod
     def tearDownClass(cls):
+        TestBase.tearDownClass()
         cls.db.close()
 
     def setUp(self):
