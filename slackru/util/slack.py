@@ -17,15 +17,6 @@ def id_to_username(userid):
                 return user['name']
 
 
-def username_to_id(username):
-    api = slack_client.api_call('users.list')
-    if api.get('ok'):
-        users = api.get('members')
-        for user in users:
-            if 'id' in user and user['name'] == username:
-                return user['id']
-
-
 def getDirectMessageChannel(users):
     try:
         resp = slack_client.api_call("conversations.open", users=users)
