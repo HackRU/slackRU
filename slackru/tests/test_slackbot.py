@@ -1,29 +1,34 @@
 import requests
 from threading import Thread
 
-from slackru.tests.test_base import TestBase
+import pytest
 
 
-class TestSlackBot(TestBase):
-    @classmethod
-    def setUpClass(cls):
-        TestBase.setUpClass()
+@pytest.fixture
+def bot():
+    from slackru.slackbot import SlackBot
+    bot = SlackBot()
+    Thread(target=bot.start).start()
 
-        from slackru.slackbot import SlackBot
-        cls.bot = SlackBot()
-        Thread(target=cls.bot.start).start()
+    yield bot
 
-    @classmethod
-    def tearDownClass(cls):
-        TestBase.tearDownClass()
-        cls.bot.stop()
+    bot.stop()
 
 
-class TestHandleCommand(TestSlackBot):
-    def test_mentors_cmd(self):
-        self.assertRaises(requests.exceptions.ConnectionError,
-                self.bot.handle_command, "mentors Python Rules!", self.channel, self.userid, self.username)
+@pytest.fixture
+def handle_cmd(bot, data):
+    return lambda cmd: bot.handle_command(cmd, data.channel, data.userid, data.username)
 
-    def test_help_cmd(self):
-        resp = self.bot.handle_command("help", self.channel, self.userid, self.username)
-        self.assertEqual(True, resp)
+
+@pytest.mark.parametrize('command', ["mentors Python Rules!", "mentors"])
+def test_mentors_cmd(client, handle_cmd, command):
+    if command == "mentors":
+        assert handle_cmd(command) is True
+    else:
+        with pytest.raises(requests.exceptions.ConnectionError):
+            handle_cmd(command)
+
+
+def test_help_cmd(client, handle_cmd):
+    resp = handle_cmd("help")
+    assert resp is True
