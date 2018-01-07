@@ -1,16 +1,14 @@
 """ The SlackBot class is defined here """
 
 import os
-import time
 import requests
+import time
 
 from slackclient import SlackClient
 
-import slackru.util as util
 from slackru.config import config
+import slackru.util as util
 
-# List Of Waiting Hacker -> Hackers who are currently waiting for a mentor to respond to them!
-# List Of Active Channels -> Active channels created from the mentor chat.
 slack_client = SlackClient(os.environ['SLACK_API_KEY'])
 BOTID = config.botID
 AT_BOTID = "<@" + BOTID + ">"
@@ -58,11 +56,7 @@ class SlackBot:
         """
             Receives commands directed at the bot and determines if they
             are valid commands. If so, then acts on the commands. If not,
-            returns back what it needs for clarification.
-            :param command:str the command to parse
-            :param channel:str the channel id
-            :param userid:str the user id
-            :param:str the username
+            prompts user for more information.
         """
         util.ifDebug(print, username + ": " + userid + ": " + channel + ": " + command)
         dividedCommand = command.split()
@@ -72,18 +66,17 @@ class SlackBot:
         if cmd == 'mentors':
             util.ifDebug(print, len(dividedCommand))
             if len(dividedCommand) == 1:
-                util.slack.sendMessage(userid, "Please input a question")
+                resp = util.slack.sendMessage(userid, "Please input a question")
+                return resp['ok']
             else:
                 question = ' '.join(dividedCommand[1:])
-                self.pairMentor(question, username, userid)
+                return self.pairMentor(question, username, userid)
         elif cmd == 'help':
             return self.help(userid, username)
 
     def pairMentor(self, question, username, userid):
         """
             Makes a post request to the server and passes the pairing to he mentee
-            :param command:str the parsedcommand
-            :param username:str the username
         """
         postData = {}
         postData['question'] = question
