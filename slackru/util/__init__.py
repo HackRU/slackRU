@@ -1,10 +1,10 @@
 def ifDebug(func, *args, inverted=False, **kwargs):
     """ Higher-Order Debug Function
 
-    Calls function (1st arg) only if debugging is enabled.
+    Calls function only if debugging is enabled.
     """
     from slackru.config import config
-    if config.debug ^ inverted:  # Bitwise XOR operator
+    if config.DEBUG ^ inverted:  # Bitwise XOR operator
         func(*args, **kwargs)
 
 

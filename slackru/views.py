@@ -5,11 +5,10 @@ import time
 from threading import Thread
 
 import flask
-from flask import current_app as app
 from flask.views import View
 
 import slackru.util as util
-from slackru import main
+from slackru import main, get_db
 
 
 class PairMentorView(View):
@@ -17,7 +16,7 @@ class PairMentorView(View):
 
     def __init__(self):
         self.postData = flask.request.form.to_dict()
-        self.db = app.db.get()
+        self.db = get_db()
 
     def matchMentors(self):
         query = ("SELECT mentors.* FROM shifts "
@@ -81,7 +80,7 @@ class MessageActionView(View):
     methods = ['POST']
 
     def __init__(self):
-        self.db = app.db.get()
+        self.db = get_db()
 
         payload = flask.request.form.to_dict()['payload']
         self.postData = json.loads(payload)

@@ -1,9 +1,13 @@
-""" Configuration Classes """
+""" Configuration Classes
+
+NOTE: Configuration class variables in all caps represent builtin Flask
+      configuration values
+"""
 
 import os
 
 
-class Base:
+class Config:
     botID = "U86U670N8"
 
     @classmethod
@@ -13,14 +17,14 @@ class Base:
             os.makedirs(db_dir)
 
 
-class DevelopmentConfig(Base):
-    debug = True
+class DevelopmentConfig(Config):
+    DEBUG = True
     serverurl = 'http://127.0.0.1:5000/'
     dbpath = 'var/mentors-dev.db'
 
 
-class ProductionConfig(Base):
-    debug = False
+class ProductionConfig(Config):
+    DEBUG = False
     serverurl = "http://slackru.pythonanywhere.com/"
     dbpath = "/home/slackru/SlackRU/var/mentors.db"
 
