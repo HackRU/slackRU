@@ -113,7 +113,7 @@ class MessageActionView(View):
         resp = {'text': 'That\'s the spirit! I have setup a direct message between you and <@{0}>. Please reach out to <@{0}> and let them know you are taking ownership of this request. Thanks! :grinning:'.format(hackerid)}
 
         def startGroupMessage():
-            util.ifNotDebug(time.sleep, 3)
+            util.ifNotDebugThen(time.sleep, 3)
             channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
             fmt = ("Hello <@{0}>. Your request for a mentor has been processed. "
                     "You have been matched with <@{1}>.\n\n"
@@ -128,7 +128,7 @@ class MessageActionView(View):
         resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
         def delayedDeleteMessage():
-            util.ifNotDebug(time.sleep, 3)
+            util.ifNotDebugThen(time.sleep, 3)
             util.slack.deleteDirectMessages(self.postData['channel']['id'], self.postData['message_ts'])
 
         Thread(target=delayedDeleteMessage).start()

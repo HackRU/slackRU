@@ -1,4 +1,4 @@
-def ifDebug(func, *args, inverted=False, **kwargs):
+def ifDebugThen(func, *args, inverted=False, **kwargs):
     """ Higher-Order Debug Function
 
     Calls function only if debugging is enabled.
@@ -8,8 +8,8 @@ def ifDebug(func, *args, inverted=False, **kwargs):
         func(*args, **kwargs)
 
 
-def ifNotDebug(func, *args, **kwargs):
-    ifDebug(func, *args, inverted=True, **kwargs)
+def ifNotDebugThen(func, *args, **kwargs):
+    ifDebugThen(func, *args, inverted=True, **kwargs)
 
 
 import slackru.util.slack

@@ -21,14 +21,14 @@ class SlackBot:
     def start(self):
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
-            util.ifDebug(print, "SlackRU connected and running!")
+            util.ifDebugThen(print, "SlackRU connected and running!")
             while self.stayAlive:
                 command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
                     self.handle_command(command, channel, userid, username)
                 time.sleep(READ_WEBSOCKET_DELAY)
         else:
-            util.ifDebug(print, "Connection failed. Invalid Slack token or bot ID?")
+            util.ifDebugThen(print, "Connection failed. Invalid Slack token or bot ID?")
 
     def stop(self):
         self.stayAlive = False
@@ -43,7 +43,7 @@ class SlackBot:
         if output_list and len(output_list) > 0:
             for output in output_list:
                 if output and 'text' in output and AT_BOTID in output['text']:
-                    util.ifDebug(print, output['channel'])
+                    util.ifDebugThen(print, output['channel'])
                     user_name = util.slack.id_to_username(output['user'])
                     return (output['text'].split(AT_BOTID)[1].strip(),
                             output['channel'],
@@ -58,13 +58,13 @@ class SlackBot:
             are valid commands. If so, then acts on the commands. If not,
             prompts user for more information.
         """
-        util.ifDebug(print, username + ": " + userid + ": " + channel + ": " + command)
+        util.ifDebugThen(print, username + ": " + userid + ": " + channel + ": " + command)
         dividedCommand = command.split()
         cmd = dividedCommand[0]
         cmd = cmd.lower()
 
         if cmd == 'mentors':
-            util.ifDebug(print, len(dividedCommand))
+            util.ifDebugThen(print, len(dividedCommand))
             if len(dividedCommand) == 1:
                 resp = util.slack.sendMessage(userid, "Please input a question")
                 return resp['ok']
