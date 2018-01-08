@@ -16,6 +16,13 @@ def app():
 
 
 @pytest.fixture(scope='session')
+def config_setup():
+    from slackru.config import config
+    flask.testing = True
+    config.setup()
+
+
+@pytest.fixture(scope='session')
 def db(data):
     db = get_db()
     db.drop_all()
@@ -29,13 +36,6 @@ def db(data):
     yield db
 
     db.close()
-
-
-@pytest.fixture(scope='session')
-def config_setup():
-    from slackru.config import config
-    flask.testing = config.testing = True
-    config.setup()
 
 
 @pytest.fixture(scope='session', name='data')

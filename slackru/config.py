@@ -1,6 +1,6 @@
 """ Configuration Classes
 
-NOTE: Configuration class variables in all caps represent builtin Flask
+NOTE: The configuration class variables in all caps represent builtin Flask
       configuration values
 """
 

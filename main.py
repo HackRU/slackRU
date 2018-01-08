@@ -1,4 +1,4 @@
-""" Use this script to start the server OR slackbot
+""" Use this script to manually run the server OR slackbot
 
     usage:
         python main.py <server|slackbot> [-c <production|development>]
@@ -24,7 +24,7 @@ def server():
 def slackbot():
     from slackru.slackbot import SlackBot
     bot = SlackBot()
-    bot.start()
+    bot.run()
 
 
 if __name__ == "__main__":

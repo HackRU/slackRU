@@ -3,13 +3,13 @@
 import sqlite3
 
 
-class Base:
+class BaseDB:
     def __init__(self, dbpath):
         self.dbpath = dbpath
         self.conn = None
         self.c = None
 
-    def get(self):
+    def open(self):
         self.conn = sqlite3.connect(self.dbpath)
 
         def make_dicts(cursor, row):
@@ -28,11 +28,11 @@ class Base:
         self.conn.commit()
 
 
-class Init(Base):
+class CreateDB(BaseDB):
     def __init__(self, dbpath):
-        Base.__init__(self, dbpath)
+        BaseDB.__init__(self, dbpath)
 
-        self.get()
+        self.open()
 
         if self.isEmpty():
             self.create_all()
@@ -93,9 +93,9 @@ class Init(Base):
                            "FOREIGN KEY(userid) REFERENCES mentors(userid))")
 
 
-class DB(Init):
+class DB(CreateDB):
     def __init__(self, dbpath):
-        Init.__init__(self, dbpath)
+        CreateDB.__init__(self, dbpath)
 
     def runQuery(self, query, args=(), one=False):
         cur = self.conn.execute(query, args)

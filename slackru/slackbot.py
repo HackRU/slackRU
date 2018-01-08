@@ -18,7 +18,7 @@ class SlackBot:
     def __init__(self):
         self.stayAlive = True
 
-    def start(self):
+    def run(self):
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
             util.ifDebugThen(print, "SlackRU connected and running!")
