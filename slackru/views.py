@@ -11,71 +11,6 @@ import slackru.util as util
 from slackru import main, get_db
 
 
-class PairMentorView(View):
-    methods = ['POST']
-
-    def __init__(self):
-        self.postData = flask.request.form.to_dict()
-        self.db = get_db()
-
-    def matchMentors(self):
-        query = ("SELECT mentors.* FROM shifts "
-                "JOIN mentors ON mentors.userid = shifts.userid "
-                "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
-                "AND datetime('now', 'localtime') < datetime(shifts.end)")
-
-        matched = []
-        query_results = self.db.runQuery(query)
-        for mentor in query_results:
-            keywords = [word.lower() for word in mentor['keywords'].split(',')]
-            for word in self.postData['question'].split():
-                if word.lower() in keywords:
-                    matched.append(mentor['userid'])
-                    break
-
-        if matched == []:
-            for mentor in query_results:
-                matched.append(mentor['userid'])
-
-        questionId = self.db.insertQuestion(self.postData['question'],
-                                self.postData['username'],
-                                self.postData['userid'],
-                                json.dumps(matched))
-
-        return (questionId, matched)
-
-    def dispatch_request(self):
-        """ Route that client sends the question to """
-
-        questionId, matched = self.matchMentors()
-
-        fmt = ("*A HACKER NEEDS YOUR HELP!!!*\n"
-                "<@{0}> has requested to be assisted by a mentor.\n"
-                "They provided the following statement:\n"
-                ">_\"{1}\"_\nCan you help this hacker?\n")
-
-        text = fmt.format(self.postData['userid'], self.postData['question'])
-
-        attachments = [{'text': '',
-                        'attachment_type': 'default',
-                        'callback_id': 'mentorResponse_{0:d}'.format(questionId),
-                        'actions': [{'name': 'answer',
-                                     'text': 'Yes',
-                                     'type': 'button',
-                                     'value': 'yes'},
-                                    {'name': 'answer',
-                                     'text': 'No',
-                                     'type': 'button',
-                                     'value': 'no'}]}]
-
-        for userid in matched:
-            channel = util.slack.getDirectMessageChannel(userid)
-            timestamp = util.slack.sendMessage(channel, text, attachments)['ts']
-            self.db.insertPost(questionId, userid, channel, timestamp)
-
-        return "done"
-
-
 class MessageActionView(View):
     methods = ['POST']
 
@@ -141,5 +76,4 @@ class MessageActionView(View):
 
 
 # These are equivalent to the '@main.route' function decorators
-main.add_url_rule('/pairmentor', view_func=PairMentorView.as_view('pairMentor'))
 main.add_url_rule('/message_action', view_func=MessageActionView.as_view('message_action'))

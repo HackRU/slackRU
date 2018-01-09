@@ -1,5 +1,4 @@
 import os
-from collections import namedtuple
 from datetime import datetime, timedelta
 
 import pytest
@@ -30,20 +29,25 @@ def db(data):
 
     start_time = datetime.now().strftime('%Y-%m-%d %H:%M')
     end_time = (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M')
-    db.insertMentor(data.mentor, data.mentorname, data.mentorid, "Python")
-    db.insertShift(data.mentorid, start_time, end_time)
+    db.insertMentor(data['mentor'][0], data['mentorname'][0], data['mentorid'][0], "Python")
+    db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], "Java")
+    db.insertShift(data['mentorid'][0], start_time, end_time)
+    db.insertShift(data['mentorid'][1], start_time, end_time)
 
     yield db
 
     db.close()
 
 
-@pytest.fixture(scope='session', name='data')
-def slack_data(config_setup):
-    SlackData = namedtuple('SlackData', 'mentor, mentorname, mentorid, username, userid, channel')
-    return SlackData('Bryan Bugyi',
-                     'bryan.bugyi',
-                     'U86U3G52Q',
-                     'bryanbugyi34',
-                     'U8LRL4L5R',
-                     'DUMMY_CHANNEL')
+@pytest.fixture(scope='session')
+def data(config_setup):
+    data = dict()
+    data['mentor'] = ['Bryan Bugyi', 'John Smith']
+    data['mentorname'] = ['bryan.bugyi', 'john.smith']
+    data['mentorid'] = ['U86U3G52Q', 'ABCDEFGHI']
+    data['username'] = 'bryanbugyi34'
+    data['userid'] = 'U8LRL4L5R'
+    data['channel'] = 'DUMMY_CHANNEL'
+    data['question'] = ['I am having some trouble with my Python code.', 'I love JAVA', 'I hate C++!']
+
+    return data

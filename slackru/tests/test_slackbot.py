@@ -1,4 +1,3 @@
-import requests
 from threading import Thread
 
 import pytest
@@ -9,8 +8,7 @@ def test_mentors_cmd(client, handle_cmd, command):
     if command == "mentors":
         assert handle_cmd(command) is True
     else:
-        with pytest.raises(requests.exceptions.ConnectionError):
-            handle_cmd(command)
+        assert handle_cmd(command) == 'done'
 
 
 def test_help_cmd(client, handle_cmd):
@@ -18,9 +16,16 @@ def test_help_cmd(client, handle_cmd):
     assert resp is True
 
 
+@pytest.mark.parametrize('questionIndex, mentorIndexes', [(0, [0]), (1, [1]), (2, [0, 1])])
+def test_matchMentors(data, questionIndex, mentorIndexes):
+    from slackru.slackbot import Commands
+    matched = Commands._matchMentors(data['question'][questionIndex])
+    assert matched == [data['mentorid'][i] for i in mentorIndexes]
+
+
 @pytest.fixture(scope='module')
 def handle_cmd(bot, data):
-    return lambda cmd: bot.handle_command(cmd, data.channel, data.userid, data.username)
+    return lambda cmd: bot.handle_command(cmd, data['channel'], data['userid'], data['username'])
 
 
 @pytest.fixture(scope='module')
