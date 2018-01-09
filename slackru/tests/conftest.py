@@ -21,7 +21,7 @@ def config_setup():
     config.setup()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def db(data):
     db = get_db()
     db.drop_all()
@@ -47,7 +47,7 @@ def data(config_setup):
     data['mentorid'] = ['U86U3G52Q', 'U8R4CCDV4']
     data['username'] = 'bryanbugyi34'
     data['userid'] = 'U8LRL4L5R'
-    data['channel'] = 'DUMMY_CHANNEL'
+    data['channel'] = ['D86QQ6P2P', 'D8RAAMGJ3']
     data['question'] = ['I am having some trouble with my Python code.', 'I love JAVA', 'I hate C++!']
 
     return data

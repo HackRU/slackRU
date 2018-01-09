@@ -27,7 +27,7 @@ def test_help_cmd(client, handle_cmd):
 
 @pytest.fixture(scope='module')
 def handle_cmd(bot, data):
-    return lambda cmd: bot.handle_command(cmd, data['channel'], data['userid'], data['username'])
+    return lambda cmd: bot.handle_command(cmd, data['channel'][0], data['userid'], data['username'])
 
 
 @pytest.fixture(scope='module')

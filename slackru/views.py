@@ -14,27 +14,41 @@ from slackru import main, get_db
 class MessageActionView(View):
     methods = ['POST']
 
-    def __init__(self):
+    def __init__(self, postData=None):
         self.db = get_db()
 
-        payload = flask.request.form.to_dict()['payload']
-        self.postData = json.loads(payload)
+        if postData:
+            self.postData = postData
+        else:
+            self.postData = flask.request.form.to_dict()
 
-        if 'mentorResponse' in self.postData['callback_id']:
-            self.answer = self.postData['actions'][0]['value']
-            self.mentorid = self.postData['user']['id']
-            self.questionId = self.postData['callback_id'].split('_')[1]
+        self.payLoad = json.loads(self.postData['payload'])
+
+        if 'mentorResponse' in self.payLoad['callback_id']:
+            self.answer = self.payLoad['actions'][0]['value']
+            self.mentorid = self.payLoad['user']['id']
+            self.questionId = self.payLoad['callback_id'].split('_')[1]
 
             # Sets View Function
             self.dispatch_request = self.DR_mentorResponse
         else:
             self.dispatch_request = lambda: "done"
 
+    def DR_mentorResponse(self):
+        """ Slack Action Request URL """
+        resp = {'yes': self.mentorAccept,
+                'no': self.mentorDecline}[self.answer]()
+
+        return resp['message']
+
     def mentorAccept(self):
         self.db.markAnswered(self.mentorid, self.questionId)
         query = "SELECT channel,timestamp FROM posts " \
                 "WHERE questionId=? AND userid!=?"
+
+        delete_count = 0
         for post in self.db.runQuery(query, [self.questionId, self.mentorid]):
+            delete_count += 1
             util.slack.deleteDirectMessages(post['channel'], post['timestamp'])
 
         query_result = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',
@@ -57,22 +71,19 @@ class MessageActionView(View):
             util.slack.sendMessage(channel, fmt.format(hackerid, self.mentorid, question))
 
         Thread(target=startGroupMessage).start()
-        return flask.jsonify(resp)
+
+        return {'message': flask.jsonify(resp),
+                'delete_count': delete_count}
 
     def mentorDecline(self):
         resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
         def delayedDeleteMessage():
             util.ifNotDebugThen(time.sleep, 3)
-            util.slack.deleteDirectMessages(self.postData['channel']['id'], self.postData['message_ts'])
+            util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])
 
         Thread(target=delayedDeleteMessage).start()
-        return flask.jsonify(resp)
-
-    def DR_mentorResponse(self):
-        """ Slack Action Request URL """
-        return {'yes': self.mentorAccept,
-                'no': self.mentorDecline}[self.answer]()
+        return {'message': flask.jsonify(resp)}
 
 
 # These are equivalent to the '@main.route' function decorators
