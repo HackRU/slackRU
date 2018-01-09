@@ -1,8 +1,9 @@
-from flask import Flask, Blueprint, g
+from flask import Flask, Blueprint
 
 from slackru.DB import DB
 
 main = Blueprint('main', __name__)
+slackru_db = None
 
 
 def create_app():
@@ -21,9 +22,10 @@ def get_db():
     current application context.
     """
     from slackru.config import config
-    if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = DB(config.dbpath)
-    return g.sqlite_db
+    global slackru_db
+    if not slackru_db:
+        slackru_db = DB(config.dbpath)
+    return slackru_db
 
 
 import slackru.views
