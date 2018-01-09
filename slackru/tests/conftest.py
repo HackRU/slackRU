@@ -42,9 +42,9 @@ def db(data):
 @pytest.fixture(scope='session')
 def data(config_setup):
     data = dict()
-    data['mentor'] = ['Bryan Bugyi', 'John Smith']
-    data['mentorname'] = ['bryan.bugyi', 'john.smith']
-    data['mentorid'] = ['U86U3G52Q', 'ABCDEFGHI']
+    data['mentor'] = ['Bryan Bugyi', 'Timmy Tester']
+    data['mentorname'] = ['bryan.bugyi', 'tester.timmy']
+    data['mentorid'] = ['U86U3G52Q', 'U8R4CCDV4']
     data['username'] = 'bryanbugyi34'
     data['userid'] = 'U8LRL4L5R'
     data['channel'] = 'DUMMY_CHANNEL'

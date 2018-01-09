@@ -83,7 +83,7 @@ class Commands:
     def mentors(cls, question, username, userid):
         util.slack.sendMessage(userid, "Trying to find a mentor")
 
-        matched = cls._matchMentors(question)
+        matched = cls.__matchMentors(question)
 
         questionId = cls.db.insertQuestion(question,
                                 username,
@@ -114,7 +114,7 @@ class Commands:
             timestamp = util.slack.sendMessage(channel, text, attachments)['ts']
             cls.db.insertPost(questionId, mentorid, channel, timestamp)
 
-        return "done"
+        return matched
 
     @classmethod
     def help(cls, userid, username):
@@ -130,7 +130,7 @@ class Commands:
         return all([resp['ok'] for resp in resps])
 
     @classmethod
-    def _matchMentors(cls, question):
+    def __matchMentors(cls, question):
         query = ("SELECT mentors.* FROM shifts "
                 "JOIN mentors ON mentors.userid = shifts.userid "
                 "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "

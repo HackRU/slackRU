@@ -6,6 +6,7 @@ import pytest
 @pytest.mark.parametrize('value, callback', zip(["yes", "no", "yes"],
                                                 ["mentorResponse_1", "mentorResponse_1", "INVALID"]))
 def test_message_action(data, inserts, client, value, callback):
+    """ message_action Interface Test """
     from slackru.config import config
     payload = {"actions": [{"name": "answer",
                             "value": value,
