@@ -32,7 +32,7 @@ def handle_cmd(bot, data):
 
 @pytest.fixture(scope='module')
 def bot():
-    from slackru.slackbot import SlackBot
+    from slackru.bot.slackbot import SlackBot
     bot = SlackBot()
     Thread(target=bot.run).start()
 
