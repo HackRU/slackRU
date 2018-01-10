@@ -1,3 +1,8 @@
+""" The fixtures defined in this calls are made available to all tests.
+
+This is handled implicitly by pytest.
+"""
+
 import os
 from datetime import datetime, timedelta
 

@@ -12,6 +12,11 @@ mentor_cmd_ids = ['{}, {}'.format(param[0], param[1])
                   for param in mentors_cmd_params]
 
 
+################
+#  Unit Tests  #
+################
+
+
 @pytest.mark.parametrize('command, mentorIndexes', mentors_cmd_params, ids=mentor_cmd_ids)
 def test_mentors_cmd(client, data, handle_cmd, command, mentorIndexes):
     if command == 'mentors':
@@ -23,6 +28,11 @@ def test_mentors_cmd(client, data, handle_cmd, command, mentorIndexes):
 def test_help_cmd(client, handle_cmd):
     resp = handle_cmd("help")
     assert resp is True
+
+
+##############
+#  Fixtures  #
+##############
 
 
 @pytest.fixture(scope='module')
