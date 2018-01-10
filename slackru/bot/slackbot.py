@@ -16,6 +16,7 @@ AT_BOTID = "<@" + BOTID + ">"
 
 class SlackBot:
     def __init__(self):
+        self.isAlive = False
         self.stayAlive = True
         self.scanner = Scanner()
 
@@ -24,6 +25,7 @@ class SlackBot:
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
             util.ifDebugThen(print, "SlackRU connected and running!")
+            self.isAlive = True
             while self.stayAlive:
                 command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:

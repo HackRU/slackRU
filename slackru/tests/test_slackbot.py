@@ -1,3 +1,4 @@
+import time
 from threading import Thread
 
 import pytest
@@ -44,8 +45,15 @@ def handle_cmd(bot, data):
 def bot():
     from slackru.bot.slackbot import SlackBot
     bot = SlackBot()
-    Thread(target=bot.run).start()
+    t = Thread(target=bot.run)
+    t.setDaemon(True)
+    t.start()
+
+    while True:
+        if bot.isAlive:
+            break
+        else:
+            time.sleep(0.1)
+            continue
 
     yield bot
-
-    bot.stop()

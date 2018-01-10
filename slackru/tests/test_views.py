@@ -38,9 +38,9 @@ def test_mentorAccept(MAV, data, client, messageData, insertQuestions):
 def test_mentorDecline(MAV, client, messageData):
     MAV.payLoad['message_ts'] = messageData[0]['ts']
     MAV.mentorDecline()
-    MAV.t.join()
-    with pytest.raises(IndexError):
-        exc_type, exc_obj, exc_trace = MAV.thread_exceptions[0]
+    MAV.threads['decline'].join()
+    with pytest.raises(KeyError):
+        exc_type, exc_obj, exc_trace = MAV.thread_exceptions['decline']
 
     with pytest.raises(util.slack.SlackError) as e:
         util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
@@ -53,14 +53,14 @@ def test_mentorDecline(MAV, client, messageData):
 ##############
 
 
-@pytest.fixture(name='MAV')
+@pytest.fixture(name='MAV', scope='module')
 def MessageActionViewInstance(getPostData):
     from slackru.views import MessageActionView
     payload = getPostData("yes", "mentorResponse_1")
     return MessageActionView(payload)
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def getPostData(data):
     def payloadFactory(value, callback):
         payload = {"actions": [{"name": "answer",

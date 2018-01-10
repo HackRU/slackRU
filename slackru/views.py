@@ -17,7 +17,8 @@ class MessageActionView(View):
 
     def __init__(self, postData=None):
         self.db = get_db()
-        self.thread_exceptions = []
+        self.threads = {}
+        self.thread_exceptions = {}
 
         if postData:
             self.postData = postData
@@ -70,7 +71,9 @@ class MessageActionView(View):
                     "Take it away <@{1}>! :grinning:")
             util.slack.sendMessage(channel, fmt.format(hackerid, self.mentorid, question))
 
-        Thread(target=startGroupMessage).start()
+        t = Thread(target=startGroupMessage)
+        self.threads['accept'] = t
+        t.start()
 
         return flask.jsonify(resp)
 
@@ -82,10 +85,11 @@ class MessageActionView(View):
                 util.ifNotDebugThen(time.sleep, 3)
                 util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])
             except Exception:
-                self.thread_exceptions.append(sys.exc_info())
+                self.thread_exceptions['decline'](sys.exc_info())
 
-        self.t = Thread(target=delayedDeleteMessage)
-        self.t.start()
+        t = Thread(target=delayedDeleteMessage)
+        self.threads['decline'] = t
+        t.start()
 
         return flask.jsonify(resp)
 
