@@ -44,7 +44,7 @@ class Commands:
                                      'value': 'no'}]}]
 
         for mentorid in matched:
-            channel = util.slack.openConversation(mentorid)['channel']['id']
+            channel = util.slack.getDirectMessageChannel(mentorid)
             timestamp = util.slack.sendMessage(channel, text, attachments)['ts']
             cls.db.insertPost(questionId, mentorid, channel, timestamp)
 

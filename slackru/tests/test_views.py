@@ -91,7 +91,7 @@ def messageData(db, data):
     db.drop_table('posts')
     db.create_posts()
     for mentorid in data['mentorid']:
-        channel = util.slack.openConversation(mentorid)['channel']['id']
+        channel = util.slack.getDirectMessageChannel(mentorid)
         ts = util.slack.sendMessage(channel, "Test Message")['ts']
 
         db.insertPost(1, mentorid, channel, ts)

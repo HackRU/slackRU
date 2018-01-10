@@ -19,9 +19,9 @@ def id_to_username(userid):
             return user['name']
 
 
-def openConversation(users):
+def getDirectMessageChannel(users):
     resp = slack_client.api_call("conversations.open", users=users)
-    return respErrorCheck(resp)
+    return respErrorCheck(resp)['channel']['id']
 
 
 def sendMessage(channel, text, attachments=None):

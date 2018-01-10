@@ -63,7 +63,7 @@ class MessageActionView(View):
 
         def startGroupMessage():
             util.ifNotDebugThen(time.sleep, 3)
-            channel = util.slack.openConversation(hackerid + ',' + self.mentorid)['channel']['id']
+            channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
             fmt = ("Hello <@{0}>. Your request for a mentor has been processed. "
                     "You have been matched with <@{1}>.\n\n"
                     "The following question/comment is associated with this request:\n>_\"{2}\"_\n"
