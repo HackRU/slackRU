@@ -1,5 +1,6 @@
 """ Flask View (URL Route) Definitions """
 
+import sys
 import json
 import time
 from threading import Thread
@@ -16,6 +17,7 @@ class MessageActionView(View):
 
     def __init__(self, postData=None):
         self.db = get_db()
+        self.thread_exceptions = []
 
         if postData:
             self.postData = postData
@@ -36,10 +38,8 @@ class MessageActionView(View):
 
     def DR_mentorResponse(self):
         """ Slack Action Request URL """
-        resp = {'yes': self.mentorAccept,
+        return {'yes': self.mentorAccept,
                 'no': self.mentorDecline}[self.answer]()
-
-        return resp['message']
 
     def mentorAccept(self):
         self.db.markAnswered(self.mentorid, self.questionId)
@@ -63,7 +63,7 @@ class MessageActionView(View):
 
         def startGroupMessage():
             util.ifNotDebugThen(time.sleep, 3)
-            channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
+            channel = util.slack.openConversation(hackerid + ',' + self.mentorid)['channel']['id']
             fmt = ("Hello <@{0}>. Your request for a mentor has been processed. "
                     "You have been matched with <@{1}>.\n\n"
                     "The following question/comment is associated with this request:\n>_\"{2}\"_\n"
@@ -72,18 +72,22 @@ class MessageActionView(View):
 
         Thread(target=startGroupMessage).start()
 
-        return {'message': flask.jsonify(resp),
-                'delete_count': delete_count}
+        return flask.jsonify(resp)
 
     def mentorDecline(self):
         resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
         def delayedDeleteMessage():
-            util.ifNotDebugThen(time.sleep, 3)
-            util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])
+            try:
+                util.ifNotDebugThen(time.sleep, 3)
+                util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])
+            except Exception:
+                self.thread_exceptions.append(sys.exc_info())
 
-        Thread(target=delayedDeleteMessage).start()
-        return {'message': flask.jsonify(resp)}
+        self.t = Thread(target=delayedDeleteMessage)
+        self.t.start()
+
+        return flask.jsonify(resp)
 
 
 # These are equivalent to the '@main.route' function decorators

@@ -24,18 +24,40 @@ def test_message_action(inserts, client, getPostData, value, callback):
 ################
 
 
-def test_mentorAccept(MAV, client, messageMentors, inserts):
-    resp = MAV.mentorAccept()
-    assert resp.get('delete_count') == 1
+def test_mentorAccept(MAV, data, client, messageData, inserts):
+    MAV.mentorAccept()
+    resp = util.slack.deleteDirectMessages(messageData[0][0], messageData[0][1])
+    assert resp['ok'] is True
+
+    with pytest.raises(util.slack.SlackError) as e:
+        util.slack.deleteDirectMessages(messageData[1][0], messageData[1][1])
+
+    assert e.value.args[0] == 'message_not_found'
 
 
-def test_mentorDecline(MAV, client, messageMentors, inserts):
+def test_mentorDecline(MAV, client, messageData):
+    MAV.payLoad['message_ts'] = messageData[0][1]
     MAV.mentorDecline()
+    MAV.t.join()
+    with pytest.raises(IndexError):
+        exc_type, exc_obj, exc_trace = MAV.thread_exceptions[0]
+
+    with pytest.raises(util.slack.SlackError) as e:
+        util.slack.deleteDirectMessages(messageData[0][0], messageData[0][1])
+
+    assert e.value.args[0] == 'message_not_found'
 
 
 ##############
 #  Fixtures  #
 ##############
+
+
+@pytest.fixture(name='MAV')
+def MessageActionViewInstance(getPostData):
+    from slackru.views import MessageActionView
+    payload = getPostData("yes", "mentorResponse_1")
+    return MessageActionView(payload)
 
 
 @pytest.fixture
@@ -48,7 +70,7 @@ def getPostData(data):
                    "user": {'id': data['mentorid'][0],
                             'name': data['mentorname'][0]},
                    'message_ts': '111111111111',
-                   'channel': {'id': 'D86QQ6P2P',
+                   'channel': {'id': data['channel'][0],
                                'name': 'general'}}
 
         return {'payload': json.dumps(payload)}
@@ -64,15 +86,16 @@ def inserts(db, data):
 
 
 @pytest.fixture
-def messageMentors(data, db):
+def messageData(db, data):
+    Mdata = []
+    db.drop_table('posts')
+    db.create_posts()
     for mentorid in data['mentorid']:
-        channel = util.slack.getDirectMessageChannel(mentorid)
-        timestamp = util.slack.sendMessage(channel, "Test Message")['ts']
-        db.insertPost(1, mentorid, channel, timestamp)
+        channel = util.slack.openConversation(mentorid)['channel']['id']
+        ts = util.slack.sendMessage(channel, "Test Message")['ts']
 
+        db.insertPost(1, mentorid, channel, ts)
 
-@pytest.fixture(name='MAV')
-def MessageActionViewInstance(getPostData):
-    from slackru.views import MessageActionView
-    payload = getPostData("yes", "mentorResponse_1")
-    return MessageActionView(payload)
+        Mdata.append((channel, ts))
+
+    return Mdata

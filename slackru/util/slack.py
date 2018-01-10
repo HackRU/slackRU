@@ -19,9 +19,9 @@ def id_to_username(userid):
             return user['name']
 
 
-def getDirectMessageChannel(users):
+def openConversation(users):
     resp = slack_client.api_call("conversations.open", users=users)
-    return respErrorCheck(resp)['channel']['id']
+    return respErrorCheck(resp)
 
 
 def sendMessage(channel, text, attachments=None):
@@ -30,7 +30,8 @@ def sendMessage(channel, text, attachments=None):
 
 
 def deleteDirectMessages(channel, ts):
-    slack_client.api_call("chat.delete", channel=channel, ts=ts, as_user=True)
+    resp = slack_client.api_call("chat.delete", channel=channel, ts=ts, as_user=True)
+    return respErrorCheck(resp)
 
 
 def respErrorCheck(resp):

@@ -22,7 +22,7 @@ def server():
 
 
 def slackbot():
-    from slackru.slackbot import SlackBot
+    from slackru.bot.slackbot import SlackBot
     bot = SlackBot()
     bot.run()
 
