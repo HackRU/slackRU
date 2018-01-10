@@ -1,5 +1,5 @@
 def ifDebugThen(func, *args, inverted=False, **kwargs):
-    """ Higher-Order Debug Function
+    """ Higher-Order Debugging Utility
 
     Calls function only if debugging is enabled.
     """

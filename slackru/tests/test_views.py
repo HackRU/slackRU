@@ -11,7 +11,7 @@ import slackru.util as util
 
 @pytest.mark.parametrize('value, callback', zip(["yes", "no", "yes"],
                                                 ["mentorResponse_1", "mentorResponse_1", "INVALID"]))
-def test_message_action(inserts, client, getPostData, value, callback):
+def test_message_action(insertQuestions, client, getPostData, value, callback):
     """ message_action Interface Test """
     from slackru.config import config
     postData = getPostData(value, callback)
@@ -24,26 +24,26 @@ def test_message_action(inserts, client, getPostData, value, callback):
 ################
 
 
-def test_mentorAccept(MAV, data, client, messageData, inserts):
+def test_mentorAccept(MAV, data, client, messageData, insertQuestions):
     MAV.mentorAccept()
-    resp = util.slack.deleteDirectMessages(messageData[0][0], messageData[0][1])
+    resp = util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
     assert resp['ok'] is True
 
     with pytest.raises(util.slack.SlackError) as e:
-        util.slack.deleteDirectMessages(messageData[1][0], messageData[1][1])
+        util.slack.deleteDirectMessages(messageData[1]['channel'], messageData[1]['ts'])
 
     assert e.value.args[0] == 'message_not_found'
 
 
 def test_mentorDecline(MAV, client, messageData):
-    MAV.payLoad['message_ts'] = messageData[0][1]
+    MAV.payLoad['message_ts'] = messageData[0]['ts']
     MAV.mentorDecline()
     MAV.t.join()
     with pytest.raises(IndexError):
         exc_type, exc_obj, exc_trace = MAV.thread_exceptions[0]
 
     with pytest.raises(util.slack.SlackError) as e:
-        util.slack.deleteDirectMessages(messageData[0][0], messageData[0][1])
+        util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
 
     assert e.value.args[0] == 'message_not_found'
 
@@ -79,7 +79,7 @@ def getPostData(data):
 
 
 @pytest.fixture
-def inserts(db, data):
+def insertQuestions(db, data):
     db.drop_table('questions')
     db.create_questions()
     db.insertQuestion(data['question'][0], data['username'], data['userid'], json.dumps([data['userid']]))
@@ -96,6 +96,6 @@ def messageData(db, data):
 
         db.insertPost(1, mentorid, channel, ts)
 
-        Mdata.append((channel, ts))
+        Mdata.append({'channel': channel, 'ts': ts})
 
     return Mdata
