@@ -1,101 +1,82 @@
-import json
+""" Tests Flask Views (URL Routes) """
 
-import pytest
+import json
 
 import slackru.util as util
 
-
-#####################
-#  Interface Tests  #
-#####################
-
-@pytest.mark.parametrize('value, callback', zip(["yes", "no", "yes"],
-                                                ["mentorResponse_1", "mentorResponse_1", "INVALID"]))
-def test_message_action(insertQuestions, client, getPostData, value, callback):
-    """ message_action Interface Test """
-    from slackru.config import config
-    postData = getPostData(value, callback)
-    resp = client.post(config.serverurl + 'message_action', data=postData)
-    assert 200 == resp.status_code
+from slackru.tests import TestBase, params
 
 
-################
-#  Unit Tests  #
-################
+class TestViews(TestBase):
+    @classmethod
+    def setUpClass(cls):
+        TestBase.setUpClass()
 
+        from slackru.views import MessageActionView
+        payload = cls.getPostData("yes", "mentorResponse_1")
+        cls.MAVI = MessageActionView(payload)  # MAVI -> MessageActionViewInstance
 
-def test_mentorAccept(MAV, data, client, messageData, insertQuestions):
-    MAV.mentorAccept()
-    resp = util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
-    assert resp['ok'] is True
+    def setUp(self):
+        self.db.drop_table('questions')
+        self.db.create_questions()
+        self.db.insertQuestion(self.data['question'][0], self.data['username'], self.data['userid'], json.dumps([self.data['userid']]))
 
-    with pytest.raises(util.slack.SlackError) as e:
-        util.slack.deleteDirectMessages(messageData[1]['channel'], messageData[1]['ts'])
+    @params(('yes', 'mentorResponse_1'), ('no', 'mentorResponse_1'), ('yes', 'INVALID'))
+    def test_message_action(self, value, callback):
+        """ message_action Interface Test """
+        from slackru.config import config
+        postData = self.getPostData(value, callback)
+        with self.app.test_client() as client:
+            resp = client.post(config.serverurl + 'message_action', data=postData)
+            self.assertEqual(200, resp.status_code)
 
-    assert e.value.args[0] == 'message_not_found'
+    def test_mentorAccept(self):
+        messageData = self.getMessageData()
 
+        self.MAVI.mentorAccept()
+        resp = util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
+        assert resp['ok'] is True
 
-def test_mentorDecline(MAV, client, messageData):
-    MAV.payLoad['message_ts'] = messageData[0]['ts']
-    MAV.mentorDecline()
-    MAV.threads['decline'].join()
-    with pytest.raises(KeyError):
-        exc_type, exc_obj, exc_trace = MAV.thread_exceptions['decline']
+        with self.assertRaises(util.slack.SlackError):
+            util.slack.deleteDirectMessages(messageData[1]['channel'], messageData[1]['ts'])
 
-    with pytest.raises(util.slack.SlackError) as e:
-        util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
+    def test_mentorDecline(self):
+        messageData = self.getMessageData()
 
-    assert e.value.args[0] == 'message_not_found'
+        self.MAVI.payLoad['message_ts'] = messageData[0]['ts']
+        self.MAVI.mentorDecline()
+        self.MAVI.threads['decline'].join()
 
+        with self.assertRaises(KeyError):
+            self.MAVI.thread_exceptions['decline']
 
-##############
-#  Fixtures  #
-##############
+        with self.assertRaisesRegex(util.slack.SlackError, 'message_not_found'):
+            util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
 
-
-@pytest.fixture(name='MAV', scope='module')
-def MessageActionViewInstance(getPostData):
-    from slackru.views import MessageActionView
-    payload = getPostData("yes", "mentorResponse_1")
-    return MessageActionView(payload)
-
-
-@pytest.fixture(scope='module')
-def getPostData(data):
-    def payloadFactory(value, callback):
+    @classmethod
+    def getPostData(cls, value, callback):
         payload = {"actions": [{"name": "answer",
                                 "value": value,
                                 "type": "button"}],
                    "callback_id": callback,
-                   "user": {'id': data['mentorid'][0],
-                            'name': data['mentorname'][0]},
+                   "user": {'id': cls.data['mentorid'][0],
+                            'name': cls.data['mentorname'][0]},
                    'message_ts': '111111111111',
-                   'channel': {'id': data['channel'][0],
+                   'channel': {'id': cls.data['channel'][0],
                                'name': 'general'}}
 
         return {'payload': json.dumps(payload)}
 
-    return payloadFactory
+    def getMessageData(self):
+        Mdata = []
+        self.db.drop_table('posts')
+        self.db.create_posts()
+        for mentorid in self.data['mentorid']:
+            channel = util.slack.getDirectMessageChannel(mentorid)
+            ts = util.slack.sendMessage(channel, "Test Message")['ts']
 
+            self.db.insertPost(1, mentorid, channel, ts)
 
-@pytest.fixture
-def insertQuestions(db, data):
-    db.drop_table('questions')
-    db.create_questions()
-    db.insertQuestion(data['question'][0], data['username'], data['userid'], json.dumps([data['userid']]))
+            Mdata.append({'channel': channel, 'ts': ts})
 
-
-@pytest.fixture
-def messageData(db, data):
-    Mdata = []
-    db.drop_table('posts')
-    db.create_posts()
-    for mentorid in data['mentorid']:
-        channel = util.slack.getDirectMessageChannel(mentorid)
-        ts = util.slack.sendMessage(channel, "Test Message")['ts']
-
-        db.insertPost(1, mentorid, channel, ts)
-
-        Mdata.append({'channel': channel, 'ts': ts})
-
-    return Mdata
+        return Mdata

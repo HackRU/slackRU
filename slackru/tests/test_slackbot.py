@@ -1,59 +1,39 @@
+""" Tests slackbot Package """
+
 import time
 from threading import Thread
 
-import pytest
+from slackru.tests import TestBase, params
 
 
-mentors_cmd_params = [("mentors Python Rules!", [0]),
-                      ("mentors My Java code is not working", [1]),
-                      ("mentors I hate C++", [0, 1]),
-                      ("mentors", [])]
+class TestSlackBot(TestBase):
+    @classmethod
+    def setUpClass(cls):
+        TestBase.setUpClass()
+        from slackru.bot.slackbot import SlackBot
+        cls.bot = SlackBot()
+        t = Thread(target=cls.bot.run)
+        t.setDaemon(True)
+        t.start()
 
-mentor_cmd_ids = ['{}, {}'.format(param[0], param[1])
-                  for param in mentors_cmd_params]
+        while True:
+            if cls.bot.isAlive:
+                break
+            else:
+                time.sleep(0.1)
+                continue
 
-
-################
-#  Unit Tests  #
-################
-
-
-@pytest.mark.parametrize('command, mentorIndexes', mentors_cmd_params, ids=mentor_cmd_ids)
-def test_mentors_cmd(client, data, handle_cmd, command, mentorIndexes):
-    if command == 'mentors':
-        assert handle_cmd(command) is True
-    else:
-        assert handle_cmd(command) == [data['mentorid'][i] for i in mentorIndexes]
-
-
-def test_help_cmd(client, handle_cmd):
-    resp = handle_cmd("help")
-    assert resp is True
-
-
-##############
-#  Fixtures  #
-##############
-
-
-@pytest.fixture(scope='module')
-def handle_cmd(bot, data):
-    return lambda cmd: bot.handle_command(cmd, data['channel'][0], data['userid'], data['username'])
-
-
-@pytest.fixture(scope='module')
-def bot():
-    from slackru.bot.slackbot import SlackBot
-    bot = SlackBot()
-    t = Thread(target=bot.run)
-    t.setDaemon(True)
-    t.start()
-
-    while True:
-        if bot.isAlive:
-            break
+    @params(("mentors Python Rules!", [0]), ("mentors My Java code is not working", [1]),
+            ("mentors I hate C++", [0, 1]), ("mentors", []))
+    def test_mentors_cmd(self, command, mentorIndexes):
+        if command == 'mentors':
+            self.assertTrue(self.handle_cmd(command))
         else:
-            time.sleep(0.1)
-            continue
+            self.assertEqual(self.handle_cmd(command), [self.data['mentorid'][i] for i in mentorIndexes])
 
-    yield bot
+    def test_help_cmd(self):
+        resp = self.handle_cmd("help")
+        self.assertTrue(resp)
+
+    def handle_cmd(self, cmd):
+        return self.bot.handle_command(cmd, self.data['channel'][0], self.data['userid'], self.data['username'])

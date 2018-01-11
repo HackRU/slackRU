@@ -27,13 +27,13 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
     serverurl = 'http://127.0.0.1:5000/'
-    dbpath = 'var/slackbot-dev.db'
+    dbpath = 'var/slackru-dev.db'
 
 
 class ProductionConfig(Config):
     DEBUG = False
     serverurl = "http://slackru.pythonanywhere.com/"
-    dbpath = "/home/slackru/SlackRU/var/slackbot.db"
+    dbpath = "/home/slackru/SlackRU/var/slackru.db"
 
 
 config = {'development': DevelopmentConfig,
