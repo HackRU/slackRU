@@ -4,6 +4,7 @@ import sqlite3
 
 
 class BaseDB:
+    """ Base Database Class """
     def __init__(self, dbpath):
         self.dbpath = dbpath
         self.conn = None
@@ -29,15 +30,19 @@ class BaseDB:
 
 
 class CreateDB(BaseDB):
+    """ Create and Drop Operations
+
+    This class also initializes the database.
+    """
     def __init__(self, dbpath):
         BaseDB.__init__(self, dbpath)
 
         self.open()
 
-        if self.isEmpty():
+        if self._isEmpty():
             self.create_all()
 
-    def isEmpty(self):
+    def _isEmpty(self):
         self.c.execute('SELECT name FROM sqlite_master WHERE type="table";')
         return self.c.fetchall() == []
 
@@ -93,17 +98,8 @@ class CreateDB(BaseDB):
                            "FOREIGN KEY(userid) REFERENCES mentors(userid))")
 
 
-class DB(CreateDB):
-    def __init__(self, dbpath):
-        CreateDB.__init__(self, dbpath)
-
-    def runQuery(self, query, args=(), one=False):
-        cur = self.conn.execute(query, args)
-        rv = cur.fetchall()
-        cur.close()
-
-        return (rv[0] if rv else None) if one else rv
-
+class InsertDB(BaseDB):
+    """ Insert Operations """
     def insertMentor(self, name, username, userid, keywords):
         CMD = "INSERT INTO mentors " \
               "(name, username, userid, keywords) " \
@@ -128,6 +124,19 @@ class DB(CreateDB):
               "(questionId, userid, channel, timestamp) " \
               "VALUES (?, ?, ?, ?)"
         self.execAndCommit(CMD, [questionId, userid, channel, timestamp])
+
+
+class DB(CreateDB, InsertDB):
+    """ DB Interface Class """
+    def __init__(self, dbpath):
+        CreateDB.__init__(self, dbpath)
+
+    def runQuery(self, query, args=(), one=False):
+        cur = self.conn.execute(query, args)
+        rv = cur.fetchall()
+        cur.close()
+
+        return (rv[0] if rv else None) if one else rv
 
     def markAnswered(self, userid, questionId):
         CMD = "UPDATE questions " \
