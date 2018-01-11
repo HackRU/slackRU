@@ -8,7 +8,6 @@ slackru_db = None
 
 def create_app():
     from slackru.config import config
-    config.setup()
 
     app = Flask(__name__)
     app.config.from_object(config)

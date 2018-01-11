@@ -5,6 +5,7 @@ NOTE: The configuration class variables in all caps represent builtin Flask
 """
 
 import os
+import logging
 
 
 class Config:
@@ -15,6 +16,12 @@ class Config:
         db_dir = os.path.dirname(cls.dbpath)
         if not os.path.exists(db_dir):
             os.makedirs(db_dir)
+
+        logLevel = {True: logging.DEBUG,
+                    False: logging.INFO}[cls.DEBUG]
+        logging.basicConfig(level=logLevel,
+                            format='%(asctime)s [%(levelname)s]: %(message)s',
+                            datefmt='(%m/%d/%Y %H:%M:%S)')
 
 
 class DevelopmentConfig(Config):
@@ -31,3 +38,6 @@ class ProductionConfig(Config):
 
 config = {'development': DevelopmentConfig,
           'production': ProductionConfig}[os.environ['SLACK_CONFIG']]
+
+# This should run once--when this module is first imported
+config.setup()
