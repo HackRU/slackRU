@@ -10,7 +10,7 @@ from slackru.tests import TestBase, params
 class TestViews(TestBase):
     @classmethod
     def setUpClass(cls):
-        TestBase.setUpClass()
+        super().setUpClass()
 
         from slackru.views import MessageActionView
         payload = cls.getPostData("yes", "mentorResponse_1")

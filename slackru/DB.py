@@ -35,7 +35,7 @@ class CreateDB(BaseDB):
     This class also initializes the database.
     """
     def __init__(self, dbpath):
-        BaseDB.__init__(self, dbpath)
+        super().__init__(dbpath)
 
         self.open()
 
@@ -128,9 +128,6 @@ class InsertDB(BaseDB):
 
 class DB(CreateDB, InsertDB):
     """ DB Interface Class """
-    def __init__(self, dbpath):
-        CreateDB.__init__(self, dbpath)
-
     def runQuery(self, query, args=(), one=False):
         cur = self.conn.execute(query, args)
         rv = cur.fetchall()

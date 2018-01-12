@@ -9,7 +9,7 @@ from slackru.tests import TestBase, params
 class TestSlackBot(TestBase):
     @classmethod
     def setUpClass(cls):
-        TestBase.setUpClass()
+        super().setUpClass()
         from slackru.bot.slackbot import SlackBot
         cls.bot = SlackBot()
         t = Thread(target=cls.bot.run)
