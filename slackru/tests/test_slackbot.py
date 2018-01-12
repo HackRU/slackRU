@@ -1,8 +1,5 @@
 """ Tests slackbot Package """
 
-import time
-from threading import Thread
-
 from slackru.tests import TestBase, params
 
 
@@ -12,16 +9,6 @@ class TestSlackBot(TestBase):
         super().setUpClass()
         from slackru.bot.slackbot import SlackBot
         cls.bot = SlackBot()
-        t = Thread(target=cls.bot.run)
-        t.setDaemon(True)
-        t.start()
-
-        while True:
-            if cls.bot.isAlive:
-                break
-            else:
-                time.sleep(0.1)
-                continue
 
     @params(("mentors Python Rules!", [0]), ("mentors My Java code is not working", [1]),
             ("mentors I hate C++", [0, 1]), ("mentors", []))

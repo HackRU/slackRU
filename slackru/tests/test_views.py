@@ -35,7 +35,7 @@ class TestViews(TestBase):
 
         self.MAVI.mentorAccept()
         resp = util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
-        assert resp['ok'] is True
+        self.assertTrue(resp['ok'])
 
         with self.assertRaises(util.slack.SlackError):
             util.slack.deleteDirectMessages(messageData[1]['channel'], messageData[1]['ts'])
