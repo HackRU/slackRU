@@ -1,18 +1,10 @@
 """ Use this script to manually run the server OR slackbot
 
     usage:
-        python main.py <server|slackbot> [-c <production|development>]
+        python main.py -h
 """
-
 import os
 import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument('runtype')
-parser.add_argument('-c', '--config', dest='config', default='development')
-args = parser.parse_args()
-
-os.environ['SLACK_CONFIG'] = args.config
 
 
 def server():
@@ -27,5 +19,15 @@ def slackbot():
     bot.run()
 
 
+runtype_opts = {'server': server, 'slackbot': slackbot}
+
+parser = argparse.ArgumentParser()
+parser.add_argument('runtype', choices=[key for key in runtype_opts.keys()])
+parser.add_argument('-c', '--config', dest='config', choices=['development', 'production'], default='development')
+args = parser.parse_args()
+
+os.environ['SLACK_CONFIG'] = args.config
+
+
 if __name__ == "__main__":
-    {'server': server, 'slackbot': slackbot}[args.runtype]()
+    runtype_opts[args.runtype]()
