@@ -14,7 +14,7 @@ class Commands:
     db = get_db()
 
     @classmethod
-    def mentors(cls, question, username, userid):
+    def mentors(cls, question, userid):
         util.slack.sendMessage(userid, "Trying to find a mentor")
 
         mentorsQuery = ("SELECT mentors.* FROM shifts "
@@ -27,7 +27,6 @@ class Commands:
                              or [mentor['userid'] for mentor in mentorsOnDuty]
 
         questionId = cls.db.insertQuestion(question,
-                                           username,
                                            userid,
                                            json.dumps(selectedMentorIDs))
 
@@ -57,7 +56,7 @@ class Commands:
         return selectedMentorIDs
 
     @classmethod
-    def help(cls, userid, username):
+    def help(cls, userid):
         resps = [None, None, None]
         resps[0] = util.slack.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
         resps[1] = util.slack.sendMessage(userid, "All commands will begin with <AT character>slackru")

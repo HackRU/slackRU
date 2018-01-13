@@ -112,11 +112,11 @@ class InsertDB(BaseDB):
               "VALUES (?, ?, ?)"
         self.execAndCommit(CMD, [userid, start, end])
 
-    def insertQuestion(self, question, username, userid, matchedMentors):
+    def insertQuestion(self, question, userid, matchedMentors):
         CMD = "INSERT INTO questions " \
-              "(question, answered, username, userid, timestamp, matchedMentors, assignedmentor) " \
-              "VALUES (?, 0, ?, ?, datetime('now', 'localtime'), ?, NULL)"
-        self.execAndCommit(CMD, [question, username, userid, matchedMentors])
+              "(question, answered, userid, timestamp, matchedMentors, assignedmentor) " \
+              "VALUES (?, 0, ?, datetime('now', 'localtime'), ?, NULL)"
+        self.execAndCommit(CMD, [question, userid, matchedMentors])
         return self.c.lastrowid
 
     def insertPost(self, questionId, userid, channel, timestamp):

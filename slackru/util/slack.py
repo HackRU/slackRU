@@ -12,14 +12,6 @@ slack_client = SlackClient(os.environ['SLACK_API_KEY'])
 class SlackError(Exception): pass
 
 
-def id_to_username(userid):
-    resp = slack_client.api_call('users.list')
-    users = respErrorCheck(resp)['members']
-    for user in users:
-        if 'name' in user and user['id'] == userid:
-            return user['name']
-
-
 def getDirectMessageChannel(users):
     resp = slack_client.api_call("conversations.open", users=users)
     return respErrorCheck(resp)['channel']['id']

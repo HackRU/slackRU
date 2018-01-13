@@ -28,9 +28,9 @@ class SlackBot:
             logging.info("SlackRU connected and running!")
             self.isAlive = True
             while self.stayAlive:
-                command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
+                command, channel, userid = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
-                    self.handle_command(command, channel, userid, username)
+                    self.handle_command(command, channel, userid)
                 time.sleep(READ_WEBSOCKET_DELAY)
         else:
             logging.info("Connection failed. Invalid Slack token or bot ID?")
@@ -48,21 +48,19 @@ class SlackBot:
         if output_list and len(output_list) > 0:
             for output in output_list:
                 if output and 'text' in output and AT_BOTID in output['text']:
-                    user_name = util.slack.id_to_username(output['user'])
                     return (output['text'].split(AT_BOTID)[1].strip(),
                             output['channel'],
-                            output['user'],
-                            user_name)
+                            output['user'])
 
         return None, None, "", ""
 
-    def handle_command(self, command, channel, userid, username):
+    def handle_command(self, command, channel, userid):
         """
             Receives commands directed at the bot and determines if they
             are valid commands. If so, then acts on the commands. If not,
             prompts user for more information.
         """
-        logging.debug(username + ": " + userid + ": " + channel + ": " + command)
+        logging.debug(userid + ": " + channel + ": " + command)
         dividedCommand = command.split()
         cmd = dividedCommand[0]
         cmd = cmd.lower()
@@ -73,6 +71,6 @@ class SlackBot:
                 return resp['ok']
             else:
                 question = ' '.join(dividedCommand[1:])
-                return Commands.mentors(question, username, userid)
+                return Commands.mentors(question, userid)
         elif cmd == 'help':
-            return Commands.help(userid, username)
+            return Commands.help(userid)

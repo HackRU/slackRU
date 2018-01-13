@@ -3,7 +3,6 @@ from flask import Flask, Blueprint
 from slackru.DB import DB
 
 main = Blueprint('main', __name__)
-slackru_db = None
 
 
 def create_app():
@@ -17,14 +16,15 @@ def create_app():
 
 
 def get_db():
-    """Opens a new database connection if there is none yet for the
-    current application context.
+    """ Return a new database connection if one does not already exist.
+    Otherwise return the already opened database.
     """
     from slackru.config import config
-    global slackru_db
-    if not slackru_db:
-        slackru_db = DB(config.dbpath)
-    return slackru_db
+    if not get_db.database:
+        get_db.database = DB(config.dbpath)
+    return get_db.database
 
+
+get_db.database = None
 
 import slackru.views

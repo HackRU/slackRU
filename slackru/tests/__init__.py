@@ -38,8 +38,8 @@ class TestBase(TestCase):
     data['mentor'] = ['Bryan Bugyi', 'Timmy Tester']
     data['mentorname'] = ['bryan.bugyi', 'tester.timmy']
     data['mentorid'] = ['U86U3G52Q', 'U8R4CCDV4']
-    data['username'] = 'bryanbugyi34'
-    data['userid'] = 'U8LRL4L5R'
+    data['username'] = ['bryanbugyi34']
+    data['userid'] = ['U8LRL4L5R']
     data['channel'] = ['D86QQ6P2P', 'D8RAAMGJ3']
     data['question'] = ['I am having some trouble with my Python code.', 'I love JAVA', 'I hate C++!']
 

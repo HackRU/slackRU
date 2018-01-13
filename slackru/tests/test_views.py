@@ -19,7 +19,7 @@ class TestViews(TestBase):
     def setUp(self):
         self.db.drop_table('questions')
         self.db.create_questions()
-        self.db.insertQuestion(self.data['question'][0], self.data['username'], self.data['userid'], json.dumps([self.data['userid']]))
+        self.db.insertQuestion(self.data['question'][0], self.data['userid'][0], json.dumps([self.data['userid'][0]]))
 
     @params(('yes', 'mentorResponse_1'), ('no', 'mentorResponse_1'), ('yes', 'INVALID'))
     def test_message_action(self, value, callback):

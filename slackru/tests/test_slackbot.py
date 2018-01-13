@@ -23,4 +23,4 @@ class TestSlackBot(TestBase):
         self.assertTrue(resp)
 
     def handle_cmd(self, cmd):
-        return self.bot.handle_command(cmd, self.data['channel'][0], self.data['userid'], self.data['username'])
+        return self.bot.handle_command(cmd, self.data['channel'][0], self.data['userid'][0])
