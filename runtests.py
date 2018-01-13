@@ -1,7 +1,7 @@
 """ Used to run the SlackRU UnitTests
 
     usage:
-        python tests.py -h
+        python runtests.py -h
 """
 
 import os
