@@ -19,15 +19,14 @@ def slackbot():
     bot.run()
 
 
-runtype_opts = {'server': server, 'slackbot': slackbot}
-
-parser = argparse.ArgumentParser()
-parser.add_argument('runtype', choices=[key for key in runtype_opts.keys()])
-parser.add_argument('-c', '--config', dest='config', choices=['development', 'production'], default='development')
-args = parser.parse_args()
-
-os.environ['SLACK_CONFIG'] = args.config
-
-
 if __name__ == "__main__":
+    runtype_opts = {'server': server, 'slackbot': slackbot}
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('runtype', choices=[key for key in runtype_opts.keys()])
+    parser.add_argument('-c', '--config', dest='config', choices=['development', 'production'], default='development')
+    args = parser.parse_args()
+
+    os.environ['SLACK_CONFIG'] = args.config
+
     runtype_opts[args.runtype]()
