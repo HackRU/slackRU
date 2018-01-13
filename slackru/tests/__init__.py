@@ -22,8 +22,9 @@ def params(*parameters):
     """
     def decorator(func):
         def wrapper(self):
+            funcArgNames = inspect.getfullargspec(func).args[1:]
             for args in parameters:
-                with self.subTest(**dict(zip(inspect.getfullargspec(func).args[1:], args))):
+                with self.subTest(**dict(zip(funcArgNames, args))):
                     func(self, *args)
         return wrapper
     return decorator
