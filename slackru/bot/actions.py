@@ -17,19 +17,19 @@ class Commands:
     def mentors(cls, question, username, userid):
         util.slack.sendMessage(userid, "Trying to find a mentor")
 
-        matched = cls.__matchMentors(question)
+        mentorsQuery = ("SELECT mentors.* FROM shifts "
+                        "JOIN mentors ON mentors.userid = shifts.userid "
+                        "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
+                        "AND datetime('now', 'localtime') < datetime(shifts.end)")
+
+        mentorsOnDuty = cls.db.runQuery(mentorsQuery)
+        selectedMentorIDs = list(cls._getMatchedMentorIDs(question, mentorsOnDuty)) \
+                             or [mentor['userid'] for mentor in mentorsOnDuty]
 
         questionId = cls.db.insertQuestion(question,
-                                username,
-                                userid,
-                                json.dumps(matched))
-
-        fmt = ("*A HACKER NEEDS YOUR HELP!!!*\n"
-                "<@{0}> has requested to be assisted by a mentor.\n"
-                "They provided the following statement:\n"
-                ">_\"{1}\"_\nCan you help this hacker?\n")
-
-        text = fmt.format(userid, question)
+                                           username,
+                                           userid,
+                                           json.dumps(selectedMentorIDs))
 
         attachments = [{'text': '',
                         'attachment_type': 'default',
@@ -43,12 +43,18 @@ class Commands:
                                      'type': 'button',
                                      'value': 'no'}]}]
 
-        for mentorid in matched:
+        textFmt = ("*A HACKER NEEDS YOUR HELP!!!*\n"
+                "<@{0}> has requested to be assisted by a mentor.\n"
+                "They provided the following statement:\n"
+                ">_\"{1}\"_\nCan you help this hacker?\n")
+
+        text = textFmt.format(userid, question)
+        for mentorid in selectedMentorIDs:
             channel = util.slack.getDirectMessageChannel(mentorid)
             timestamp = util.slack.sendMessage(channel, text, attachments)['ts']
             cls.db.insertPost(questionId, mentorid, channel, timestamp)
 
-        return matched
+        return selectedMentorIDs
 
     @classmethod
     def help(cls, userid, username):
@@ -64,23 +70,10 @@ class Commands:
         return all([resp['ok'] for resp in resps])
 
     @classmethod
-    def __matchMentors(cls, question):
-        query = ("SELECT mentors.* FROM shifts "
-                "JOIN mentors ON mentors.userid = shifts.userid "
-                "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
-                "AND datetime('now', 'localtime') < datetime(shifts.end)")
-
-        matched = []
-        query_results = cls.db.runQuery(query)
-        for mentor in query_results:
+    def _getMatchedMentorIDs(cls, question, mentorsOnDuty):
+        for mentor in mentorsOnDuty:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]
             for word in question.split():
                 if word.lower() in keywords:
-                    matched.append(mentor['userid'])
+                    yield mentor['userid']
                     break
-
-        if matched == []:
-            for mentor in query_results:
-                matched.append(mentor['userid'])
-
-        return matched
