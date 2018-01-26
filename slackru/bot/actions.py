@@ -91,8 +91,7 @@ class Commands:
         translator = question.maketrans(dict.fromkeys(string.punctuation))
 
         temp = question.translate(translator)
-        temp = list(filter(lambda x: x not in string.punctuation, temp.split()))
-        temp = [word.lower() for word in temp]
+        temp = [word.lower() for word in temp.split()]
 
         question_keywords = temp
 
