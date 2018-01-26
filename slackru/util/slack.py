@@ -27,7 +27,7 @@ def deleteDirectMessages(channel: 'str', ts: 'str') -> '{str: ??}':
     return respErrorCheck(resp)
 
 
-def respErrorCheck(resp: '{str: ??}'):
+def respErrorCheck(resp: '{str: ??}') -> '{str: ??}':
     """ Slack Error Handling Wrapper """
     if resp['ok']:
         return resp
