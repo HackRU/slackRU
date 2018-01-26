@@ -104,7 +104,6 @@ class SlackBot:
 
 
         keywds_arr = [w.lower() for w in keywds_arr if w != '']
-        print(keywds_arr)
         return ' '.join(keywds_arr)
 
 
