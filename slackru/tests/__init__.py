@@ -32,7 +32,7 @@ def params(*parameters):
 
 class TestBase(TestCase):
     """ Base Unit Testing Class. Inherited by all other test classes. """
-    os.environ['SLACK_CONFIG'] = 'development'
+    os.environ['SLACK_CONFIG'] = 'testing'
 
     data = dict()
     data['mentor'] = ['Bryan Bugyi', 'Timmy Tester']

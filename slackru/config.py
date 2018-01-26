@@ -32,6 +32,11 @@ class DevelopmentConfig(Config):
     dbpath = 'var/slackru-dev.db'
 
 
+class TestingConfig(DevelopmentConfig):
+    """ Configuration Class used for Tests """
+    DEBUG = False
+
+
 class ProductionConfig(Config):
     """ Production Configuration Class """
     DEBUG = False
@@ -40,6 +45,7 @@ class ProductionConfig(Config):
 
 
 config = {'development': DevelopmentConfig,
+          'testing': TestingConfig,
           'production': ProductionConfig}[os.environ['SLACK_CONFIG']]
 
 # This should run once--when this module is first imported

@@ -86,9 +86,19 @@ class Commands:
     @classmethod
     def _getMatchedMentorIDs(cls, question: 'str', mentorsOnDuty: '[{str: ??}]'):
         """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """
+        import string
+
+        translator = question.maketrans(dict.fromkeys(string.punctuation))
+
+        temp = question.translate(translator)
+        temp = list(filter(lambda x: x not in string.punctuation, temp.split()))
+        temp = [word.lower() for word in temp]
+
+        question_keywords = temp
+
         for mentor in mentorsOnDuty:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]
-            for word in question.split():
-                if word.lower() in keywords:
+            for word in question_keywords:
+                if word in keywords:
                     yield mentor['userid']
                     break
