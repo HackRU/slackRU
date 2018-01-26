@@ -79,6 +79,36 @@ class SlackBot:
         elif cmd == 'help':
             return self.help(userid, username)
 
+
+    def parseQuestion(ques, remove_stop_words = True):
+        '''
+        Args:
+            String ques: question written by user
+        Returns:
+            String parsed_ques: containing only keywords and no punctuation
+        '''
+        import data
+        for c in data.stop_chars:
+            ques = ques.replace(c, '|')
+
+        ques_arr = ques.split('|')
+
+        keywds_arr = []
+
+        if remove_stop_words:
+            for word in ques_arr:
+                if word not in data.stop_words:
+                    keywds_arr.append(word)
+        else:
+            keywds_arr = ques_arr
+
+
+        keywds_arr = [w.lower() for w in keywds_arr if w != '']
+        print(keywds_arr)
+        return ' '.join(keywds_arr)
+
+
+
     def pairMentor(self, question, username, userid):
         """
             Makes a post request to the server and passes the pairing to he mentee
