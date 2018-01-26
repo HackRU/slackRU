@@ -44,7 +44,7 @@ class SlackBot:
         """ Stop SlackBot """
         self.stayAlive = False
 
-    def parse_slack_output(self, slack_rtm_output):
+    def parse_slack_output(self, slack_rtm_output: '{str: str}|None'):
         """
             The Slack Real Time Messaging API is an events firehose.
             this parsing function returns None unless a message is
@@ -60,7 +60,7 @@ class SlackBot:
 
         return None, None, ""
 
-    def handle_command(self, command, channel, userid):
+    def handle_command(self, command: 'str', channel: 'str', userid: 'str'):
         """
             Receives commands directed at the bot and determines if they
             are valid commands. If so, then acts on the commands. If not,

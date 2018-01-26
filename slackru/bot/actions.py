@@ -20,7 +20,7 @@ class Commands:
     db = get_db()
 
     @classmethod
-    def mentors(cls, question, userid):
+    def mentors(cls, question: 'str', userid: 'str') -> '[str]':
         """ 'mentors' command: Matches mentor with hacker.
 
         @question: hacker's question
@@ -67,7 +67,7 @@ class Commands:
         return selectedMentorIDs
 
     @classmethod
-    def help(cls, userid):
+    def help(cls, userid: 'str'):
         """ 'help' command: Provides list of SlackBot commands
 
         @userid: hacker's userid
@@ -84,7 +84,7 @@ class Commands:
         return all([resp['ok'] for resp in resps])
 
     @classmethod
-    def _getMatchedMentorIDs(cls, question, mentorsOnDuty):
+    def _getMatchedMentorIDs(cls, question: 'str', mentorsOnDuty: '[{str: ??}]'):
         """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """
         for mentor in mentorsOnDuty:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]

@@ -45,7 +45,7 @@ class MessageActionView(View):
         else:
             self.dispatch_request = lambda: "done"
 
-    def DR_mentorResponse(self):
+    def DR_mentorResponse(self) -> 'flask.Response(...)':
         """ Slack Action Request URL
 
         Return value is sent to Slack and will replace old Slack message
@@ -53,7 +53,7 @@ class MessageActionView(View):
         return {'yes': self.mentorAccept,
                 'no': self.mentorDecline}[self.answer]()
 
-    def mentorAccept(self):
+    def mentorAccept(self) -> 'flask.Reponse(...)':
         """ If mentor presses 'Accept':
 
         - Respond to him/her (replace previous message)
@@ -94,7 +94,7 @@ class MessageActionView(View):
 
         return flask.jsonify(resp)
 
-    def mentorDecline(self):
+    def mentorDecline(self) -> 'flask.Reponse(...)':
         """ If mentor presses 'Decline':
 
         - Respond to him/her (replace previous message)
