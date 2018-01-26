@@ -1,3 +1,8 @@
+""" SlackBot Actions
+
+Utility Functions and Classes used by the SlackBot
+"""
+
 import json
 
 import slackru.util as util
@@ -11,10 +16,16 @@ class Scanner:
 
 
 class Commands:
+    """ SlackBot Commands """
     db = get_db()
 
     @classmethod
     def mentors(cls, question, userid):
+        """ 'mentors' command: Matches mentor with hacker.
+
+        @question: hacker's question
+        @userid: hacker's userid
+        """
         util.slack.sendMessage(userid, "Trying to find a mentor")
 
         mentorsQuery = ("SELECT mentors.* FROM shifts "
@@ -57,6 +68,10 @@ class Commands:
 
     @classmethod
     def help(cls, userid):
+        """ 'help' command: Provides list of SlackBot commands
+
+        @userid: hacker's userid
+        """
         resps = [None, None, None]
         resps[0] = util.slack.sendMessage(userid, "Hello! You requested the help command, here are a list of commands you can use delimeted by |'s:")
         resps[1] = util.slack.sendMessage(userid, "All commands will begin with <AT character>slackru")
@@ -70,6 +85,7 @@ class Commands:
 
     @classmethod
     def _getMatchedMentorIDs(cls, question, mentorsOnDuty):
+        """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """
         for mentor in mentorsOnDuty:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]
             for word in question.split():

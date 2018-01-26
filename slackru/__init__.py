@@ -6,6 +6,7 @@ main = Blueprint('main', __name__)
 
 
 def create_app():
+    """ Initialize Flask App """
     from slackru.config import config
 
     app = Flask(__name__)

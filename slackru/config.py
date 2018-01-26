@@ -9,6 +9,7 @@ import logging
 
 
 class Config:
+    """ Base Configuration Class """
     botID = "U86U670N8"
 
     @classmethod
@@ -25,12 +26,14 @@ class Config:
 
 
 class DevelopmentConfig(Config):
+    """ Development Configuration Class """
     DEBUG = True
     serverurl = 'http://127.0.0.1:5000/'
     dbpath = 'var/slackru-dev.db'
 
 
 class ProductionConfig(Config):
+    """ Production Configuration Class """
     DEBUG = False
     serverurl = "http://slackru.pythonanywhere.com/"
     dbpath = "/home/slackru/SlackRU/var/slackru.db"
