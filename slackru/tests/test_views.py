@@ -4,7 +4,7 @@ import json
 
 import slackru.util as util
 
-from slackru.tests import TestBase, params
+from slackru.tests import TestBase, params, data
 
 
 class TestViews(TestBase):
@@ -19,7 +19,7 @@ class TestViews(TestBase):
     def setUp(self):
         self.db.drop_table('questions')
         self.db.create_questions()
-        self.db.insertQuestion(self.data['question'][0], self.data['userid'][0], json.dumps([self.data['userid'][0]]))
+        self.db.insertQuestion(data['question'][0], data['userid'][0], json.dumps([data['userid'][0]]))
 
     @params(('yes', 'mentorResponse_1'), ('no', 'mentorResponse_1'), ('yes', 'INVALID'))
     def test_message_action(self, value, callback):
@@ -59,10 +59,10 @@ class TestViews(TestBase):
                                 "value": value,
                                 "type": "button"}],
                    "callback_id": callback,
-                   "user": {'id': cls.data['mentorid'][0],
-                            'name': cls.data['mentorname'][0]},
+                   "user": {'id': data['mentorid'][0],
+                            'name': data['mentorname'][0]},
                    'message_ts': '111111111111',
-                   'channel': {'id': cls.data['channel'][0],
+                   'channel': {'id': data['channel'][0],
                                'name': 'general'}}
 
         return {'payload': json.dumps(payload)}
@@ -71,9 +71,9 @@ class TestViews(TestBase):
         Mdata = []
         self.db.drop_table('posts')
         self.db.create_posts()
-        for mentorid in self.data['mentorid']:
+        for mentorid in data['mentorid']:
             channel = util.slack.getDirectMessageChannel(mentorid)
-            ts = util.slack.sendMessage(channel, "Test Message")['ts']
+            ts = util.slack.sendMessage(channel, "Test Message")
 
             self.db.insertPost(1, mentorid, channel, ts)
 

@@ -47,9 +47,7 @@ class MessageActionView(View):
         query = "SELECT channel,timestamp FROM posts " \
                 "WHERE questionId=? AND userid!=?"
 
-        delete_count = 0
         for post in self.db.runQuery(query, [self.questionId, self.mentorid]):
-            delete_count += 1
             util.slack.deleteDirectMessages(post['channel'], post['timestamp'])
 
         query_result = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',

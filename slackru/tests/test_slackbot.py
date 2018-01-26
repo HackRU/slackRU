@@ -1,6 +1,6 @@
 """ Tests slackbot Package """
 
-from slackru.tests import TestBase, params
+from slackru.tests import TestBase, params, data
 
 
 class TestSlackBot(TestBase):
@@ -14,13 +14,13 @@ class TestSlackBot(TestBase):
             ("mentors I hate C++", [0, 1]), ("mentors", []))
     def test_mentors_cmd(self, command, mentorIndexes):
         if command == 'mentors':
-            self.assertTrue(self.handle_cmd(command))
+            self.assertIsNotNone(self.handle_cmd(command))
         else:
-            self.assertEqual(self.handle_cmd(command), [self.data['mentorid'][i] for i in mentorIndexes])
+            self.assertEqual(self.handle_cmd(command), [data['mentorid'][i] for i in mentorIndexes])
 
     def test_help_cmd(self):
         resp = self.handle_cmd("help")
         self.assertTrue(resp)
 
     def handle_cmd(self, cmd):
-        return self.bot.handle_command(cmd, self.data['channel'][0], self.data['userid'][0])
+        return self.bot.handle_command(cmd, data['channel'][0], data['userid'][0])

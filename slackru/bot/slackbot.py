@@ -67,8 +67,7 @@ class SlackBot:
 
         if cmd == 'mentors':
             if len(dividedCommand) == 1:
-                resp = util.slack.sendMessage(userid, "Please input a question")
-                return resp['ok']
+                return util.slack.sendMessage(userid, "Please input a question")
             else:
                 question = ' '.join(dividedCommand[1:])
                 return Commands.mentors(question, userid)

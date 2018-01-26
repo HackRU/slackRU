@@ -30,6 +30,9 @@ class DevelopmentConfig(Config):
     dbpath = 'var/slackru-dev.db'
 
 
+class TestConfig(DevelopmentConfig): pass
+
+
 class ProductionConfig(Config):
     DEBUG = False
     serverurl = "http://slackru.pythonanywhere.com/"
@@ -37,7 +40,8 @@ class ProductionConfig(Config):
 
 
 config = {'development': DevelopmentConfig,
-          'production': ProductionConfig}[os.environ['SLACK_CONFIG']]
+          'production': ProductionConfig,
+          'testing': TestConfig}[os.environ['SLACK_CONFIG']]
 
 # This should run once--when this module is first imported
 config.setup()
