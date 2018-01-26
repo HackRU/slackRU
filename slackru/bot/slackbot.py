@@ -28,7 +28,7 @@ class SlackBot:
             logging.info("SlackRU connected and running!")
             self.isAlive = True
             while self.stayAlive:
-                command, channel, username, userid = self.parse_slack_output(slack_client.rtm_read())
+                command, channel, userid = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
                     self.handle_command(command, channel, userid)
                 time.sleep(READ_WEBSOCKET_DELAY)
@@ -52,7 +52,7 @@ class SlackBot:
                             output['channel'],
                             output['user'])
 
-        return None, None, "", ""
+        return None, None, ""
 
     def handle_command(self, command, channel, userid):
         """
