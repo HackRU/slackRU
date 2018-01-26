@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 """ Use this script to manually run the server OR slackbot
 
     usage:
-        python main.py -h
+        ./main.py -h
 """
+
 import os
 import argparse
 

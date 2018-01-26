@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 """ Used to run the SlackRU UnitTests
 
     usage:
-        python runtests.py -h
+        ./runtests.py -h
 """
 
 import os
