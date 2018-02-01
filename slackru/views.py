@@ -13,6 +13,14 @@ from slackru import main, get_db
 
 
 class MessageActionView(View):
+    """ 'message_action' URL route
+
+    POST requests are sent from Slack to https://<slackru-site>/message_action
+    in response to an interactive button press in Slack (e.g. a mentor pressed
+    either the 'Accept' button or 'Decline' button).
+
+    More on Slack's "Interactive Message Buttons": https://api.slack.com/docs/message-buttons
+    """
     methods = ['POST']
 
     def __init__(self, postData=None):
@@ -37,12 +45,22 @@ class MessageActionView(View):
         else:
             self.dispatch_request = lambda: "done"
 
-    def DR_mentorResponse(self):
-        """ Slack Action Request URL """
+    def DR_mentorResponse(self) -> 'flask.Response(...)':
+        """ Slack Action Request URL
+
+        Return value is sent to Slack and will replace old Slack message
+        """
         return {'yes': self.mentorAccept,
                 'no': self.mentorDecline}[self.answer]()
 
-    def mentorAccept(self):
+    def mentorAccept(self) -> 'flask.Reponse(...)':
+        """ If mentor presses 'Accept':
+
+        - Respond to him/her (replace previous message)
+        - Setup group message channel with bot, hacker, and mentor
+        - Delete all other Slack messages sent to mentors regarding this question
+          from this hacker
+        """
         self.db.markAnswered(self.mentorid, self.questionId)
         query = "SELECT channel,timestamp FROM posts " \
                 "WHERE questionId=? AND userid!=?"
@@ -61,6 +79,7 @@ class MessageActionView(View):
         resp = {'text': 'That\'s the spirit! I have setup a direct message between you and <@{0}>. Please reach out to <@{0}> and let them know you are taking ownership of this request. Thanks! :grinning:'.format(hackerid)}
 
         def startGroupMessage():
+            """ Starts Group Message with hacker and mentor """
             util.ifNotDebugThen(time.sleep, 3)
             channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
             fmt = ("Hello <@{0}>. Your request for a mentor has been processed. "
@@ -75,10 +94,17 @@ class MessageActionView(View):
 
         return flask.jsonify(resp)
 
-    def mentorDecline(self):
+    def mentorDecline(self) -> 'flask.Reponse(...)':
+        """ If mentor presses 'Decline':
+
+        - Respond to him/her (replace previous message)
+        - Delete reponse after sleep period (reduces clutter)
+        """
         resp = {'text': 'No problem! Thanks for responding anyway! :grinning:'}
 
         def delayedDeleteMessage():
+            """ After a delay, delete the Slack message corresponding to this
+            button press """
             try:
                 util.ifNotDebugThen(time.sleep, 3)
                 util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])

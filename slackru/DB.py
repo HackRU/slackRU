@@ -5,7 +5,7 @@ import sqlite3
 
 class BaseDB:
     """ Base Database Class """
-    def __init__(self, dbpath):
+    def __init__(self, dbpath: 'str'):
         self.dbpath = dbpath
         self.conn = None
         self.c = None
@@ -34,7 +34,7 @@ class CreateDB(BaseDB):
 
     This class also initializes the database.
     """
-    def __init__(self, dbpath):
+    def __init__(self, dbpath: 'str'):
         super().__init__(dbpath)
 
         self.open()
@@ -66,7 +66,7 @@ class CreateDB(BaseDB):
         self.execAndCommit("CREATE TABLE mentors "
                            "(userid TEXT PRIMARY KEY, "
                            "name TEXT, "
-                           "username, "
+                           "username TEXT, "
                            "keywords VARCHAR(1000))")
 
     def create_shifts(self):
@@ -100,26 +100,26 @@ class CreateDB(BaseDB):
 
 class InsertDB(BaseDB):
     """ Insert Operations """
-    def insertMentor(self, name, username, userid, keywords):
+    def insertMentor(self, name: 'str', username: 'str', userid: 'str', keywords: 'str'):
         CMD = "INSERT INTO mentors " \
               "(name, username, userid, keywords) " \
               "VALUES (?, ?, ?, ?)"
         self.execAndCommit(CMD, [name, username, userid, keywords])
 
-    def insertShift(self, userid, start, end):
+    def insertShift(self, userid: 'str', start: 'str', end: 'str'):
         CMD = "INSERT INTO shifts " \
               "(userid, start, end) " \
               "VALUES (?, ?, ?)"
         self.execAndCommit(CMD, [userid, start, end])
 
-    def insertQuestion(self, question, userid, matchedMentors):
+    def insertQuestion(self, question: 'str', userid: 'str', matchedMentors: '[str]'):
         CMD = "INSERT INTO questions " \
               "(question, answered, userid, timestamp, matchedMentors, assignedmentor) " \
               "VALUES (?, 0, ?, datetime('now', 'localtime'), ?, NULL)"
         self.execAndCommit(CMD, [question, userid, matchedMentors])
         return self.c.lastrowid
 
-    def insertPost(self, questionId, userid, channel, timestamp):
+    def insertPost(self, questionId: 'int', userid: 'str', channel: 'str', timestamp: 'str'):
         CMD = "INSERT INTO posts " \
               "(questionId, userid, channel, timestamp) " \
               "VALUES (?, ?, ?, ?)"
@@ -128,14 +128,14 @@ class InsertDB(BaseDB):
 
 class DB(CreateDB, InsertDB):
     """ DB Interface Class """
-    def runQuery(self, query, args=(), one=False):
+    def runQuery(self, query: 'str', args=(), one=False):
         cur = self.conn.execute(query, args)
         rv = cur.fetchall()
         cur.close()
 
         return (rv[0] if rv else None) if one else rv
 
-    def markAnswered(self, userid, questionId):
+    def markAnswered(self, userid: 'str', questionId: 'int'):
         CMD = "UPDATE questions " \
               "SET answered=1, " \
               "assignedMentor=? " \

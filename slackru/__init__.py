@@ -5,7 +5,8 @@ from slackru.DB import DB
 main = Blueprint('main', __name__)
 
 
-def create_app():
+def create_app() -> 'Flask(...)':
+    """ Initialize Flask App """
     from slackru.config import config
 
     app = Flask(__name__)
@@ -15,7 +16,7 @@ def create_app():
     return app
 
 
-def get_db():
+def get_db() -> 'DB(...)':
     """ Return a new database connection if one does not already exist.
     Otherwise return the already opened database.
     """

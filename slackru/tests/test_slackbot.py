@@ -10,8 +10,8 @@ class TestSlackBot(TestBase):
         from slackru.bot.slackbot import SlackBot
         cls.bot = SlackBot()
 
-    @params(("mentors Python Rules!", [0]), ("mentors My Java code is not working", [1]),
-            ("mentors I hate C++", [0, 1]), ("mentors", []))
+    @params(("mentors", []), ("mentors My Java code is not working", [1]),
+            ("mentors I like python.", [0]), ("mentors Anyone know java?", [1]))
     def test_mentors_cmd(self, command, mentorIndexes):
         if command == 'mentors':
             self.assertIsNotNone(self.handle_cmd(command))

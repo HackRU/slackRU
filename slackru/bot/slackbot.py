@@ -16,12 +16,17 @@ AT_BOTID = "<@" + BOTID + ">"
 
 
 class SlackBot:
+    """ Main SlackBot Class
+
+    Runs SlackBot and monitors Slack workspace
+    """
     def __init__(self):
         self.isAlive = False
         self.stayAlive = True
         self.scanner = Scanner()
 
     def run(self):
+        """ Run SlackBot """
         self.scanner.scheduleScans()
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
@@ -36,9 +41,10 @@ class SlackBot:
             logging.info("Connection failed. Invalid Slack token or bot ID?")
 
     def stop(self):
+        """ Stop SlackBot """
         self.stayAlive = False
 
-    def parse_slack_output(self, slack_rtm_output):
+    def parse_slack_output(self, slack_rtm_output: '{str: str}|None') -> '(str, str, str)|(None,None,None)':
         """
             The Slack Real Time Messaging API is an events firehose.
             this parsing function returns None unless a message is
@@ -52,9 +58,9 @@ class SlackBot:
                             output['channel'],
                             output['user'])
 
-        return None, None, "", ""
+        return None, None, None
 
-    def handle_command(self, command, channel, userid):
+    def handle_command(self, command: 'str', channel: 'str', userid: 'str'):
         """
             Receives commands directed at the bot and determines if they
             are valid commands. If so, then acts on the commands. If not,

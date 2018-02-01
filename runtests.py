@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
+
 """ Used to run the SlackRU UnitTests
 
     usage:
-        python runtests.py -h
+        ./runtests.py -h
 """
 
 import os
-import sys
 import unittest
 import argparse
 
@@ -24,8 +25,6 @@ if __name__ == "__main__":
 
     parser.add_argument('test_suite', nargs='?', choices=[key for key in pattern_opts.keys()], default='all')
     args = parser.parse_args()
-
-    sys.stdout = sys.stderr = open(os.devnull, 'w')
 
     suite = loader.discover(os.path.dirname(os.path.realpath(__file__)) + '/slackru/tests',
                                             pattern=pattern_opts[args.test_suite])

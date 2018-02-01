@@ -9,6 +9,7 @@ import logging
 
 
 class Config:
+    """ Base Configuration Class """
     botID = "U86U670N8"
 
     @classmethod
@@ -25,23 +26,27 @@ class Config:
 
 
 class DevelopmentConfig(Config):
+    """ Development Configuration Class """
     DEBUG = True
     serverurl = 'http://127.0.0.1:5000/'
     dbpath = 'var/slackru-dev.db'
 
 
-class TestConfig(DevelopmentConfig): pass
+class TestingConfig(DevelopmentConfig):
+    """ Configuration Class used for Tests """
+    DEBUG = False
 
 
 class ProductionConfig(Config):
+    """ Production Configuration Class """
     DEBUG = False
     serverurl = "http://slackru.pythonanywhere.com/"
     dbpath = "/home/slackru/SlackRU/var/slackru.db"
 
 
 config = {'development': DevelopmentConfig,
-          'production': ProductionConfig,
-          'testing': TestConfig}[os.environ['SLACK_CONFIG']]
+          'testing': TestingConfig,
+          'production': ProductionConfig}[os.environ['SLACK_CONFIG']]
 
 # This should run once--when this module is first imported
 config.setup()
