@@ -47,7 +47,10 @@ all_tags = ['javascript', 'java', 'c#', 'php', 'android', 'jquery', 'python', 'h
 from pprint import pprint
 r = requests.get('https://api.stackexchange.com/2.2/search/advanced?order=desc&site=stackoverflow&accepted=False&sort=votes&q=[caching] OR [unity3d] OR [c#]')
 
-# pprint(r.json()['items'][2])
+pprint(r.json()['items'][2])
 
-r = requests.get('https://api.stackexchange.com/2.2/questions/30173913/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody')
-pprint(r.json())	
+
+
+
+# r = requests.get('https://api.stackexchange.com/2.2/questions/30173913/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody')
+# pprint(r.json())	
