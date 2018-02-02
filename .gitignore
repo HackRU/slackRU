@@ -1,5 +1,5 @@
 venv/*
-slackru/tests/coverage/*
+**/coverage/*
 __pycache__/*
 *.swp
 *.db

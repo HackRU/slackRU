@@ -4,7 +4,8 @@ import json
 
 import slackru.util as util
 
-from slackru.tests import TestBase, params, slack_client, data
+from slackru.tests import TestBase, params, data
+from slackru.tests.slack_mock import slack_mock
 
 
 class TestViews(TestBase):
@@ -32,7 +33,7 @@ class TestViews(TestBase):
 
     def test_mentorAccept(self):
         self.MAVI.mentorAccept()
-        slack_client.api_call.assert_called()
+        slack_mock.api_call.assert_called()
 
     def test_mentorDecline(self):
         messageData = self.getMessageData()

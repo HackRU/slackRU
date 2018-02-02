@@ -3,14 +3,11 @@
 import os
 import inspect
 from datetime import datetime, timedelta
-from unittest.mock import Mock
 
 import flask
 from flask_testing import TestCase
 
-import slackru.util
 from slackru import get_db
-from slackru.util.slackapi import SlackAPI
 
 
 data = dict()
@@ -21,17 +18,6 @@ data['username'] = ['bryanbugyi34']
 data['userid'] = ['U8LRL4L5R']
 data['channel'] = ['D86QQ6P2P', 'D8RAAMGJ3']
 data['question'] = ['I am having some trouble with my Python code.', 'I love JAVA', 'I hate C++!']
-
-
-def side_effect(action, *args, **kwargs):
-    return {'channel': {'id': 'CHANNEL_ID'},
-            'ts': 'TIMESTAMP',
-            'ok': True}
-
-
-slack_client = Mock()
-slack_client.api_call = Mock(side_effect=side_effect)
-slackru.util.slack = SlackAPI(slack_client)
 
 
 def params(*parameters):

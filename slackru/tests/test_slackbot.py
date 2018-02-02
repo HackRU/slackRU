@@ -1,6 +1,7 @@
 """ Tests slackbot Package """
 
-from slackru.tests import TestBase, params, slack_client, data
+from slackru.tests import TestBase, params, data
+from slackru.tests.slack_mock import slack_mock
 
 
 class TestSlackBot(TestBase):
@@ -20,7 +21,7 @@ class TestSlackBot(TestBase):
 
     def test_help_cmd(self):
         self.handle_cmd("help")
-        slack_client.api_call.assert_called_once()
+        slack_mock.api_call.assert_called_once()
 
     def handle_cmd(self, cmd):
         return self.bot.handle_command(cmd, data['channel'][0], data['userid'][0])

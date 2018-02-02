@@ -18,8 +18,6 @@ def slack_error_check(func):
 class SlackAPI:
     def __init__(self, slack_client):
         self.api_call = slack_error_check(slack_client.api_call)
-        self.client = slack_client
-        self.SlackError = SlackError  # Easy Access for Tests
 
     def getDirectMessageChannel(self, users):
         resp = self.api_call("conversations.open", users=users)
