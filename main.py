@@ -9,14 +9,6 @@
 import os
 import argparse
 
-from slackclient import SlackClient
-
-import slackru.util
-from slackru.util.slackapi import SlackAPI
-
-
-slackru.util.slack = SlackAPI(SlackClient(os.environ['SLACK_API_KEY']))
-
 
 def server():
     from slackru import create_app

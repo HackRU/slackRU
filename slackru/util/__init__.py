@@ -1,3 +1,13 @@
+import os
+
+from slackclient import SlackClient
+
+from slackru.util.slackapi import SlackAPI
+
+
+slack = SlackAPI(SlackClient(os.environ['SLACK_API_KEY']))
+
+
 def ifDebugThen(func, *args, inverted=False, **kwargs):
     """ Higher-Order Debugging Utility
 
