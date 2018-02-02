@@ -43,12 +43,30 @@ all_tags = ['javascript', 'java', 'c#', 'php', 'android', 'jquery', 'python', 'h
 
 
 
+def get_top_answer(question):
 
-from pprint import pprint
-r = requests.get('https://api.stackexchange.com/2.2/search/advanced?order=desc&site=stackoverflow&accepted=False&sort=votes&q=[caching] OR [unity3d] OR [c#]')
+	words = question.split(' ')
+	kywds = [w for w in all_tags if w in words] 
 
-pprint(r.json()['items'][2])
+	url = 'https://api.stackexchange.com/2.2/search/advanced?order=desc&site=stackoverflow&accepted=False&sort=votes&q='
 
+	for w in kywds:
+
+		tag = '[' + w + '] OR '
+		url += tag
+
+	url = url[: -4]
+
+	print(kywds)
+
+
+
+# from pprint import pprint
+# r = requests.get('https://api.stackexchange.com/2.2/search/advanced?order=desc&site=stackoverflow&accepted=False&sort=votes&q=[caching] OR [unity3d] OR [c#]')
+
+# pprint(r.json()['items'][2])
+
+get_top_answer("I rock at python and java ...")
 
 
 
