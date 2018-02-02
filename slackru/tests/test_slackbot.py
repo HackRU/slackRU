@@ -24,7 +24,7 @@ class TestSlackBot(TestBase):
 
     def test_help_cmd(self):
         self.handle_cmd("help")
-        self.assertEqual(slack_mock.method_calls[0][1][0], 'chat.postMessage')
+        self.assertEqual(slack_mock.method_calls[0][1], ('chat.postMessage',))
 
     def handle_cmd(self, cmd):
         return self.bot.handle_command(cmd, data['channel'][0], data['userid'][0])
