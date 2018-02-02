@@ -3,11 +3,14 @@
 import os
 import inspect
 from datetime import datetime, timedelta
+from unittest.mock import Mock
 
 import flask
 from flask_testing import TestCase
 
+import slackru.util
 from slackru import get_db
+from slackru.util.slackapi import SlackAPI
 
 
 data = dict()
@@ -18,6 +21,17 @@ data['username'] = ['bryanbugyi34']
 data['userid'] = ['U8LRL4L5R']
 data['channel'] = ['D86QQ6P2P', 'D8RAAMGJ3']
 data['question'] = ['I am having some trouble with my Python code.', 'I love JAVA', 'I hate C++!']
+
+
+def side_effect(action, *args, **kwargs):
+    return {'channel': {'id': 'CHANNEL_ID'},
+            'ts': 'TIMESTAMP',
+            'ok': True}
+
+
+slack_client = Mock()
+slack_client.api_call = Mock(side_effect=side_effect)
+slackru.util.slack = SlackAPI(slack_client)
 
 
 def params(*parameters):
@@ -59,10 +73,10 @@ class TestBase(TestCase):
 
             start_time = datetime.now().strftime('%Y-%m-%d %H:%M')
             end_time = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M')
-            cls.db.insertMentor(cls.data['mentor'][0], cls.data['mentorname'][0], cls.data['mentorid'][0], "Python")
-            cls.db.insertMentor(cls.data['mentor'][1], cls.data['mentorname'][1], cls.data['mentorid'][1], "Java")
-            cls.db.insertShift(cls.data['mentorid'][0], start_time, end_time)
-            cls.db.insertShift(cls.data['mentorid'][1], start_time, end_time)
+            cls.db.insertMentor(data['mentor'][0], data['mentorname'][0], data['mentorid'][0], "Python")
+            cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], "Java")
+            cls.db.insertShift(data['mentorid'][0], start_time, end_time)
+            cls.db.insertShift(data['mentorid'][1], start_time, end_time)
 
     def create_app(self):
         """ Used by Flask-Testing package to create app context """

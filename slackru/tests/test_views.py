@@ -4,7 +4,7 @@ import json
 
 import slackru.util as util
 
-from slackru.tests import TestBase, params, data
+from slackru.tests import TestBase, params, slack_client, data
 
 
 class TestViews(TestBase):
@@ -31,14 +31,8 @@ class TestViews(TestBase):
             self.assertEqual(200, resp.status_code)
 
     def test_mentorAccept(self):
-        messageData = self.getMessageData()
-
         self.MAVI.mentorAccept()
-        resp = util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
-        self.assertTrue(resp['ok'])
-
-        with self.assertRaises(util.slack.SlackError):
-            util.slack.deleteDirectMessages(messageData[1]['channel'], messageData[1]['ts'])
+        slack_client.api_call.assert_called()
 
     def test_mentorDecline(self):
         messageData = self.getMessageData()
@@ -49,9 +43,6 @@ class TestViews(TestBase):
 
         with self.assertRaises(KeyError):
             self.MAVI.thread_exceptions['decline']
-
-        with self.assertRaisesRegex(util.slack.SlackError, 'message_not_found'):
-            util.slack.deleteDirectMessages(messageData[0]['channel'], messageData[0]['ts'])
 
     @classmethod
     def getPostData(cls, value, callback):

@@ -7,8 +7,9 @@
 """
 
 import os
-import unittest
 import argparse
+import unittest
+
 
 os.environ['SLACK_CONFIG'] = 'testing'
 
