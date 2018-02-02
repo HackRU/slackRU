@@ -8,15 +8,15 @@ from slackru.util.slackapi import SlackAPI
 slack = SlackAPI(SlackClient(os.environ['SLACK_API_KEY']))
 
 
-def ifDebugThen(func, *args, inverted=False, **kwargs):
+def ifTestingThen(func, *args, inverted=False, **kwargs):
     """ Higher-Order Debugging Utility
 
     Calls function only if debugging is enabled.
     """
     from slackru.config import config
-    if config.DEBUG ^ inverted:  # Bitwise XOR operator
+    if config.TESTING ^ inverted:  # Bitwise XOR operator
         func(*args, **kwargs)
 
 
-def ifNotDebugThen(func, *args, **kwargs):
-    ifDebugThen(func, *args, inverted=True, **kwargs)
+def ifNotTestingThen(func, *args, **kwargs):
+    ifTestingThen(func, *args, inverted=True, **kwargs)

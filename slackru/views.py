@@ -80,7 +80,7 @@ class MessageActionView(View):
 
         def startGroupMessage():
             """ Starts Group Message with hacker and mentor """
-            util.ifNotDebugThen(time.sleep, 3)
+            util.ifNotTestingThen(time.sleep, 3)
             channel = util.slack.getDirectMessageChannel(hackerid + ',' + self.mentorid)
             fmt = ("Hello <@{0}>. Your request for a mentor has been processed. "
                     "You have been matched with <@{1}>.\n\n"
@@ -106,7 +106,7 @@ class MessageActionView(View):
             """ After a delay, delete the Slack message corresponding to this
             button press """
             try:
-                util.ifNotDebugThen(time.sleep, 3)
+                util.ifNotTestingThen(time.sleep, 3)
                 util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])
             except Exception:
                 self.thread_exceptions['decline'] = sys.exc_info()

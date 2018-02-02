@@ -11,6 +11,7 @@ import logging
 class Config:
     """ Base Configuration Class """
     botID = "U86U670N8"
+    TESTING = False
 
     @classmethod
     def setup(cls):
@@ -34,7 +35,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(DevelopmentConfig):
     """ Configuration Class used for Tests """
-    pass
+    TESTING = True
 
 
 class ProductionConfig(Config):
