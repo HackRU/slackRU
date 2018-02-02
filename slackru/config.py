@@ -34,7 +34,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(DevelopmentConfig):
     """ Configuration Class used for Tests """
-    DEBUG = False
+    pass
 
 
 class ProductionConfig(Config):

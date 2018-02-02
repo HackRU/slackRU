@@ -8,6 +8,7 @@ import flask
 from flask_testing import TestCase
 
 from slackru import get_db
+from slackru.tests.slack_mock import slack_mock
 
 
 data = dict()
@@ -63,6 +64,9 @@ class TestBase(TestCase):
             cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], "Java")
             cls.db.insertShift(data['mentorid'][0], start_time, end_time)
             cls.db.insertShift(data['mentorid'][1], start_time, end_time)
+
+    def setUp(self):
+        slack_mock.reset_mock()
 
     def create_app(self):
         """ Used by Flask-Testing package to create app context """
