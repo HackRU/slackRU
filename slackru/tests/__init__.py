@@ -42,9 +42,9 @@ slack_mock = MagicMock()
 slack_mock.api_call = MagicMock(side_effect=mock_api_call)
 
 
-###################################
-#  Shared Test Functions/Classes  #
-###################################
+############################
+#  Shared Test Decorators  #
+############################
 def params(*parameters):
     """ Example Usage:
 
@@ -65,6 +65,17 @@ def params(*parameters):
     return decorator
 
 
+def reset_mock(func):
+    """ Decorator that resets mock objects before calling decorated function """
+    def wrapper(self):
+        slack_mock.reset_mock()
+        func(self)
+    return wrapper
+
+
+#########################
+#  Shared Test Classes  #
+#########################
 class TestBase(TestCase):
     """ Base Unit Testing Class. Inherited by all other test classes. """
     @classmethod
@@ -88,9 +99,6 @@ class TestBase(TestCase):
             cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], "Java")
             cls.db.insertShift(data['mentorid'][0], start_time, end_time)
             cls.db.insertShift(data['mentorid'][1], start_time, end_time)
-
-    def setUp(self):
-        slack_mock.reset_mock()
 
     def create_app(self):
         """ Used by Flask-Testing package to create app context """

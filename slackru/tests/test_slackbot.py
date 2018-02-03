@@ -1,6 +1,6 @@
 """ Tests slackbot Package """
 
-from slackru.tests import TestBase, params, data
+from slackru.tests import TestBase, params, reset_mock, data
 from slackru.tests import slack_mock
 
 
@@ -19,6 +19,7 @@ class TestSlackBot(TestBase):
         else:
             self.assertEqual(self.handle_cmd(command), [data['mentorid'][i] for i in mentorIndexes])
 
+    @reset_mock
     def test_help_cmd(self):
         self.handle_cmd("help")
         self.assertEqual(slack_mock.method_calls[0][1], ('chat.postMessage',))
