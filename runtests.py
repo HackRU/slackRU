@@ -26,8 +26,8 @@ if __name__ == "__main__":
                     'slackbot': 'test*bot*.py',
                     'views': 'test_*view*.py'}
 
-    parser.add_argument('test_suite', nargs='?', choices=[key for key in pattern_opts.keys()], default='all')
-    parser.add_argument('--no-mock', dest='mock', action='store_false')
+    parser.add_argument('test_suite', nargs='?', choices=[key for key in pattern_opts.keys()], default='all', help="set of tests to run (default is 'all')")
+    parser.add_argument('--no-mock', dest='mock', action='store_false', help="disable mock objects from overwriting original objects (they will wrap original objects instead)")
     args = parser.parse_args()
 
     if not args.mock:
