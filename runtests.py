@@ -11,7 +11,7 @@ import argparse
 import unittest
 from unittest.mock import MagicMock, patch
 
-from slackru.tests.slack_mock import slack_mock
+from slackru.tests import slack_mock
 from slackru.util.slackapi import SlackAPI
 
 

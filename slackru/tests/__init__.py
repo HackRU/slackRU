@@ -3,17 +3,20 @@
 import os
 import inspect
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 
 import flask
 from flask_testing import TestCase
 
 from slackru import get_db
-from slackru.tests.slack_mock import slack_mock
 
 
 os.environ['SLACK_CONFIG'] = 'testing'
 
 
+######################
+#  Shared Test Data  #
+######################
 data = dict()
 data['mentor'] = ['Bryan Bugyi', 'Timmy Tester']
 data['mentorname'] = ['bryan.bugyi', 'tester.timmy']
@@ -24,6 +27,24 @@ data['channel'] = ['D86QQ6P2P', 'D8RAAMGJ3']
 data['question'] = ['I am having some trouble with my Python code.', 'I love JAVA', 'I hate C++!']
 
 
+##################
+#  Mock Objects  #
+##################
+def mock_api_call(action, *args, **kwargs):
+    return {'channel': {'id': 'CHANNEL_ID'},
+            'ts': 'TIMESTAMP',
+            'ok': True}
+
+
+# This object is used to patch 'slackru.util.slack' before the tests are run.
+# This is done in 'runtests.py' (at the time of this writing).
+slack_mock = MagicMock()
+slack_mock.api_call = MagicMock(side_effect=mock_api_call)
+
+
+###################################
+#  Shared Test Functions/Classes  #
+###################################
 def params(*parameters):
     """ Example Usage:
 

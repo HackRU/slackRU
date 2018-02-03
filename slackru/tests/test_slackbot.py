@@ -1,7 +1,7 @@
 """ Tests slackbot Package """
 
 from slackru.tests import TestBase, params, data
-from slackru.tests.slack_mock import slack_mock
+from slackru.tests import slack_mock
 
 
 class TestSlackBot(TestBase):
