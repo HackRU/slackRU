@@ -11,6 +11,9 @@ from slackru import get_db
 from slackru.tests.slack_mock import slack_mock
 
 
+os.environ['SLACK_CONFIG'] = 'testing'
+
+
 data = dict()
 data['mentor'] = ['Bryan Bugyi', 'Timmy Tester']
 data['mentorname'] = ['bryan.bugyi', 'tester.timmy']

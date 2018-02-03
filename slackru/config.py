@@ -36,6 +36,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(DevelopmentConfig):
     """ Configuration Class used for Tests """
     TESTING = True
+    DEBUG = False
 
 
 class ProductionConfig(Config):

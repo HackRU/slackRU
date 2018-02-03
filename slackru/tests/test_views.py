@@ -3,7 +3,6 @@
 import json
 
 import slackru.util as util
-
 from slackru.tests import TestBase, params, data
 from slackru.tests.slack_mock import slack_mock
 
@@ -13,7 +12,6 @@ class TestViews(TestBase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.messageData = cls.getMessageData()
         from slackru.views import MessageActionView
         payload = cls.getPostData("yes", "mentorResponse_1")
         cls.MAVI = MessageActionView(payload)  # MAVI -> MessageActionViewInstance
@@ -34,12 +32,15 @@ class TestViews(TestBase):
             self.assertEqual(200, resp.status_code)
 
     def test_mentorAccept(self):
+        self.getMessageData()
         self.MAVI.mentorAccept()
+        self.MAVI.threads['accept'].join()
         self.assertEqual([call[1][0] for call in slack_mock.method_calls],
                          ['chat.delete', 'conversations.open', 'chat.postMessage'])
 
     def test_mentorDecline(self):
-        self.MAVI.payLoad['message_ts'] = self.messageData[0]['ts']
+        messageData = self.getMessageData()
+        self.MAVI.payLoad['message_ts'] = messageData[0]['ts']
         self.MAVI.mentorDecline()
         self.MAVI.threads['decline'].join()
 
@@ -60,17 +61,17 @@ class TestViews(TestBase):
 
         return {'payload': json.dumps(payload)}
 
-    @classmethod
-    def getMessageData(cls):
+    def getMessageData(self):
         Mdata = []
-        cls.db.drop_table('posts')
-        cls.db.create_posts()
+        self.db.drop_table('posts')
+        self.db.create_posts()
         for mentorid in data['mentorid']:
             channel = util.slack.getDirectMessageChannel(mentorid)
             ts = util.slack.sendMessage(channel, "Test Message")
 
-            cls.db.insertPost(1, mentorid, channel, ts)
+            self.db.insertPost(1, mentorid, channel, ts)
 
             Mdata.append({'channel': channel, 'ts': ts})
 
+        slack_mock.reset_mock()
         return Mdata

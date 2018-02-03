@@ -4,8 +4,8 @@ from slackclient import SlackClient
 
 from slackru.util.slackapi import SlackAPI
 
-
-slack = SlackAPI(SlackClient(os.environ['SLACK_API_KEY']))
+slack_client = SlackClient(os.environ['SLACK_API_KEY'])
+slack = SlackAPI(slack_client)
 
 
 def ifTestingThen(func, *args, inverted=False, **kwargs):

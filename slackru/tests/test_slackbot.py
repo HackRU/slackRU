@@ -11,9 +11,6 @@ class TestSlackBot(TestBase):
         from slackru.bot.slackbot import SlackBot
         cls.bot = SlackBot()
 
-    def setUp(self):
-        super().setUp()
-
     @params(("mentors", []), ("mentors My Java code is not working", [1]),
             ("mentors I like python.", [0]), ("mentors Anyone know java?", [1]))
     def test_mentors_cmd(self, command, mentorIndexes):
