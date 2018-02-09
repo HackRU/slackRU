@@ -1,5 +1,4 @@
-import requests
-from pprint import pprint
+
 
 # tags = requests.get('https://api.stackexchange.com/2.2/tags?page=1&pagesize=100&order=desc&sort=popular&site=stackoverflow')
 # items = tags.json()['items']
@@ -11,6 +10,27 @@ from pprint import pprint
 
 # all_tags = all_tags_1 + all_tags_2 
 # print(all_tags)
+
+
+chars_to_skip = {',', '\'', '"', ':', '-', '?', '!', '&', '+', '#', '@', '/',
+          '\\', '(', ')', '{', '}', '%', '^', '*', '_'}
+stop_words = {'a','in', 's', 'do', 'that', 'between', 'most', 'who', 'their',
+'now', 'be', 'which', 'ourselves', 'my', 'some', 'of', 'the', 'to', 'hasn',
+'about', 'was', 'before', 'its', 'but', 'with', 'have', 'on', 'own', 'ma',
+'them', 'doesn', 'mustn', 'a', 'same', 'yourself', 'y', 'is', 'for', 'where',
+'aren', 'had', 'didn', 'o', 'this', 'himself', 'in', 'further', 'only', 'against',
+'t', 'each', 'as', 'i', 'just', 'if', 'out', 'were', 'from', 'has', 'again',
+ 'through', 'we', 'how', 'me', 'so', 'does', 'off', 'yourselves', 'you', 'below',
+  'wasn', 'been', 'because', 'any', 'am', 'will', 're', 'ain', 'during', 'or',
+   'than', 'your', 'when', 'these', 'wouldn', 'll', 'haven', 'itself', 'more',
+  'she', 'while', 'yours', 'by', 'both', 'couldn', 'his', 'at', 'down', 've',
+   'mightn', 'and', 'after', 'then', 'theirs', 'it', 'such', 'our', 'those',
+    'don', 'what', 'he', 'themselves', 'd', 'whom', 'him', 'above', 'ours',
+     'once', 'can', 'weren', 'under', 'not', 'there', 'here', 'shan', 'why',
+    'being', 'they', 'm', 'won', 'into', 'over', 'up', 'needn', 'few', 'isn',
+     'are', 'shouldn', 'too', 'hadn', 'myself', 'did', 'her', 'having', 'very',
+      'herself', 'doing', 'hers', 'should', 'no', 'all', 'nor', 'an', 'other',
+       'until', 'also'}
 
 all_tags = ['javascript', 'java', 'c#', 'php', 'android', 'jquery', 'python', 'html', 'c++',
  'ios', 'css', 'mysql', 'sql', 'asp.net', 'ruby-on-rails', 'objective-c', 'c', '.net',
@@ -42,11 +62,11 @@ all_tags = ['javascript', 'java', 'c#', 'php', 'android', 'jquery', 'python', 'h
                            'cakephp', 'math', 'dom', 'iis', 'select', 'button', 'd3.js',
                             'join', 'xamarin', 'search']
 
-
-def get_relevant_quest(org_ques, quest_dict):
-
-  
-
+import requests
+from pprint import pprint
+from textblob import Word
+from textblob import TextBlob
+from textblob.wordnet import Synset
 
 
 def remove_spam(text):
@@ -67,7 +87,68 @@ def remove_spam(text):
   return new
 
 
-def get_top_answer(question):
+def get_relevant_quest(org_ques, all_quest_dicts):
+  '''
+  Args:
+    org_quest : String
+    all_quest_dicts : List of dictionaries holding all slightly relevant questions
+
+  Returns:
+    dictionary with most relevant question
+
+  '''
+
+  org_ques = remove_spam(org_ques).split(' ')
+  org_ques = [w for w in org_ques if w not in stop_words]
+
+  for org_word in org_ques:
+
+    for quest_dict in all_quest_dicts:
+
+      ctr = 0
+
+      for quest_kwd in quest_dict['body_kwds']:
+
+        curr_max = 0
+        org_syns = Word(org_word).synsets
+        quest_syns = Word(quest_kwd).synsets
+
+        if len(org_syns) == 0 or len(quest_syns) == 0:
+          continue
+
+        for org_syn in org_syns:
+
+          for quest_syn in quest_syns:
+
+            pathsim = org_syn.path_similarity(quest_syn)
+
+                if pathsim is not None and pathsim > curr_max:
+                  curr_max = pathsim
+
+
+        if curr_max != 0:
+          ctr += 1
+          quest_dict['pts'] += curr_max
+
+
+
+  max_pts = 0
+  index_most_relevant = -1
+  for i, quest_dict in enumerate(all_quest_dicts):
+
+    if quest_dict['pts'] > max_pts:
+      max_pts = quest_dict['pts']
+      index_most_relevant = i
+
+
+  return all_quest_dicts[index_most_relevant]
+
+
+
+
+
+
+def get_all_ques(question):
 
   words = question.split(' ')
   kywds = [w for w in all_tags if w in words] 
@@ -90,16 +171,38 @@ def get_top_answer(question):
     title = remove_spam(ques['title'])
     body = remove_spam(ques['body_markdown'])
 
-    current_ques = {'title': title, 'id': ques['question_id'], 'body': body}
+    body_kwds = body.split(' ')
+    body_kwds = [w for w in body_kwds if w not in stop_words]
+
+
+    current_ques = {'title': title, 'id': ques['question_id'],
+     'body': body, 'body_kwds': body_kwds, 'pts': 0}
     questions_json.append(current_ques)
 
 
-  pprint(questions_json[0])
-
-
-get_top_answer("I rock at python and java ...")
+  return questions_json
 
 
 
-# r = requests.get('https://api.stackexchange.com/2.2/questions/48520049/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody')
-# pprint(r.json()['items'])  
+def get_top_answer(ques_id):
+
+  r = requests.get('https://api.stackexchange.com/2.2/questions/48520049/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody')
+  ans = r.json()['items'][0]
+  pprint(ans)
+  return ans
+
+
+
+
+def run(org_question):
+
+  all_ques = get_all_ques(org_question)
+
+  relevant_ques = get_relevant_quest(org_question, all_ques)
+
+  ques_id = relevant_ques['id']
+
+  top_answer = get_top_answer(ques_id)
+
+
+  return relevant_ques, top_answer
