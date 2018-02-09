@@ -26,7 +26,7 @@ if __name__ == "__main__":
     runtype_opts = {'server': server, 'slackbot': slackbot}
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('runtype', choices=[key for key in runtype_opts.keys()], help="run 'server' or 'slackbot'")
+    parser.add_argument('runtype', nargs='?', choices=[key for key in runtype_opts.keys()], default='server', help="run 'server' or 'slackbot'")
     parser.add_argument('-c', '--config', dest='config', choices=['development', 'production', 'testing'], default='development', help="set configuration class (default is 'development')")
     args = parser.parse_args()
 
