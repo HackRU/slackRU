@@ -1,15 +1,12 @@
-from threading import Thread
+import os
 
 from slackru import create_app
 from slackru.bot.slackbot import SlackBot
 
-bot = SlackBot()
-t = Thread(target=bot.run)
-t.start()
+
+pid = os.fork()
+if not pid:
+    bot = SlackBot()
+    bot.run()
 
 application = create_app()
-
-
-if __name__ == "__main__":
-    application.debug = True
-    application.run()
