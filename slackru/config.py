@@ -42,8 +42,8 @@ class TestingConfig(DevelopmentConfig):
 class ProductionConfig(Config):
     """ Production Configuration Class """
     DEBUG = False
-    serverurl = "http://slackru.pythonanywhere.com/"
-    dbpath = "/home/slackru/SlackRU/var/slackru.db"
+    serverurl = "http://slackru.bkdhwfwsv2.us-east-1.elasticbeanstalk.com/"
+    dbpath = "var/slackru.db"
 
 
 config = {'development': DevelopmentConfig,
