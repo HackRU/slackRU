@@ -1,3 +1,7 @@
+# Waffle Project Management
+
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/HackRU/SlackRU.svg?columns=all)](https://waffle.io/HackRU/SlackRU)
+
 # New Feature Ideas!
 Be creative and liberal. It is expected that most of these features will never see the light of day, so feel free to dream big!
 
