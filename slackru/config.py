@@ -20,7 +20,7 @@ class Config:
             os.makedirs(db_dir)
 
         logLevel = {True: logging.DEBUG,
-                    False: logging.INFO}[cls.DEBUG]
+                    False: logging.ERROR}[cls.DEBUG]
         logging.basicConfig(level=logLevel,
                             format='%(asctime)s [%(levelname)s]: %(message)s',
                             datefmt='(%m/%d/%Y %H:%M:%S)')

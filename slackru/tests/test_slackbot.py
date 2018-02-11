@@ -1,13 +1,9 @@
 """ Tests slackbot Package """
 
-from unittest.mock import patch, MagicMock
+import requests
 
 from slackru.tests import TestBase, params, reset_mock, data
 from slackru.tests import slack_mock
-
-
-class MockResp:
-    status_code = 200
 
 
 class TestSlackBot(TestBase):
@@ -23,9 +19,7 @@ class TestSlackBot(TestBase):
         if command == 'mentors':
             self.assertEqual(self.handle_cmd(command), 500)
         else:
-            with patch('slackru.bot.actions.requests.post', MagicMock(return_value=MockResp)) as post_mock:
-                self.assertEqual(self.handle_cmd(command), 200)
-                self.assertEqual(1, post_mock.call_count)
+            self.assertRaises(requests.exceptions.ConnectionError, self.handle_cmd, command)
 
     @reset_mock
     def test_help_cmd(self):
