@@ -8,7 +8,6 @@ from slackclient import SlackClient
 
 from slackru.config import config
 from slackru.bot.actions import Commands, Scanner
-import slackru.util as util
 
 slack_client = SlackClient(os.environ['SLACK_API_KEY'])
 BOTID = config.botID
@@ -72,10 +71,7 @@ class SlackBot:
         cmd = cmd.lower()
 
         if cmd == 'mentors':
-            if len(dividedCommand) == 1:
-                return util.slack.sendMessage(userid, "Please input a question")
-            else:
-                question = ' '.join(dividedCommand[1:])
-                return Commands.mentors(question, userid)
+            question = ' '.join(dividedCommand[1:])
+            return Commands.mentors(question, userid)
         elif cmd == 'help':
             return Commands.help(userid)

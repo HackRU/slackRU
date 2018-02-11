@@ -10,6 +10,7 @@ from flask.views import View
 
 import slackru.util as util
 from slackru import main, get_db
+import slackru.messages as M
 
 
 class MessageActionView(View):
@@ -118,5 +119,57 @@ class MessageActionView(View):
         return flask.jsonify(resp)
 
 
+class PairMentor(View):
+    methods = ['POST']
+
+    def __init__(self):
+        self.db = get_db()
+        self.postData = flask.request.form.to_dict()
+        self.question = self.postData['question']
+        self.userid = self.postData['userid']
+
+    def dispatch_request(self):
+        mentorsQuery = ("SELECT mentors.* FROM shifts "
+                        "JOIN mentors ON mentors.userid = shifts.userid "
+                        "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
+                        "AND datetime('now', 'localtime') < datetime(shifts.end)")
+
+        mentorsOnDuty = self.db.runQuery(mentorsQuery)
+        selectedMentorIDs = list(self._getMatchedMentorIDs(self.question, mentorsOnDuty)) \
+                             or [mentor['userid'] for mentor in mentorsOnDuty]
+
+        questionId = self.db.insertQuestion(self.question,
+                                           self.userid,
+                                           json.dumps(selectedMentorIDs))
+
+        attachments = M.mentors_attachments(questionId)
+        text = M.mentors_text(self.userid, self.question)
+        for mentorid in selectedMentorIDs:
+            channel = util.slack.getDirectMessageChannel(mentorid)
+            timestamp = util.slack.sendMessage(channel, text, attachments)
+            self.db.insertPost(questionId, mentorid, channel, timestamp)
+
+        return ("done", {'mentorIDs': selectedMentorIDs})
+
+    def _getMatchedMentorIDs(self, question: 'str', mentorsOnDuty: '[{str: ??}]'):
+        """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """
+        import string
+
+        translator = question.maketrans(dict.fromkeys(string.punctuation))
+
+        temp = question.translate(translator)
+        temp = [word.lower() for word in temp.split()]
+
+        question_keywords = temp
+
+        for mentor in mentorsOnDuty:
+            keywords = [word.lower() for word in mentor['keywords'].split(',')]
+            for word in question_keywords:
+                if word in keywords:
+                    yield mentor['userid']
+                    break
+
+
 # These are equivalent to the '@main.route' function decorators
 main.add_url_rule('/message_action', view_func=MessageActionView.as_view('message_action'))
+main.add_url_rule('/pair_mentor', view_func=PairMentor.as_view('pair_mentor'))

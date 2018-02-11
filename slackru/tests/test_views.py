@@ -5,6 +5,7 @@ import json
 import slackru.util as util
 from slackru.tests import TestBase, reset_mock, params, data
 from slackru.tests import slack_mock
+from slackru.config import config
 
 
 class TestViews(TestBase):
@@ -22,10 +23,17 @@ class TestViews(TestBase):
         self.db.create_questions()
         self.db.insertQuestion(data['question'][0], data['userid'][0], json.dumps([data['userid'][0]]))
 
+    @params(("My Java code is not working", [1]), ("I like python.", [0]), ("Anyone know java?", [1]))
+    def test_pair_mentor(self, question, mentorIndexes):
+        postData = {'question': question,
+                    'userid': data['userid'][0]}
+        with self.app.test_client() as client:
+            resp = client.post(config.serverurl + 'pair_mentor', data=postData)
+            self.assertEqual([resp.headers['mentorIDs']], [data['mentorid'][i] for i in mentorIndexes])
+
     @params(('yes', 'mentorResponse_1'), ('no', 'mentorResponse_1'), ('yes', 'INVALID'))
     def test_message_action(self, value, callback):
         """ message_action Interface Test """
-        from slackru.config import config
         postData = self.getPostData(value, callback)
         with self.app.test_client() as client:
             resp = client.post(config.serverurl + 'message_action', data=postData)
