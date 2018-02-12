@@ -16,7 +16,7 @@ def create_app() -> 'Flask(...)':
     return app
 
 
-def get_db() -> 'DB(...)':
+def get_db() -> DB:
     """ Return a new database connection if one does not already exist.
     Otherwise return the already opened database.
     """

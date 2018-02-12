@@ -120,6 +120,12 @@ class MessageActionView(View):
 
 
 class PairMentor(View):
+    """ 'pair_mentor' Flask URL Route
+
+    The SlackBot sends a POST request to this route to request that a hacker be paired
+    with a mentor. The SQL database is needed to handle this, which is why the SlackBot
+    cannot handle this functionality locally.
+    """
     methods = ['POST']
 
     def __init__(self):
@@ -128,7 +134,8 @@ class PairMentor(View):
         self.question = self.postData['question']
         self.userid = self.postData['userid']
 
-    def dispatch_request(self):
+    def dispatch_request(self) -> 'flask.Response(...)':
+        """ The URL route is linked to this method """
         mentorsQuery = ("SELECT mentors.* FROM shifts "
                         "JOIN mentors ON mentors.userid = shifts.userid "
                         "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
