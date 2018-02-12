@@ -3,7 +3,7 @@
 import requests
 
 from slackru.tests import TestBase, params, reset_mock, data
-from slackru.tests import slack_mock
+from slackru.tests import slack_mock, post_mock
 
 
 class TestSlackBot(TestBase):
@@ -15,11 +15,18 @@ class TestSlackBot(TestBase):
 
     @params(("mentors", []), ("mentors My Java code is not working", [1]),
             ("mentors I like python.", [0]), ("mentors Anyone know java?", [1]))
+    @reset_mock
     def test_mentors_cmd(self, command, mentorIndexes):
         if command == 'mentors':
             self.assertEqual(self.handle_cmd(command), 500)
         else:
-            self.assertRaises(requests.exceptions.ConnectionError, self.handle_cmd, command)
+            try:
+                self.handle_cmd(command)
+                self.assertEqual(1, post_mock.call_count)
+            except requests.exceptions.ConnectionError as e:
+                # This exception is expected to be thrown when 'runtests.py' is run with the
+                # '--no-mock' option.
+                pass
 
     @reset_mock
     def test_help_cmd(self):

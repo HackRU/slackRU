@@ -8,6 +8,7 @@
 
 import os
 import argparse
+import requests
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -33,9 +34,13 @@ if __name__ == "__main__":
     if not args.mock:
         from slackru.util import slack_client
         slack_mock.api_call = MagicMock(wraps=slack_client.api_call)
+        post_mock = MagicMock(wraps=requests.post)
+    else:
+        from slackru.tests import post_mock
 
     suite = loader.discover(os.path.dirname(os.path.realpath(__file__)) + '/slackru/tests',
                                             pattern=pattern_opts[args.test_suite])
 
-    with patch('slackru.util.slack', SlackAPI(slack_mock)):
+    with patch('slackru.util.slack', SlackAPI(slack_mock)), \
+     patch('slackru.bot.actions.requests.post', post_mock):
         runner.run(suite)

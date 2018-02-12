@@ -36,10 +36,20 @@ def mock_api_call(action, *args, **kwargs):
             'ok': True}
 
 
+class MockPostResp:
+    status_code = 200
+
+
+def mock_post_call(*args, **kwargs):
+    return MockPostResp()
+
+
 # This object is used to patch 'slackru.util.slack' before the tests are run.
 # This is done in 'runtests.py' (at the time of this writing).
 slack_mock = MagicMock()
 slack_mock.api_call = MagicMock(side_effect=mock_api_call)
+
+post_mock = MagicMock(side_effect=mock_post_call)
 
 
 ############################
@@ -67,9 +77,10 @@ def params(*parameters):
 
 def reset_mock(func):
     """ Decorator that resets mock objects before calling decorated function """
-    def wrapper(self):
+    def wrapper(self, *args, **kwargs):
         slack_mock.reset_mock()
-        func(self)
+        post_mock.reset_mock()
+        func(self, *args, **kwargs)
     return wrapper
 
 
