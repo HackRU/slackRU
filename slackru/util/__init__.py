@@ -9,9 +9,9 @@ slack = SlackAPI(slack_client)
 
 
 def ifTestingThen(func, *args, inverted=False, **kwargs):
-    """ Higher-Order Debugging Utility
+    """ Higher-Order Testing Utility
 
-    Calls function only if debugging is enabled.
+    Calls function only if testing is enabled.
     """
     from slackru.config import config
     if config.TESTING ^ inverted:  # Bitwise XOR operator

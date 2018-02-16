@@ -19,10 +19,12 @@ class Commands:
     """ SlackBot Commands """
     @classmethod
     def mentors(cls, question: str, userid: str) -> int:
-        """ 'mentors' command: Matches mentor with hacker.
+        """ mentors: Matches mentor with hacker.
 
-        @question: hacker's question
-        @userid: hacker's userid
+        usage:
+            {bot} mentors <question>
+
+        <question>: hacker's question
         """
         util.slack.sendMessage(userid, "Trying to find a mentor")
 
@@ -41,11 +43,29 @@ class Commands:
         util.slack.sendMessage(userid, M.HELP)
 
     @classmethod
-    def register(cls, mentor_data: 'fullname | phone_number | keywords',
-            userid: str, username: str):
-        """ 'register' command: Adds mentor to database """
+    def register(cls, mentor_data: 'fullname | phone_number | keywords', userid: str, username: str):
+        """ *register: Adds mentor to database
+
+        usage:
+            {bot} register <fullname> | <phone_number> | <keywords>
+
+        <fullname>: The hacker's first and last name, seperated by a space.
+        <phone_number>: The hacker's phone number. No spaces, dashes, or parentheses (e.g. 5555555555).
+        <keywords>: These represent skills (programming languages, framewords, etc.) that you feel
+                    you are particularly well suited to mentor others in. This should be a comma
+                    seperated list (e.g. Python,Java,Haskell)
+
+        NOTE: Regardless of the keywords that you choose, you will potentially be notified of any
+              inquiry (question, request for help, etc.) that a hacker makes. You will, however,
+              be prioritized when a hacker inquiry matches one of your listed keywords (i.e. the
+              SlackBot will attempt to reach out to you before other mentors if the hacker has a
+              question that contains one of your keywords).
+
+        WARNING: You must use '|' to seperate each option! Keywords should be seperated using commas!
+        """
         try:
             fullname, phone_number, keywords = [field.strip() for field in mentor_data.split('|')]
+            keywords = keywords.replace(' ', '')
         except ValueError as e:
             return 500
 
