@@ -41,10 +41,11 @@ class Commands:
         util.slack.sendMessage(userid, M.HELP)
 
     @classmethod
-    def register(cls, mentor_data: 'fullname; phone_number; keywords',
+    def register(cls, mentor_data: 'fullname | phone_number | keywords',
             userid: str, username: str):
+        """ 'register' command: Adds mentor to database """
         try:
-            fullname, phone_number, keywords = [field.strip() for field in mentor_data.split(';')]
+            fullname, phone_number, keywords = [field.strip() for field in mentor_data.split('|')]
         except ValueError as e:
             return 500
 

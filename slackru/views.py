@@ -183,10 +183,17 @@ class PairMentor(PostView):
 
 
 class RegisterMentor(PostView):
+    """ 'register_mentor' Flask URL Route
+
+    When the 'register' command is run, the SlackBot sends a POST request
+    to this URL route. The server then uses the POST data to add a new
+    mentor the the database.
+    """
     def __init__(self):
         super().__init__()
 
     def dispatch_request(self):
+        """ The URL route is linked to this method """
         self.db.insertMentor(**self.postData)
 
         channel = util.slack.getDirectMessageChannel(self.postData['userid'])

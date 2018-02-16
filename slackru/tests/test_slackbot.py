@@ -25,7 +25,7 @@ class TestSlackBot(TestBase):
         self.handle_cmd("help")
         self.assertEqual(slack_mock.method_calls[0][1], ('chat.postMessage',))
 
-    @params("register", "register Bryan Bugyi; 6095007081; Python, Haskell")
+    @params("register", "register Bryan Bugyi | 6095007081 | Python, Haskell")
     def test_register_cmd(self, command):
         if command == 'register':
             self.assertEqual(self.handle_cmd(command), 500)
