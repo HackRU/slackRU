@@ -13,7 +13,20 @@ from slackru import main, get_db
 import slackru.messages as M
 
 
-class MessageActionView(View):
+class PostView(View):
+    """ Base Class for POST URL Route Classes """
+    methods = ['POST']
+
+    def __init__(self, postData=None):
+        self.db = get_db()
+
+        if postData:
+            self.postData = postData
+        else:
+            self.postData = flask.request.form.to_dict()
+
+
+class MessageActionView(PostView):
     """ 'message_action' URL route
 
     POST requests are sent from Slack to https://<slackru-site>/message_action
@@ -22,17 +35,11 @@ class MessageActionView(View):
 
     More on Slack's "Interactive Message Buttons": https://api.slack.com/docs/message-buttons
     """
-    methods = ['POST']
-
     def __init__(self, postData=None):
-        self.db = get_db()
+        super().__init__(postData)
+
         self.threads = {}
         self.thread_exceptions = {}
-
-        if postData:
-            self.postData = postData
-        else:
-            self.postData = flask.request.form.to_dict()
 
         self.payLoad = json.loads(self.postData['payload'])
 
@@ -119,18 +126,16 @@ class MessageActionView(View):
         return flask.jsonify(resp)
 
 
-class PairMentor(View):
+class PairMentor(PostView):
     """ 'pair_mentor' Flask URL Route
 
     The SlackBot sends a POST request to this route to request that a hacker be paired
     with a mentor. The SQL database is needed to handle this, which is why the SlackBot
     cannot handle this functionality locally.
     """
-    methods = ['POST']
-
     def __init__(self):
-        self.db = get_db()
-        self.postData = flask.request.form.to_dict()
+        super().__init__()
+
         self.question = self.postData['question']
         self.userid = self.postData['userid']
 
@@ -177,6 +182,20 @@ class PairMentor(View):
                     break
 
 
+class RegisterMentor(PostView):
+    def __init__(self):
+        super().__init__()
+
+    def dispatch_request(self):
+        self.db.insertMentor(**self.postData)
+
+        channel = util.slack.getDirectMessageChannel(self.postData['userid'])
+        util.slack.sendMessage(channel, M.register_success(**self.postData))
+
+        return "done"
+
+
 # These are equivalent to the '@main.route' function decorators
 main.add_url_rule('/message_action', view_func=MessageActionView.as_view('message_action'))
 main.add_url_rule('/pair_mentor', view_func=PairMentor.as_view('pair_mentor'))
+main.add_url_rule('/register_mentor', view_func=RegisterMentor.as_view('register_mentor'))

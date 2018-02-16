@@ -7,6 +7,7 @@ import logging
 from slackclient import SlackClient
 
 from slackru.config import config
+from slackru.util import slack
 from slackru.bot.actions import Commands, Scanner
 
 slack_client = SlackClient(os.environ['SLACK_API_KEY'])
@@ -32,9 +33,9 @@ class SlackBot:
             logging.info("SlackRU connected and running!")
             self.isAlive = True
             while self.stayAlive:
-                command, channel, userid = self.parse_slack_output(slack_client.rtm_read())
+                command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
                 if command and channel:
-                    self.handle_command(command, channel, userid)
+                    self.handle_command(command, channel, userid, username)
                 time.sleep(READ_WEBSOCKET_DELAY)
         else:
             logging.info("Connection failed. Invalid Slack token or bot ID?")
@@ -55,11 +56,12 @@ class SlackBot:
                 if output and 'text' in output and AT_BOTID in output['text']:
                     return (output['text'].split(AT_BOTID)[1].strip(),
                             output['channel'],
-                            output['user'])
+                            output['user'],
+                            slack.id_to_username(output['user']))
 
-        return None, None, None
+        return None, None, None, None
 
-    def handle_command(self, command: 'str', channel: 'str', userid: 'str'):
+    def handle_command(self, command: str, channel: str, userid: str, username: str):
         """
             Receives commands directed at the bot and determines if they
             are valid commands. If so, then acts on the commands. If not,
@@ -75,3 +77,6 @@ class SlackBot:
             return Commands.mentors(question, userid)
         elif cmd == 'help':
             return Commands.help(userid)
+        elif cmd == 'register':
+            mentor_data = ' '.join(dividedCommand[1:])
+            return Commands.register(mentor_data, userid, username)

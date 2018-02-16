@@ -30,3 +30,11 @@ class SlackAPI:
     def deleteDirectMessages(self, channel, ts):
         resp = self.api_call("chat.delete", channel=channel, ts=ts, as_user=True)
         return resp
+
+    def id_to_username(self, userid: str):
+        user_list = self.api_call('users.list')
+        if (user_list.get('ok')):
+            users = user_list.get('members')
+            for user in users:
+                if 'name' in user and user.get('id') == userid:
+                    return user['name']

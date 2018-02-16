@@ -23,13 +23,17 @@ class TestViews(TestBase):
         self.db.create_questions()
         self.db.insertQuestion(data['question'][0], data['userid'][0], json.dumps([data['userid'][0]]))
 
-    @params(("My Java code is not working", [1]), ("I like python.", [0]), ("Anyone know java?", [1]))
-    def test_pair_mentor(self, question, mentorIndexes):
-        postData = {'question': question,
-                    'userid': data['userid'][0]}
+    @params(('Bryan Bugyi', '6095007081', 'Python,Haskell'))
+    def test_register_mentor(self, fullname, phone_number, keywords):
+        postData = {'fullname': fullname,
+                    'phone_number': phone_number,
+                    'keywords': keywords,
+                    'userid': data['userid'][0],
+                    'username': data['username'][0]}
+
         with self.app.test_client() as client:
-            resp = client.post(config.serverurl + 'pair_mentor', data=postData)
-            self.assertEqual([resp.headers['mentorIDs']], [data['mentorid'][i] for i in mentorIndexes])
+            resp = client.post(config.serverurl + 'register_mentor', data=postData)
+            self.assertEqual(200, resp.status_code)
 
     @params(('yes', 'mentorResponse_1'), ('no', 'mentorResponse_1'), ('yes', 'INVALID'))
     def test_message_action(self, value, callback):
@@ -38,6 +42,14 @@ class TestViews(TestBase):
         with self.app.test_client() as client:
             resp = client.post(config.serverurl + 'message_action', data=postData)
             self.assertEqual(200, resp.status_code)
+
+    @params(("My Java code is not working", [1]), ("I like python.", [0]), ("Anyone know java?", [1]))
+    def test_pair_mentor(self, question, mentorIndexes):
+        postData = {'question': question,
+                    'userid': data['userid'][0]}
+        with self.app.test_client() as client:
+            resp = client.post(config.serverurl + 'pair_mentor', data=postData)
+            self.assertEqual([resp.headers['mentorIDs']], [data['mentorid'][i] for i in mentorIndexes])
 
     @reset_mock
     def test_mentorAccept(self):

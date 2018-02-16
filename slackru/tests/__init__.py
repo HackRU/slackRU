@@ -21,6 +21,7 @@ data = dict()
 data['mentor'] = ['Bryan Bugyi', 'Timmy Tester']
 data['mentorname'] = ['bryan.bugyi', 'tester.timmy']
 data['mentorid'] = ['U86U3G52Q', 'U8R4CCDV4']
+data['phone_number'] = ['6095007081', '5555555555']
 data['username'] = ['bryanbugyi34']
 data['userid'] = ['U8LRL4L5R']
 data['channel'] = ['D86QQ6P2P', 'D8RAAMGJ3']
@@ -69,6 +70,11 @@ def params(*parameters):
         def wrapper(self):
             funcArgNames = inspect.getfullargspec(func).args[1:]
             for args in parameters:
+                # Ensures that, for single parameter calls (e.g. @params("cmd1", "cmd2", ...),
+                # you do not have to wrap each argument (e.g. "cmd1") into a tuple.
+                if len(funcArgNames) < 2:
+                    args = (args, )
+
                 with self.subTest(**dict(zip(funcArgNames, args))):
                     func(self, *args)
         return wrapper
@@ -106,8 +112,8 @@ class TestBase(TestCase):
 
             start_time = datetime.now().strftime('%Y-%m-%d %H:%M')
             end_time = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M')
-            cls.db.insertMentor(data['mentor'][0], data['mentorname'][0], data['mentorid'][0], "Python")
-            cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], "Java")
+            cls.db.insertMentor(data['mentor'][0], data['mentorname'][0], data['mentorid'][0], data['phone_number'][0], "Python")
+            cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], data['phone_number'][1], "Java")
             cls.db.insertShift(data['mentorid'][0], start_time, end_time)
             cls.db.insertShift(data['mentorid'][1], start_time, end_time)
 

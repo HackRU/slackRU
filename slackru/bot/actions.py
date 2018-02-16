@@ -7,7 +7,6 @@ import requests
 
 import slackru.util as util
 import slackru.messages as M
-from slackru import get_db
 from slackru.config import config
 
 
@@ -18,8 +17,6 @@ class Scanner:
 
 class Commands:
     """ SlackBot Commands """
-    db = get_db()
-
     @classmethod
     def mentors(cls, question: str, userid: str) -> int:
         """ 'mentors' command: Matches mentor with hacker.
@@ -42,3 +39,23 @@ class Commands:
     @classmethod
     def help(cls, userid):
         util.slack.sendMessage(userid, M.HELP)
+
+    @classmethod
+    def register(cls, mentor_data: 'fullname; phone_number; keywords',
+            userid: str, username: str):
+        try:
+            fullname, phone_number, keywords = [field.strip() for field in mentor_data.split(';')]
+        except ValueError as e:
+            return 500
+
+        if not fullname:
+            return 501
+
+        postData = {'fullname': fullname,
+                    'phone_number': phone_number,
+                    'keywords': keywords,
+                    'userid': userid,
+                    'username': username}
+
+        resp = requests.post(config.serverurl + 'register_mentor', data=postData)
+        return resp.status_code

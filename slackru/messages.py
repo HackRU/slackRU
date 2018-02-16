@@ -1,6 +1,12 @@
 HELP = "HELP TEXT GOES HERE"
 
 
+def register_success(**kwargs):
+    return ("You have successfully registered to be a mentor!:\n"
+        ">fullname = {fullname}\n>username = {username}\n>userid = {userid}\n"
+        ">phone number = {phone_number}\n>keywords = {keywords}".format(**kwargs))
+
+
 def mentors_attachments(questionId):
     return [{'text': '',
             'attachment_type': 'default',
