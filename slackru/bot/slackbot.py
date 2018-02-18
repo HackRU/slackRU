@@ -8,7 +8,7 @@ from slackclient import SlackClient
 
 from slackru.config import config
 from slackru.util import slack
-from slackru.bot.actions import Commands, Scanner
+from slackru.bot.commands import Commands
 
 slack_client = SlackClient(os.environ['SLACK_API_KEY'])
 BOTID = config.botID
@@ -23,11 +23,9 @@ class SlackBot:
     def __init__(self):
         self.isAlive = False
         self.stayAlive = True
-        self.scanner = Scanner()
 
     def run(self):
         """ Run SlackBot """
-        self.scanner.scheduleScans()
         READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
         if slack_client.rtm_connect():
             logging.info("SlackRU connected and running!")
@@ -71,12 +69,17 @@ class SlackBot:
         dividedCommand = command.split()
         cmd = dividedCommand[0]
         cmd = cmd.lower()
+        args = dividedCommand[1:]
+
+        if '-h' in args or '--help' in args:
+            return Commands.help(userid, command=cmd)
 
         if cmd == 'mentors':
-            question = ' '.join(dividedCommand[1:])
+            question = ' '.join(args)
             return Commands.mentors(question, userid)
         elif cmd == 'help':
-            return Commands.help(userid)
+            command = None if not args else args[0]
+            return Commands.help(userid, command=command)
         elif cmd == 'register':
-            mentor_data = ' '.join(dividedCommand[1:])
-            return Commands.register(mentor_data, userid, username)
+            mentor_data = ' '.join(args)
+            return Commands._register(mentor_data, userid, username)

@@ -42,5 +42,5 @@ if __name__ == "__main__":
                                             pattern=pattern_opts[args.test_suite])
 
     with patch('slackru.util.slack', SlackAPI(slack_mock)), \
-     patch('slackru.bot.actions.requests.post', post_mock):
+     patch('slackru.bot.commands.requests.post', post_mock):
         runner.run(suite)

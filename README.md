@@ -12,6 +12,7 @@ Be creative and liberal. It is expected that most of these features will never s
 - [ ] No more `@<bot>` to start SlackBot commands (could we use Slack "slash" commands instead?: https://api.slack.com/slash-commands).
 - [ ] Identify Female Names. Match female hackers w/ female mentors when possible. Not sure if this is desirable or not. Would definitely need to get a thumbs up before implementing something like this.
 - [ ] Move these ideas to the homepage of the SlackRU Flask server (which doesn't currently exist) and add a "Like" button. Track and display how many likes each idea has.
+- [ ] Tell A.I. Jokes.
 
 # SlackRUTest
 Is the Slack workspace we use for testing. Reach out to me if you are (or want to start) helping develop SlackRU and need access (bryan.bugyi@rutgers.edu).

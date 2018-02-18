@@ -1,4 +1,26 @@
-HELP = "HELP TEXT GOES HERE"
+import re
+
+
+HELP = """
+Hello hacker! My name is HackBot!
+
+I currently support the following commands:
+
+{commands}
+
+Remember, I'm here to help! And unless I become self-aware at some point during this
+hackathon (keep your fingers crossed!), I'll be here all night! So don't be a stranger!  :robot_face:
+"""
+
+
+def help_msg(cmd_docs, one=False):
+    block_docs = re.sub('(^|\n)', '\\1>', cmd_docs.lstrip())
+
+    if one:
+        return block_docs
+
+    msg = HELP.lstrip().format(commands=block_docs)
+    return msg
 
 
 def register_success(**kwargs):

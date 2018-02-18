@@ -23,7 +23,7 @@ class TestSlackBot(TestBase):
     @reset_mock
     def test_help_cmd(self):
         self.handle_cmd("help")
-        self.assertEqual(slack_mock.method_calls[0][1], ('chat.postMessage',))
+        self.assertEqual(slack_mock.api_call.call_count, 2)
 
     @params("register", "register Bryan Bugyi | 6095007081 | Python, Haskell")
     def test_register_cmd(self, command):
