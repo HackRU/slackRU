@@ -1,3 +1,9 @@
+""" This module holds all of the static Slack messages that the SlackBot sends.
+
+Seperating these messages out from the rest of the code should help reduce clutter,
+improve readability, and improve organization.
+"""
+
 import re
 
 
