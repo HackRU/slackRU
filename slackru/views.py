@@ -147,7 +147,7 @@ class PairMentor(PostView):
                         "AND datetime('now', 'localtime') < datetime(shifts.end)")
 
         mentorsOnDuty = self.db.runQuery(mentorsQuery)
-        selectedMentorIDs = list(self._getMatchedMentorIDs(self.question, mentorsOnDuty)) \
+        selectedMentorIDs = list(self.getMatchedMentorIDs(self.question, mentorsOnDuty)) \
                              or [mentor['userid'] for mentor in mentorsOnDuty]
 
         questionId = self.db.insertQuestion(self.question,
@@ -163,7 +163,7 @@ class PairMentor(PostView):
 
         return ("done", {'mentorIDs': selectedMentorIDs})
 
-    def _getMatchedMentorIDs(self, question: 'str', mentorsOnDuty: '[{str: ??}]'):
+    def getMatchedMentorIDs(self, question: 'str', mentorsOnDuty: '[{str: ??}]'):
         """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """
         import string
 

@@ -12,14 +12,28 @@ Remember, I'm here to help! And unless I become self-aware at some point during 
 hackathon (keep your fingers crossed!), I'll be here all night! So don't be a stranger!  :robot_face:
 """
 
+HELP_ERROR = """
+Ughhh. I'm not feeling so good.  :nauseated_face:
 
-def help_msg(cmd_docs, one=False):
+Did you maybe type something in wrong? Here's a list of the commands that I support
+with descriptions on how to use them:
+
+{commands}
+"""
+
+
+def help_msg(cmd_docs: str, one=False, error=False) -> str:
     block_docs = re.sub('(^|\n)', '\\1>', cmd_docs.lstrip())
 
     if one:
         return block_docs
 
-    msg = HELP.lstrip().format(commands=block_docs)
+    if not error:
+        template = HELP
+    else:
+        template = HELP_ERROR
+
+    msg = template.format(commands=block_docs)
     return msg
 
 

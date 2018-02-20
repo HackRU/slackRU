@@ -83,3 +83,5 @@ class SlackBot:
         elif cmd == 'register':
             mentor_data = ' '.join(args)
             return Commands._register(mentor_data, userid, username)
+        else:
+            return Commands.help(userid, error=True)

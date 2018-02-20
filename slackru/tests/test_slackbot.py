@@ -20,10 +20,13 @@ class TestSlackBot(TestBase):
         else:
             self.handle_post_cmd(command)
 
+    @params("help", "help register", "mentors -h")
     @reset_mock
-    def test_help_cmd(self):
-        self.handle_cmd("help")
-        self.assertEqual(slack_mock.api_call.call_count, 2)
+    def test_help_cmd(self, command):
+        self.handle_cmd(command)
+        actual = [call[0][0] for call in slack_mock.api_call.call_args_list]
+        expected = ["conversations.open", "chat.postMessage"]
+        self.assertEqual(actual, expected)
 
     @params("register", "register Bryan Bugyi | 6095007081 | Python, Haskell")
     def test_register_cmd(self, command):

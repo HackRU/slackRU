@@ -34,6 +34,52 @@ class Commands:
     option with the command).
     """
     @classmethod
+    def help(cls, userid: str, command: str=None, error=False):
+        """ Use the `{name}` command to display my documentation.
+
+        usage:
+            `{precmd}{name}`
+            `{precmd}{name} <command>`
+            `{precmd}<command> -h`
+
+        {argbar}
+        `<command>`: one of my other commands (e.g. `mentors`)
+        """
+        ARGBAR = '_***** Parameter Details *****_'
+
+        def appendDoc(docs: str, name: str, obj: '<method>') -> str:
+            if obj.__doc__:
+                docstr = obj.__doc__.lstrip()
+            else:
+                return docs
+
+            titled_docstr = '\n\n*========== ' + name.upper() + ' ==========*\n' + docstr
+            new_doc = docs + titled_docstr.format(name=name, precmd='@SRU ', argbar=ARGBAR)
+            return new_doc
+
+        channel = util.slack.getDirectMessageChannel(userid)
+
+        if command:
+            try:
+                obj = getattr(cls, command)
+            except AttributeError as e:
+                obj = getattr(cls, '_' + command)
+
+            doc = appendDoc('', command, obj)
+            help_msg = M.help_msg(doc, one=True, error=error)
+        else:
+            cmd_docs = ''
+            for name in cls.__dict__:
+                obj = getattr(cls, name)
+
+                if name[0] != '_':
+                    cmd_docs = appendDoc(cmd_docs, name, obj)
+
+            help_msg = M.help_msg(cmd_docs, error=error)
+
+        util.slack.sendMessage(channel, help_msg)
+
+    @classmethod
     def mentors(cls, question: str, userid: str) -> int:
         """ Use the `{name}` command to request assistance from a mentor.
 
@@ -58,47 +104,6 @@ class Commands:
         resp = requests.post(config.serverurl + 'pair_mentor', data=postData)
 
         return resp.status_code
-
-    @classmethod
-    def help(cls, userid, command=None):
-        """ Use the `{name}` command to display my documentation.
-
-        usage:
-            `{precmd}{name}`
-        """
-        ARGBAR = '_***** Parameter Details *****_'
-
-        def appendDoc(docs, name, obj):
-            if obj.__doc__:
-                docstr = obj.__doc__.lstrip()
-            else:
-                return docs
-
-            titled_docstr = '\n\n*========== ' + name.upper() + ' ==========*\n' + docstr
-            new_doc = docs + titled_docstr.format(name=name, precmd='@SRU ', argbar=ARGBAR)
-            return new_doc
-
-        channel = util.slack.getDirectMessageChannel(userid)
-
-        if command:
-            try:
-                obj = getattr(cls, command)
-            except AttributeError as e:
-                obj = getattr(cls, '_' + command)
-
-            doc = appendDoc('', command, obj)
-            help_msg = M.help_msg(doc, one=True)
-        else:
-            cmd_docs = ''
-            for name in cls.__dict__:
-                obj = getattr(cls, name)
-
-                if name[0] != '_':
-                    cmd_docs = appendDoc(cmd_docs, name, obj)
-
-            help_msg = M.help_msg(cmd_docs)
-
-        util.slack.sendMessage(channel, help_msg)
 
     @classmethod
     def _register(cls, mentor_data: 'fullname | phone_number | keywords', userid: str, username: str):
