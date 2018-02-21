@@ -9,29 +9,37 @@ class Commands:
     """ SlackBot Commands
 
     ========== Help Documentation ==========
-    Note that the method docstrings of this class are used to feed the 'help'
-    command. This means that if you make any changes to the methods in this
-    class, you MUST update the docstrings accordingly. Try to keep any new
-    docstrings as consistent with the current method docstrings as possible.
+    READ THIS BEFORE MAKING CHANGES TO THIS CLASS!
+
+    The method docstrings of this class are used to feed the 'help' command.
+    This means that if you make any changes to the methods in this class, you
+    MUST update the docstrings accordingly. Try to keep any new docstrings as
+    consistent with the current method docstrings as possible.
 
     ----- Format Variables -----
     The 'help' command uses format variables to generalize the docstrings as
-    much as possible. Use the following format variables in the method docstrings
-    whereever applicable:
+    much as possible. Use the following format variables in the method
+    docstrings wherever applicable:
 
-    {name}: The name of the method (which should be the same as the name of the command!).
-    {precmd}: The sentinal value that the SlackBot searches for. Right now it is @<BotName>,
-              but it may change in the future (it will hopefully disappear altogether). This
-              variable should be used in each command's usage description.
-    {argbar}: The title bar used before the description of the command's arguments.
+    {name}:   The name of the method (which should be the same as the name of the
+              command!).
+
+    {precmd}: The sentinal value that the SlackBot searches for. Right now it
+              is '@<BotName> ', but it may change in the future. This variable
+              should be used in each command's usage description.
+
+    {argbar}: The title bar used before the description of the command's
+              arguments.
 
     ----- Protected Commands -----
-    Not all commands should be displayed in the general purpose 'help' message. The 'register'
-    command, for example, registers a mentor with the SlackBot. So hackers should not be aware of
-    this command. Protected commands should be represented by protected methods. In Python, you can
-    make a method protected by starting the method name with a SINGLE underscore. These methods will
-    only have their documentation displayed when the it is explicitly requested (e.g. by using the '-h'
-    option with the command).
+    Not all commands should be displayed in the general purpose 'help' message.
+    The 'register' command, for example, registers a mentor with the SlackBot.
+    So hackers should not be aware of this command. "Protected" commands should
+    be represented by "protected" methods. In Python, you can declare a method
+    to be protected by starting the method name with a SINGLE underscore.  The
+    'help' command will display the documentation of protected methods ONLY
+    when it is explicitly requested to do so (e.g. 'help register' will display
+    the 'register' command's documentation).
     """
     @classmethod
     def help(cls, userid: str, command: str=None, error=False):
