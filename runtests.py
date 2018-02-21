@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" Used to run the SlackRU UnitTests
+""" Use this script to run all (or a portion of) the tests.
 
     usage:
         ./runtests.py -h
@@ -21,7 +21,8 @@ runner = unittest.runner.TextTestRunner(verbosity=2, buffer=True)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    description = __doc__.split('\n')[0]  # First line of this module's docstring
+    parser = argparse.ArgumentParser(description=description)
 
     pattern_opts = {'all': 'test*.py',
                     'slackbot': 'test*bot*.py',

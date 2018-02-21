@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" Use this script to manually run the server OR slackbot
+""" Use this script to manually run the server OR slackbot.
 
     usage:
         ./main.py -h
@@ -25,9 +25,10 @@ def slackbot():
 if __name__ == "__main__":
     runtype_opts = {'server': server, 'slackbot': slackbot}
 
-    parser = argparse.ArgumentParser()
+    description = __doc__.split('\n')[0]  # First line of this module's docstring
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument('runtype', nargs='?', choices=[key for key in runtype_opts.keys()], default='server', help="run 'server' or 'slackbot'")
-    parser.add_argument('-c', '--config', dest='config', choices=['development', 'production', 'testing'], default='development', help="set configuration class (default is 'development')")
+    parser.add_argument('--config', dest='config', choices=['development', 'production', 'testing'], default='development', help="set configuration class (default is 'development')")
     args = parser.parse_args()
 
     os.environ['SLACK_CONFIG'] = args.config
