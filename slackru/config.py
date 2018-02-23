@@ -41,7 +41,7 @@ class TestingConfig(DevelopmentConfig):
 
 class ProductionConfig(Config):
     """ Production Configuration Class """
-    DEBUG = False
+    DEBUG = True
     botID = "U9DFNJMHR"
     slack_api_key = os.environ['SLACK_API_KEY']
     serverurl = "http://slackru.bkdhwfwsv2.us-east-1.elasticbeanstalk.com/"

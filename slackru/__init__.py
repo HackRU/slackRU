@@ -18,7 +18,7 @@ def create_app() -> 'Flask(...)':
     global sqlalch_db, db
     sqlalch_db = SQLAlchemy(app)
 
-    from slackru.DB import DB
+    from slackru.models import DB
     db = DB()
 
     return app
