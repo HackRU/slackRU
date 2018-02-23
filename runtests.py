@@ -12,6 +12,9 @@ import requests
 import unittest
 from unittest.mock import MagicMock, patch
 
+# Needed before slackru imports
+os.environ['SLACK_CONFIG'] = 'testing'
+
 from slackru.tests import slack_mock
 from slackru.util.slackapi import SlackAPI
 

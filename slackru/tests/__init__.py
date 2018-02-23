@@ -11,9 +11,6 @@ from flask_testing import TestCase
 from slackru import get_db
 
 
-os.environ['SLACK_CONFIG'] = 'testing'
-
-
 ######################
 #  Shared Test Data  #
 ######################

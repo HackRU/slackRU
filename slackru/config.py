@@ -29,6 +29,7 @@ class Config:
 class DevelopmentConfig(Config):
     """ Development Configuration Class """
     DEBUG = True
+    slack_api_key = os.environ['TEST_SLACK_API_KEY']
     serverurl = 'http://127.0.0.1:5000/'
     dbpath = 'var/slackru-dev.db'
 
@@ -42,6 +43,8 @@ class TestingConfig(DevelopmentConfig):
 class ProductionConfig(Config):
     """ Production Configuration Class """
     DEBUG = False
+    botID = "U9DFNJMHR"
+    slack_api_key = os.environ['SLACK_API_KEY']
     serverurl = "http://slackru.bkdhwfwsv2.us-east-1.elasticbeanstalk.com/"
     dbpath = "var/slackru.db"
 

@@ -1,10 +1,9 @@
-import os
-
 from slackclient import SlackClient
 
 from slackru.util.slackapi import SlackAPI
+from slackru.config import config
 
-slack_client = SlackClient(os.environ['SLACK_API_KEY'])
+slack_client = SlackClient(config.slack_api_key)
 slack = SlackAPI(slack_client)
 
 
@@ -13,7 +12,6 @@ def ifTestingThen(func, *args, inverted=False, **kwargs):
 
     Calls function only if testing is enabled.
     """
-    from slackru.config import config
     if config.TESTING ^ inverted:  # Bitwise XOR operator
         func(*args, **kwargs)
 

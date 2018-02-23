@@ -103,7 +103,7 @@ class InsertDB(BaseDB):
     """ Insert Operations """
     def insertMentor(self, fullname: str, username: str, userid: str,
             phone_number: str, keywords: str):
-        CMD = "INSERT INTO mentors " \
+        CMD = "INSERT OR REPLACE INTO mentors " \
               "(fullname, username, userid, phone_number, keywords) " \
               "VALUES (?, ?, ?, ?, ?)"
         self.execAndCommit(CMD, [fullname, username, userid, phone_number, keywords])

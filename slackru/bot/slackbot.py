@@ -1,6 +1,5 @@
 """ The SlackBot class is defined here """
 
-import os
 import time
 import logging
 
@@ -10,7 +9,7 @@ from slackru.config import config
 from slackru.util import slack
 from slackru.bot.commands import Commands
 
-slack_client = SlackClient(os.environ['SLACK_API_KEY'])
+slack_client = SlackClient(config.slack_api_key)
 BOTID = config.botID
 AT_BOTID = "<@" + BOTID + ">"
 
