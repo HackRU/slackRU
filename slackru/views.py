@@ -115,6 +115,7 @@ class MessageActionView(PostView):
                 util.slack.deleteDirectMessages(self.payLoad['channel']['id'], self.payLoad['message_ts'])
             except Exception:
                 self.thread_exceptions['decline'] = sys.exc_info()
+                raise
 
         t = Thread(target=delayedDeleteMessage)
         self.threads['decline'] = t

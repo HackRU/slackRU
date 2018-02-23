@@ -13,6 +13,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     """ Base Configuration Class """
     botID = "U86U670N8"
+    TESTING = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'slackru.db')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
