@@ -1,14 +1,11 @@
 """ Shared Testing Utilities """
 
-import os
 import inspect
-from datetime import datetime, timedelta
+import os
 from unittest.mock import MagicMock
 
 import flask
 from flask_testing import TestCase
-
-from slackru import get_db
 
 
 ######################
@@ -94,25 +91,13 @@ class TestBase(TestCase):
     """ Base Unit Testing Class. Inherited by all other test classes. """
     @classmethod
     def setUpClass(cls):
-        cls.db = get_db()
-
         # A hack to enable tests to run certain commands only once per SESSION
         # instead of once per CLASS
         if not os.getenv('SLACKRU_TEST_SESSION'):
             os.environ['SLACKRU_TEST_SESSION'] = 'True'
-            from slackru.config import config
+            from slackru import create_app
+            cls.app = create_app()
             flask.testing = True
-            config.setup()
-
-            cls.db.drop_all()
-            cls.db.create_all()
-
-            start_time = datetime.now().strftime('%Y-%m-%d %H:%M')
-            end_time = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M')
-            cls.db.insertMentor(data['mentor'][0], data['mentorname'][0], data['mentorid'][0], data['phone_number'][0], "Python")
-            cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], data['phone_number'][1], "Java")
-            cls.db.insertShift(data['mentorid'][0], start_time, end_time)
-            cls.db.insertShift(data['mentorid'][1], start_time, end_time)
 
     def create_app(self):
         """ Used by Flask-Testing package to create app context """

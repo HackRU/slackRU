@@ -1,146 +1,94 @@
 """ All SQLite database interactions should route through a DB instance """
 
-import sqlite3
+from datetime import datetime
+
+from slackru import sqlalch_db as db
 
 
+#####################
+#  Database Models  #
+#####################
+class Mentor(db.Model):
+    __tablename__ = 'mentors'
+    userid = db.Column(db.String(64), primary_key=True)
+    fullname = db.Column(db.String(64))
+    username = db.Column(db.String(64))
+    phone_number = db.Column(db.String(12), unique=True)
+    keywords = db.Column(db.String(1000))
+    questions = db.relationship('Question', backref='mentor', lazy=True)
+    posts = db.relationship('Post', backref='mentor', lazy=True)
+
+
+class Question(db.Model):
+    __tablename__ = "questions"
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(64))
+    answered = db.Column(db.Boolean)
+    username = db.Column(db.String(64))
+    userid = db.Column(db.String(64))
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    matchedMentors = db.Column(db.String(128))
+    assignedMentor = db.Column(db.String(64), db.ForeignKey('mentors.userid'), nullable=False)
+    posts = db.relationship('Post', backref='question', lazy=True)
+
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    questionId = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    userid = db.Column(db.String(64), db.ForeignKey('mentors.userid'), nullable=False)
+    channel = db.Column(db.String(64))
+    timestamp = db.Column(db.Integer)
+
+
+db.create_all()
+
+
+#######################
+#  Database Wrappers  #
+#######################
 class BaseDB:
     """ Base Database Class """
-    def __init__(self, dbpath: str):
-        self.dbpath = dbpath
-        self.conn = None
-        self.c = None
+    def __init__(self):
+        self.Mentor = Mentor
+        self.Post = Post
+        self.Question = Question
 
-    def open(self):
-        self.conn = sqlite3.connect(self.dbpath)
+    def execAndCommit(self, *objs):
+        for obj in objs:
+            db.session.add(obj)
+        db.session.commit()
 
-        def make_dicts(cursor, row):
-            return dict((cursor.description[idx][0], value)
-                        for idx, value in enumerate(row))
-
-        self.conn.row_factory = make_dicts
-        self.c = self.conn.cursor()
-        return self
-
-    def close(self):
-        self.conn.close()
-
-    def execAndCommit(self, *args):
-        self.c.execute(*args)
-        self.conn.commit()
-
-
-class CreateDB(BaseDB):
-    """ Create and Drop Operations
-
-    This class also initializes the database.
-    """
-    def __init__(self, dbpath: str):
-        super().__init__(dbpath)
-
-        self.open()
-
-        if self._isEmpty():
-            self.create_all()
-
-    def _isEmpty(self):
-        self.c.execute('SELECT name FROM sqlite_master WHERE type="table";')
-        return self.c.fetchall() == []
-
-    def create_all(self):
-        self.create_mentors()
-        self.create_shifts()
-        self.create_questions()
-        self.create_posts()
-
-    def drop_table(self, table_name):
-        self.c.execute("DROP TABLE IF EXISTS " + table_name)
-        self.conn.commit()
-
-    def drop_all(self):
-        self.drop_table('mentors')
-        self.drop_table('shifts')
-        self.drop_table('questions')
-        self.drop_table('posts')
-
-    def create_mentors(self):
-        self.execAndCommit("CREATE TABLE mentors "
-                           "(userid TEXT PRIMARY KEY, "
-                           "fullname TEXT, "
-                           "username TEXT, "
-                           "phone_number TEXT, "
-                           "keywords VARCHAR(1000))")
-
-    def create_shifts(self):
-        self.execAndCommit("CREATE TABLE shifts "
-                           "(userid TEXT, "
-                           "start TEXT, "
-                           "end TEXT, "
-                           "FOREIGN KEY(userid) REFERENCES mentors(userid))")
-
-    def create_questions(self):
-        self.execAndCommit("CREATE TABLE questions "
-                           "(id INTEGER PRIMARY KEY, "
-                           "question TEXT, "
-                           "answered INTEGER, "
-                           "username TEXT, "
-                           "userid TEXT, "
-                           "timestamp INTEGER, "
-                           "matchedMentors BLOB, "
-                           "assignedMentor TEXT, "
-                           "FOREIGN KEY(assignedMentor) REFERENCES mentors(userid))")
-
-    def create_posts(self):
-        self.execAndCommit("CREATE TABLE posts "
-                           "(questionId INTEGER, "
-                           "userid TEXT, "
-                           "channel TEXT, "
-                           "timestamp TEXT, "
-                           "FOREIGN KEY(questionId) REFERENCES questions(id), "
-                           "FOREIGN KEY(userid) REFERENCES mentors(userid))")
+    def __getattr__(self, name):
+        method = getattr(db, name)
+        return method
 
 
 class InsertDB(BaseDB):
     """ Insert Operations """
     def insertMentor(self, fullname: str, username: str, userid: str,
             phone_number: str, keywords: str):
-        CMD = "INSERT OR REPLACE INTO mentors " \
-              "(fullname, username, userid, phone_number, keywords) " \
-              "VALUES (?, ?, ?, ?, ?)"
-        self.execAndCommit(CMD, [fullname, username, userid, phone_number, keywords])
-
-    def insertShift(self, userid: str, start: str, end: str):
-        CMD = "INSERT INTO shifts " \
-              "(userid, start, end) " \
-              "VALUES (?, ?, ?)"
-        self.execAndCommit(CMD, [userid, start, end])
+        mentor = Mentor(fullname=fullname, username=username, userid=userid,
+                phone_number=phone_number, keywords=keywords)
+        self.execAndCommit(mentor)
 
     def insertQuestion(self, question: str, userid: str, matchedMentors: '[str]'):
-        CMD = "INSERT INTO questions " \
-              "(question, answered, userid, timestamp, matchedMentors, assignedmentor) " \
-              "VALUES (?, 0, ?, datetime('now', 'localtime'), ?, NULL)"
-        self.execAndCommit(CMD, [question, userid, matchedMentors])
-        return self.c.lastrowid
+        Q = Question(question=question, userid=userid, matchedMentors=matchedMentors,
+                assignedMentor='')
+        self.execAndCommit(Q)
+        return Question.query.order_by(Question.id).all()[-1].id
 
     def insertPost(self, questionId: int, userid: str, channel: str, timestamp: str):
-        CMD = "INSERT INTO posts " \
-              "(questionId, userid, channel, timestamp) " \
-              "VALUES (?, ?, ?, ?)"
-        self.execAndCommit(CMD, [questionId, userid, channel, timestamp])
+        post = Post(questionId=questionId, userid=userid, channel=channel,
+                timestamp=timestamp)
+        self.execAndCommit(post)
 
 
-class DB(CreateDB, InsertDB):
+class DB(InsertDB):
     """ DB Interface Class """
-    def runQuery(self, query: str, args=(), one=False):
-        cur = self.conn.execute(query, args)
-        rv = cur.fetchall()
-        cur.close()
-
-        return (rv[0] if rv else None) if one else rv
-
     def markAnswered(self, userid: str, questionId: int):
-        CMD = "UPDATE questions " \
-              "SET answered=1, " \
-              "assignedMentor=? " \
-              "WHERE id=?"
+        Q = Question.query.get(questionId)
+        Q.answered = True
+        Q.assignedMentor = userid
 
-        self.execAndCommit(CMD, [userid, questionId])
+        self.execAndCommit(Q)

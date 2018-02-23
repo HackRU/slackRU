@@ -1,8 +1,10 @@
 from flask import Flask, Blueprint
-
-from slackru.DB import DB
+from flask_sqlalchemy import SQLAlchemy
 
 main = Blueprint('main', __name__)
+
+sqlalch_db = None
+db = None
 
 
 def create_app() -> 'Flask(...)':
@@ -13,19 +15,17 @@ def create_app() -> 'Flask(...)':
     app.config.from_object(config)
     app.register_blueprint(main)
 
+    global sqlalch_db, db
+    sqlalch_db = SQLAlchemy(app)
+
+    from slackru.DB import DB
+    db = DB()
+
     return app
 
 
-def get_db() -> DB:
-    """ Return a new database connection if one does not already exist.
-    Otherwise return the already opened database.
-    """
-    from slackru.config import config
-    if not get_db.database:
-        get_db.database = DB(config.dbpath)
-    return get_db.database
+def get_db() -> 'DB(...)':
+    return db
 
-
-get_db.database = None
 
 import slackru.views

@@ -69,19 +69,17 @@ class MessageActionView(PostView):
           from this hacker
         """
         self.db.markAnswered(self.mentorid, self.questionId)
-        query = "SELECT channel,timestamp FROM posts " \
-                "WHERE questionId=? AND userid!=?"
 
-        for post in self.db.runQuery(query, [self.questionId, self.mentorid]):
-            util.slack.deleteDirectMessages(post['channel'], post['timestamp'])
+        postsToMentors = self.db.Post.query.filter(self.db.Post.questionId == self.questionId)
 
-        query_result = self.db.runQuery('SELECT userid,question FROM questions WHERE id=?',
-                                         [self.questionId],
-                                         one=True)
+        print(self.mentorid)
+        for post in postsToMentors:
+            if post.userid != self.mentorid:
+                print(post.userid)
+                util.slack.deleteDirectMessages(post.channel, post.timestamp)
 
-        assert query_result, "No question matches the given question ID!"
-
-        hackerid, question = query_result.values()
+        Q = self.db.Question.query.get(self.questionId)
+        hackerid, question = Q.userid, Q.question
 
         resp = {'text': 'That\'s the spirit! I have setup a direct message between you and <@{0}>. Please reach out to <@{0}> and let them know you are taking ownership of this request. Thanks! :grinning:'.format(hackerid)}
 
@@ -140,12 +138,11 @@ class PairMentor(PostView):
 
     def dispatch_request(self) -> 'flask.Response(...)':
         """ The URL route is linked to this method """
-        mentorsQuery = "SELECT * FROM mentors"
 
-        allMentors = self.db.runQuery(mentorsQuery)
+        allMentors = self.db.Mentor.query.all()
 
         # Reenable Mentor Matching when Issue #20 is closed
-        selectedMentorIDs = [mentor['userid'] for mentor in allMentors]
+        selectedMentorIDs = [mentor.userid for mentor in allMentors]
         # selectedMentorIDs = list(self.getMatchedMentorIDs(self.question, allMentors)) \
         #                      or [mentor['userid'] for mentor in allMentors]
 

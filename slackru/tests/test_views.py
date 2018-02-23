@@ -3,6 +3,7 @@
 import json
 
 import slackru.util as util
+from slackru import get_db
 from slackru.tests import TestBase, reset_mock, params, data
 from slackru.tests import slack_mock
 from slackru.config import config
@@ -12,18 +13,25 @@ class TestViews(TestBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
         from slackru.views import MessageActionView
         payload = cls.getPostData("yes", "mentorResponse_1")
         cls.MAVI = MessageActionView(payload)  # MAVI -> MessageActionViewInstance
 
+        cls.db = get_db()
+
+        cls.db.drop_all()
+        cls.db.create_all()
+        cls.db.session.commit()
+
+        cls.db.insertMentor(data['mentor'][0], data['mentorname'][0], data['mentorid'][0], data['phone_number'][0], "Python")
+        cls.db.insertMentor(data['mentor'][1], data['mentorname'][1], data['mentorid'][1], data['phone_number'][1], "Java")
+
+        cls.db.insertQuestion(data['question'][0], data['userid'][0], json.dumps([data['userid'][0]]))
+
     def setUp(self):
         super().setUp()
-        self.db.drop_table('questions')
-        self.db.create_questions()
-        self.db.insertQuestion(data['question'][0], data['userid'][0], json.dumps([data['userid'][0]]))
 
-    @params(('Bryan Bugyi', '6095007081', 'Python,Haskell'))
+    @params(('Party Pam', '987654321', 'HTML,CSS'))
     def test_register_mentor(self, fullname, phone_number, keywords):
         postData = {'fullname': fullname,
                     'phone_number': phone_number,
@@ -84,8 +92,7 @@ class TestViews(TestBase):
 
     def getMessageData(self):
         Mdata = []
-        self.db.drop_table('posts')
-        self.db.create_posts()
+        self.db.Post.query.delete()
         for mentorid in data['mentorid']:
             channel = util.slack.getDirectMessageChannel(mentorid)
             ts = util.slack.sendMessage(channel, "Test Message")
