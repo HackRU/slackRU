@@ -19,7 +19,6 @@ class PostView(View):
 
     def __init__(self, postData=None):
         self.db = get_db()
-
         if postData:
             self.postData = postData
         else:
@@ -161,7 +160,7 @@ class PairMentor(PostView):
             timestamp = util.slack.sendMessage(channel, text, attachments)
             self.db.insertPost(questionId, mentorid, channel, timestamp)
 
-        return ("done", {'mentorIDs': selectedMentorIDs})
+        return ("done", {'mentorIDs': str(selectedMentorIDs)})
 
     def getMatchedMentorIDs(self, question: 'str', allMentors: '[{str: ??}]'):
         """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """

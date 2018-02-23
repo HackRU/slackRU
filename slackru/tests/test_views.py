@@ -43,13 +43,13 @@ class TestViews(TestBase):
             resp = client.post(config.serverurl + 'message_action', data=postData)
             self.assertEqual(200, resp.status_code)
 
-    @params(("My Java code is not working", [1]), ("I like python.", [0]), ("Anyone know java?", [1]))
+    @params(("My Java code is not working", [0,1]), ("Anyone know python?", [0,1]), ("Can someone help me?", [0,1]))
     def test_pair_mentor(self, question, mentorIndexes):
         postData = {'question': question,
                     'userid': data['userid'][0]}
         with self.app.test_client() as client:
             resp = client.post(config.serverurl + 'pair_mentor', data=postData)
-            self.assertEqual([resp.headers['mentorIDs']], [data['mentorid'][i] for i in mentorIndexes])
+            self.assertEqual(resp.headers['mentorIDs'], str([data['mentorid'][i] for i in mentorIndexes]))
 
     @reset_mock
     def test_mentorAccept(self):
