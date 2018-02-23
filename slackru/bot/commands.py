@@ -62,7 +62,7 @@ class Commands:
                 return docs
 
             titled_docstr = '\n\n*========== ' + name.upper() + ' ==========*\n' + docstr
-            new_doc = docs + titled_docstr.format(name=name, precmd='@SRU ', argbar=ARGBAR)
+            new_doc = docs + titled_docstr.format(name=name, precmd='@hackbot ', argbar=ARGBAR)
             return new_doc
 
         channel = util.slack.getDirectMessageChannel(userid)
