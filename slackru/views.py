@@ -144,8 +144,11 @@ class PairMentor(PostView):
         mentorsQuery = "SELECT * FROM mentors"
 
         allMentors = self.db.runQuery(mentorsQuery)
-        selectedMentorIDs = list(self.getMatchedMentorIDs(self.question, allMentors)) \
-                             or [mentor['userid'] for mentor in allMentors]
+
+        # Reenable Mentor Matching when Issue #20 is closed
+        selectedMentorIDs = [mentor['userid'] for mentor in allMentors]
+        # selectedMentorIDs = list(self.getMatchedMentorIDs(self.question, allMentors)) \
+        #                      or [mentor['userid'] for mentor in allMentors]
 
         questionId = self.db.insertQuestion(self.question,
                                            self.userid,
@@ -184,7 +187,7 @@ class RegisterMentor(PostView):
 
     When the 'register' command is run, the SlackBot sends a POST request
     to this URL route. The server then uses the POST data to add a new
-    mentor the the database.
+    mentor to the database.
     """
     def __init__(self):
         super().__init__()
