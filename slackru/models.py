@@ -68,9 +68,18 @@ class InsertDB(BaseDB):
     """ Insert Operations """
     def insertMentor(self, fullname: str, username: str, userid: str,
             phone_number: str, keywords: str):
-        mentor = Mentor(fullname=fullname, username=username, userid=userid,
+        isDuplicate = False
+        old_mentor_record = Mentor.query.filter_by(userid=userid).first()
+        if old_mentor_record is not None:
+            db.session.delete(old_mentor_record)
+            db.session.commit()
+            isDuplicate = True
+
+        new_mentor_record = Mentor(fullname=fullname, username=username, userid=userid,
                 phone_number=phone_number, keywords=keywords)
-        self.execAndCommit(mentor)
+        self.execAndCommit(new_mentor_record)
+
+        return isDuplicate
 
     def insertQuestion(self, question: str, userid: str, matchedMentors: '[str]'):
         Q = Question(question=question, userid=userid, matchedMentors=matchedMentors,
