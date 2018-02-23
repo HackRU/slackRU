@@ -141,14 +141,11 @@ class PairMentor(PostView):
 
     def dispatch_request(self) -> 'flask.Response(...)':
         """ The URL route is linked to this method """
-        mentorsQuery = ("SELECT mentors.* FROM shifts "
-                        "JOIN mentors ON mentors.userid = shifts.userid "
-                        "WHERE datetime('now', 'localtime') >= datetime(shifts.start) "
-                        "AND datetime('now', 'localtime') < datetime(shifts.end)")
+        mentorsQuery = "SELECT * FROM mentors"
 
-        mentorsOnDuty = self.db.runQuery(mentorsQuery)
-        selectedMentorIDs = list(self.getMatchedMentorIDs(self.question, mentorsOnDuty)) \
-                             or [mentor['userid'] for mentor in mentorsOnDuty]
+        allMentors = self.db.runQuery(mentorsQuery)
+        selectedMentorIDs = list(self.getMatchedMentorIDs(self.question, allMentors)) \
+                             or [mentor['userid'] for mentor in allMentors]
 
         questionId = self.db.insertQuestion(self.question,
                                            self.userid,
@@ -163,7 +160,7 @@ class PairMentor(PostView):
 
         return ("done", {'mentorIDs': selectedMentorIDs})
 
-    def getMatchedMentorIDs(self, question: 'str', mentorsOnDuty: '[{str: ??}]'):
+    def getMatchedMentorIDs(self, question: 'str', allMentors: '[{str: ??}]'):
         """ Matches Mentors based on 'question' and what mentors currently have shifts scheduled """
         import string
 
@@ -174,7 +171,7 @@ class PairMentor(PostView):
 
         question_keywords = temp
 
-        for mentor in mentorsOnDuty:
+        for mentor in allMentors:
             keywords = [word.lower() for word in mentor['keywords'].split(',')]
             for word in question_keywords:
                 if word in keywords:
