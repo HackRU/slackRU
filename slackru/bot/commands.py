@@ -51,7 +51,7 @@ class Commands:
             `{precmd}<command> -h`
 
         {argbar}
-        `<command>`: one of my other commands (e.g. `mentors`)
+        `<command>`: one of my available commands (e.g. `mentors` or `help`)
         """
         ARGBAR = '_***** Parameter Details *****_'
 
@@ -121,8 +121,8 @@ class Commands:
             `{precmd}{name} <fullname> | <phone_number> | <keywords>`
 
         {argbar}
-        `<fullname>`: The hacker's first and last name, seperated by a space.
-        `<phone_number>`: The hacker's phone number. No spaces, dashes, or parentheses (e.g. 5555555555).
+        `<fullname>`: The mentor's first and last name, seperated by a space.
+        `<phone_number>`: The mentor's phone number. No spaces, dashes, or parentheses (e.g. 5555555555).
         `<keywords>`: These represent skills (programming languages, framewords, etc.) that you feel
                     you are particularly well suited to mentor others in. This should be a comma
                     seperated list (e.g. Python,Java,Haskell)
@@ -133,7 +133,7 @@ class Commands:
               SlackBot will attempt to reach out to you before other mentors if the hacker has a
               question that contains one of your keywords).
 
-        NOTE: If you make a mistake/type, you can always run this command
+        NOTE: If you make a mistake/typo, you can always run this command
               again. If you have already registered, I will just overwrite your
               previous records with the new ones that you provide.
 

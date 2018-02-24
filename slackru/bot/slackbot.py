@@ -30,10 +30,14 @@ class SlackBot:
             logging.info("SlackRU connected and running!")
             self.isAlive = True
             while self.stayAlive:
-                command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
-                if command and channel:
-                    self.handle_command(command, channel, userid, username)
-                time.sleep(READ_WEBSOCKET_DELAY)
+                try:
+                    command, channel, userid, username = self.parse_slack_output(slack_client.rtm_read())
+                    if command and channel:
+                        self.handle_command(command, channel, userid, username)
+                    time.sleep(READ_WEBSOCKET_DELAY)
+                except Exception as e:
+                    logging.exception("'SlackBot.run' raised an exception.")
+                    continue
         else:
             logging.info("Connection failed. Invalid Slack token or bot ID?")
 
