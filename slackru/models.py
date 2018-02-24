@@ -69,15 +69,17 @@ class InsertDB(BaseDB):
     def insertMentor(self, fullname: str, username: str, userid: str,
             phone_number: str, keywords: str):
         isDuplicate = False
-        old_mentor_record = Mentor.query.filter_by(userid=userid).first()
-        if old_mentor_record is not None:
-            db.session.delete(old_mentor_record)
+        mentor = Mentor.query.filter_by(userid=userid).first()
+        if mentor is not None:
+            mentor.fullname = fullname
+            mentor.phone_number = phone_number
+            mentor.keywords = keywords
             db.session.commit()
             isDuplicate = True
-
-        new_mentor_record = Mentor(fullname=fullname, username=username, userid=userid,
-                phone_number=phone_number, keywords=keywords)
-        self.execAndCommit(new_mentor_record)
+        else:
+            mentor = Mentor(fullname=fullname, username=username, userid=userid,
+                    phone_number=phone_number, keywords=keywords)
+            self.execAndCommit(mentor)
 
         return isDuplicate
 

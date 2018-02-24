@@ -133,6 +133,10 @@ class Commands:
               SlackBot will attempt to reach out to you before other mentors if the hacker has a
               question that contains one of your keywords).
 
+        NOTE: If you make a mistake/type, you can always run this command
+              again. If you have already registered, I will just overwrite your
+              previous records with the new ones that you provide.
+
         WARNING: You must use '|' to seperate each option! Keywords should be seperated using commas!
                  You must register using this command or you will NOT be notified when hackers reach
                  out for help!
