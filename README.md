@@ -2,6 +2,17 @@
 
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/HackRU/SlackRU.svg?columns=all)](https://waffle.io/HackRU/SlackRU)
 
+# Deployment
+
+There are two parts to deploying SlackRU:
+
+#### (1) Deploying the Server
+The server is a Flask app. This can be deployed using any cloud server infrastructure that supports Flask. We have previously used an AWS beanstalk. Documentation for deploying a Flask app on a beanstalk can be found [here](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-flask.html).
+
+#### (2) Deploying the SlackBot
+
+The SlackBot connects to the Slack workspace using Slack's API. As such, the SlackBot can be launched from any machine with a working internet connection using `python main.py --config production slackbot`. It is preferable to deploy the SlackBot on a reliable cloud server (as opposed to deploying it on your own local machine).
+
 # New Feature Ideas!
 Be creative and liberal. It is expected that most of these features will never see the light of day, so feel free to dream big!
 
